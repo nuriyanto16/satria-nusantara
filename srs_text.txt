@@ -1,0 +1,1042 @@
+--- Page 1 ---
+SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+Sistem Informasi Manajemen Anggota
+LSP SATRIA NUSANTARA
+Versi 3.0 Final
+Tanggal Juni 2026
+Status Final — Siap Pengembangan
+Dibuat oleh Tim Pengembang Sistem SN
+Disetujui oleh _____________ / Pimpinan SN Pusat
+RIWAYAT VERSI
+Versi Tanggal Deskripsi Perubahan
+1.0 2025 Versi awal — dokumen dasar sistem
+2.0 Mei 2026 Update fitur, penyempurnaan aturan bisnis
+3.0 Juni 2026 Final: +30 layar mobile, +Mode Pengurus/Pelatih, +Tes
+Kebugaran, +Halaman 12 Web Admin, +WhatsApp deep link,
++Daftar Isi
+4.0 Juni 2026 Update terminologi (BLBA/PH/PK/GPK/EKT Jurus/EKT Non
+Jurus), 9 tingkatan, alur EKT Jurus & Non Jurus, scope
+Latgab multi-cabang, +2 layar mobile (17a & 17c) menjadi 32
+layar, unified form Latgab+EKT di web admin, aturan bisnis
+BR-EKT-05/06/07, BR-LTG-03, koreksi BR-ABS-02, parameter
+EKT per tingkatan
+--- Page 2 ---
+DAFTAR ISI
+BAB 1 PENDAHULUAN
+• 1.1 Latar Belakang
+• 1.2 Tujuan Dokumen
+• 1.3 Ruang Lingkup Sistem
+• 1.4 Definisi, Akronim & Singkatan
+• 1.5 Referensi
+• 1.6 Gambaran Dokumen
+BAB 2 GAMBARAN SISTEM
+• 2.1 Arsitektur Umum
+• 2.2 Komponen Sistem
+• 2.3 Aktor & Role Pengguna (Mode Anggota / Pengurus / Pelatih)
+• 2.4 Alur Sistem Utama (8 alur: Pendaftaran, Absensi, BLBA, EKT, Latgab, Pelatnas, Tes
+Kebugaran, Input Jadwal Pelatih)
+• 2.5 Integrasi Antar Komponen
+• 2.6 Asumsi & Batasan Sistem
+BAB 3 STRUKTUR ORGANISASI
+• 3.1 Hierarki Organisasi
+• 3.2 Tingkat Pusat
+• 3.3 Tingkat Cabang (Kepengurusan, Kode Cabang)
+• 3.4 Tingkat Unit
+• 3.5 Pelatih (Jenis, Penugasan, Latihan Internal, Transport)
+• 3.6 Keanggotaan (Tingkatan, Status, Nomor Anggota)
+BAB 4 FITUR APLIKASI MOBILE — 30 LAYAR
+• 4.1 Ringkasan Layar (tabel 30 layar)
+• 4.2 Navigasi & Layout Umum
+• 4.3.1 Grup Onboarding (Layar 1–6: Splash, Login, Daftar, Menunggu Verifikasi)
+• 4.3.2 Grup Beranda (Layar 7–8: Home, Detail Konten)
+• 4.3.3 Grup Jadwal (Layar 9–14: Kalender, List, Detail Jadwal, EKT, Latgab, Pelatnas)
+• 4.3.4 Grup Scan QR (Layar 15–17: QR Pelatih, Daftar Hadir Sesi, Scan Anggota, Scan
+Berhasil)
+• 4.3.5 Grup BLBA (Layar 18–20: BLBA, Pilih E-Wallet, Pembayaran Berhasil + WhatsApp)
+• 4.3.6 Grup Profil (Layar 21–24: Profil, Kartu Anggota, Data Diri, Notifikasi)
+• 4.3.7 Grup Tes Kebugaran — Mode Pelatih (Layar 25–26: Pilih Peserta, Input Hasil Tes)
+• 4.3.8 Grup Mode Pengurus (Layar 27–28: Kelola Konten, Buat/Edit Konten)
+• 4.3.9 Grup Mode Pelatih — form Input Jadwal — dua Jenis Sesi (Latihan Rutin / Latihan
+Pelatih), scope Unit · Layar 30: Jadwal Tersimpan
+--- Page 3 ---
+BAB 5 FITUR WEB ADMIN — 12 HALAMAN
+• 5.1 Ringkasan Halaman (tabel 12 halaman)
+• 5.2 Layout Umum Web Admin
+• 5.3.1 Halaman 01 — Dashboard (+ stat card Kebugaran, tren kebugaran)
+• 5.3.2 Halaman 02 — Kelola Cabang
+• 5.3.3 Halaman 03 — Kelola Anggota (+ tab Kebugaran)
+• 5.3.4 Halaman 04 — Kelola Jadwal Latihan (+ tautkan Tes Kebugaran)
+• 5.3.5 Halaman 05 — Latgab / EKT / Pelatnas (+ field Penyelenggara dinamis per jenis event)
+• 5.3.6 Halaman 06 — Absensi & Kehadiran
+• 5.3.7 Halaman 07 — BLBA
+• 5.3.8 Halaman 08 — Laporan (+ Laporan Kebugaran)
+• 5.3.9 Halaman 09 — Konten & Artikel
+• 5.3.10 Halaman 10 — Manajemen User
+• 5.3.11 Halaman 11 — Pengaturan (+ Section Tes Kebugaran)
+• 5.3.12 Halaman 12 — Tes Kebugaran (BARU)
+BAB 6 ATURAN BISNIS
+• 6.1 BLBA (BR-IUR-01 s/d BR-IUR-05)
+• 6.2 EKT — Evaluasi Kenaikan Tingkat (BR-EKT-01 s/d BR-EKT-04)
+• 6.3 Latgab — Latihan Gabungan (BR-LTG-01 s/d BR-LTG-02)
+• 6.4 Pelatnas — Pelatihan Nasional (BR-PLT-01 s/d BR-PLT-02)
+• 6.5 Absensi & Kehadiran (BR-ABS-01 s/d BR-ABS-02)
+• 6.6 Transport Pelatih (BR-TRP-01 s/d BR-TRP-02)
+• 6.7 Konten & Pengumuman (BR-KON-01 s/d BR-KON-02)
+• 6.8 Penomoran Anggota (BR-NOM-01)
+• 6.9 Tes Kebugaran — (BR-KB-01 s/d BR-KB-04 + tabel standar nilai)
+• 6.10 Aturan Jadwal Latihan (BR-JDW-01 s/d BR-JDW-05 + ringkasan scope)
+BAB 7 MANAJEMEN USER & OTORISASI
+• 7.1 Jenis Akun Pengguna (Mobile vs Web Admin)
+• 7.2 Role Web Admin (Admin Pusat, Pengurus Cabang, PIC Unit, Pelatih)
+• 7.3 Matrix Otorisasi Akses Menu (+ baris Tes Kebugaran)
+• 7.4 Detail Lingkup Akses per Role
+• 7.5 Autentikasi & Keamanan Akun (Mobile, Web Admin, Umum)
+BAB 8 NOTIFIKASI
+• 8.1 Daftar Notifikasi & Trigger (13 jenis: N-01 s/d N-13)
+• 8.2 Variabel Dinamis Template
+• 8.3 Template Notifikasi Default (13 template)
+• 8.4 Aturan Pengiriman Notifikasi
+--- Page 4 ---
+BAB 9 INTEGRASI & PEMBAYARAN
+• 9.1 Integrasi Midtrans — Payment Gateway (alur, status transaksi)
+• 9.2 Integrasi Firebase Cloud Messaging (FCM)
+• 9.3 Integrasi Google OAuth 2.0 (Sign-In Mobile)
+• 9.4 Integrasi WhatsApp Deep Link — BARU (kirim bukti BLBA)
+• 9.5 Struktur API Internal Backend (14 kelompok endpoint, standar response, HTTP status code)
+• 9.6 Penanganan Error Integrasi
+BAB 10 PENGATURAN SISTEM
+• 10.1 Parameter BLBA (4 parameter)
+• 10.2 Parameter Transport Pelatih (4 parameter)
+• 10.3 Parameter Syarat EKT (4 parameter)
+• 10.4 Parameter Tes Kebugaran — BARU (5+ parameter + contoh tabel standar nilai)
+• 10.5 Parameter Profil Organisasi (11 parameter)
+• 10.6 Parameter Notifikasi (13 toggle + template)
+• 10.7 Parameter Aplikasi Mobile (6 parameter)
+• 10.8 Ringkasan Semua Parameter (total 48+ parameter)
+BAB 11 KEBUTUHAN NON-FUNGSIONAL
+• 11.1 Performa — 9 kebutuhan NF-P01 s/d NF-P09
+• 11.2 Keandalan — 10 kebutuhan NF-R01 s/d NF-R10
+• 11.3 Keamanan — 12 kebutuhan NF-S01 s/d NF-S12
+• 11.4 Skalabilitas
+• 11.5 Kemudahan Penggunaan (Mobile & Web Admin)
+• 11.6 Kemudahan Pemeliharaan
+• 11.7 Kompatibilitas
+• 11.8 Lokalisasi
+BAB 12 STACK TEKNOLOGI
+• 12.1 Ringkasan Stack per Lapisan
+• 12.2 Stack Mobile App (14 library)
+• 12.3 Stack Web Admin (12 library)
+• 12.4 Stack Backend (18 library)
+• 12.5 Database & Storage + Catatan Desain Database
+• 12.6 Infrastruktur & DevOps
+• 12.7 Tools Pengembangan
+• 12.8 Catatan Tambahan Stack
+--- Page 5 ---
+BAB 1 — PENDAHULUAN
+1.1 Latar Belakang
+Satria Nusantara (SN) adalah lembaga seni pernapasan yang telah berdiri sejak lama dan
+memiliki jaringan organisasi yang tersebar luas di seluruh Indonesia. Organisasi ini memiliki
+struktur hierarki yang terdiri dari Pusat di Yogyakarta, Cabang di berbagai kota dan kabupaten,
+serta Unit sebagai tempat latihan di tingkat komunitas.
+Seiring bertambahnya jumlah anggota yang mencapai puluhan ribu orang di ratusan cabang,
+pengelolaan data anggota, kehadiran latihan, BLBA, tes kebugaran, dan kegiatan masih
+dilakukan secara manual atau menggunakan sistem yang terpisah-pisah. Hal ini
+menyebabkan inefisiensi operasional, sulitnya monitoring dari pusat, dan pengalaman
+anggota yang kurang optimal.
+Dokumen ini mendefinisikan kebutuhan sistem informasi manajemen anggota Satria
+Nusantara yang terintegrasi, meliputi aplikasi mobile untuk anggota (dengan mode tambahan
+untuk pengurus dan pelatih) serta portal web admin untuk pengurus di semua tingkatan.
+1.2 Tujuan Dokumen
+Dokumen SRS ini bertujuan untuk:
+• Mendefinisikan seluruh kebutuhan fungsional dan non-fungsional sistem
+• Menjadi acuan bagi tim pengembang dalam membangun sistem
+• Menjadi referensi bagi stakeholder dalam mengevaluasi sistem
+• Mendokumentasikan keputusan desain dan aturan bisnis yang telah disepakati
+• Menjadi baseline untuk pengujian dan validasi sistem
+1.3 Ruang Lingkup Sistem
+Sistem terdiri dari dua komponen utama:
+Komponen Deskripsi Target Pengguna
+Aplikasi Mobile Aplikasi Android & iOS untuk anggota — absensi QR,
+BLBA, jadwal, pendaftaran EKT/Latgab/Pelatnas, tes
+kebugaran, kelola konten (mode pengurus), input
+jadwal (mode pelatih)
+Seluruh anggota
+aktif SN, Pengurus,
+Pelatih
+Web Admin Portal web untuk pengurus — kelola anggota, jadwal,
+BLBA, laporan, konten, tes kebugaran, manajemen
+user
+Admin Pusat,
+Pengurus Cabang,
+PIC Unit, Pelatih
+1.4 Definisi, Akronim & Singkatan
+Istilah Definisi
+SN Satria Nusantara — nama organisasi seni pernapasan
+LSP-SN Lembaga Sertifikasi Profesi Satria Nusantara — nama resmi lembaga
+Pusat Kantor pusat SN di Kota Yogyakarta, DI Yogyakarta
+Cabang Unit organisasi tingkat kota/kabupaten, dikelola Pengurus Cabang
+Unit Tempat latihan di tingkat komunitas, dikoordinasi PIC Unit
+--- Page 6 ---
+Istilah EKT Latgab Pelatnas PIC Unit QR Absensi QRIS Tingkatan Jurus Nomor Anggota Tes Kebugaran Periode Tes SRS API JWT BLBA PH PK GPK EKT Jurus EKT Non Jurus Definisi
+Evaluasi Kenaikan Tingkat — ujian resmi untuk naik jurus/tingkatan.
+Terdiri dari dua jenis: EKT Jurus (naik ke jurus berikutnya) dan EKT Non
+Jurus (Pengayaan/Pendalaman Wawasan, syarat naik tingkat tertentu).
+Latihan Gabungan — kegiatan latihan bersama lintas cabang/unit. Scope
+peserta fleksibel: per provinsi atau multi-cabang. Biasanya
+diselenggarakan bersamaan dengan EKT Jurus.
+Pelatihan Nasional — kegiatan nasional tahunan seluruh anggota
+Indonesia
+Person In Charge Unit — koordinator harian di tingkat unit latihan
+QR code yang digenerate pelatih per sesi untuk pencatatan kehadiran
+Quick Response Code Indonesian Standard — standar pembayaran
+digital Indonesia
+9 level kenaikan yang harus dilalui secara berurutan: Pra Dasar, Dasar,
+PH (Pengendalian Halus), Gabungan, PK (Pengendalian Keras), GPK
+(Gabungan Pengendalian Keras), Penjuru, Selangkah, Meditasi. Setiap
+tingkatan memiliki jumlah jurus yang berbeda-beda
+Sub-level dalam setiap tingkatan. Jumlah jurus bervariasi per tingkatan
+(misal: Gabungan = 7 jurus, GPK = 4 jurus). EKT Jurus dilakukan setiap
+mau naik ke jurus berikutnya, atau naik ke jurus 1 tingkatan berikutnya jika
+sudah di jurus terakhir tingkatan tersebut
+Kode unik format: [Kode Provinsi]-[Kode Kota/Kab]-[Nomor Urut]
+Evaluasi kondisi fisik anggota secara berkala — 5 jenis tes: nafas dalam
+air, push up, sit up, sit and reach, shuttle run
+Periode pelaksanaan tes kebugaran dalam satu tahun (default 3 periode
+per tahun)
+Software Requirements Specification — dokumen ini
+Application Programming Interface
+JSON Web Token — metode autentikasi berbasis token
+Biaya Latihan Bulanan Anggota — kontribusi wajib bulanan yang
+dibayarkan anggota aktif melalui e-wallet.
+Pengendalian Halus — tingkatan ke-3 dalam sistem SN. Sebelumnya
+ditulis "Peng. Halus"
+Pengendalian Keras — tingkatan ke-5 dalam sistem SN. Sebelumnya
+ditulis "Peng. Keras"
+Gabungan Pengendalian Keras — tingkatan ke-6 dalam sistem SN (4
+jurus). Sebelumnya ditulis "Gab. PK".
+Ujian resmi untuk naik ke jurus berikutnya. Jika di jurus terakhir suatu
+tingkatan → otomatis naik ke jurus 1 tingkatan berikutnya. Dilaksanakan
+bersamaan dengan Latgab.
+EKT Non Jurus | Evaluasi khusus sebagai syarat wajib sebelum naik ke
+tingkatan tertentu. Jenis: Pengayaan I (syarat naik ke Gabungan, min. PH
+Jurus 6), Pengayaan II (syarat naik ke PK, min. Gabungan Jurus 4),
+Pendalaman Wawasan I (syarat naik ke GPK, min. PK Jurus 6). Hanya
+dilakukan sekali per tingkatan.
+--- Page 7 ---
+1.5 Referensi
+• Mockup Mobile App SN v1.0 — 30 layar interaktif (termasuk mode pengurus, mode
+pelatih, dan tes kebugaran)
+• Mockup Web Admin SN v2.0 — 12 halaman interaktif (termasuk halaman Tes
+Kebugaran)
+• Diskusi dan kesepakatan desain dengan Project Manager (Mei–Juni 2026)
+• Regulasi organisasi LSP Satria Nusantara
+1.6 Gambaran Dokumen
+Dokumen ini disusun dalam 12 bab sebagai berikut:
+• Bab 1 — Pendahuluan: latar belakang, tujuan, ruang lingkup, definisi
+• Bab 2 — Gambaran Sistem: arsitektur umum, aktor, alur sistem
+• Bab 3 — Struktur Organisasi: hierarki, kepengurusan, pelatih
+• Bab 4 — Fitur Mobile App: detail 30 layar aplikasi (termasuk mode pengurus & pelatih)
+• Bab 5 — Fitur Web Admin: detail 12 halaman portal pengurus (termasuk Tes
+Kebugaran)
+• Bab 6 — Aturan Bisnis: BLBA, EKT, transport, absensi, tes kebugaran
+• Bab 7 — Manajemen User & Otorisasi: role matrix akses
+• Bab 8 — Notifikasi: trigger, template, variabel dinamis
+• Bab 9 — Integrasi & Pembayaran: e-wallet, QRIS, WhatsApp deep link
+• Bab 10 — Pengaturan Sistem: parameter konfigurasi
+• Bab 11 — Kebutuhan Non-Fungsional: performa, keamanan, skalabilitas
+• Bab 12 — Stack Teknologi: mobile, web, backend, database
+--- Page 8 ---
+BAB 2 — GAMBARAN SISTEM
+2.1 Arsitektur Umum
+Sistem SN menggunakan arsitektur tiga lapis (three-tier architecture) yang memisahkan
+antara lapisan presentasi, logika bisnis, dan data. Dua antarmuka pengguna utama — aplikasi
+mobile dan web admin — berkomunikasi dengan satu backend terpusat melalui REST API
+yang diamankan dengan JWT.
+2.2 Komponen Sistem
+Berikut adalah daftar komponen utama sistem beserta teknologi dan fungsinya:
+Komponen Teknologi Fungsi
+Mobile App React Native Aplikasi anggota: absensi QR, BLBA, jadwal,
+EKT/Latgab/Pelatnas, tes kebugaran, profil. Mode
+Pengurus: kelola konten. Mode Pelatih: generate QR,
+input jadwal, input hasil tes kebugaran.
+Web Admin React + Next.js Portal pengurus: kelola semua data, tes kebugaran,
+dan konfigurasi sistem
+Backend API Node.js +
+Express
+REST API — logika bisnis, autentikasi, integrasi
+pembayaran & notifikasi
+Database PostgreSQL Penyimpanan data utama: anggota, transaksi,
+kehadiran, tes kebugaran, konten
+Payment Gateway Midtrans Pemrosesan pembayaran via DANA, OVO, GoPay,
+ShopeePay
+Push Notification Firebase FCM Pengiriman notifikasi ke aplikasi mobile anggota
+Hosting Cloud
+(VPS/PaaS)
+Infrastruktur server backend dan storage
+--- Page 9 ---
+2.3 Aktor & Role Pengguna
+2.3.1 Pengguna Mobile App — Mode Pengguna
+Aplikasi mobile menggunakan satu akun dengan mode tampilan yang menyesuaikan secara
+otomatis berdasarkan role pengguna yang login. Terdapat tiga mode:
+• Mode Anggota: akses fitur standar (absensi QR, jadwal, BLBA, EKT/Latgab/Pelatnas,
+profil, tes kebugaran view-only). Semua anggota aktif mendapat mode ini secara
+default.
+• Mode Pengurus: aktif jika user terdaftar sebagai Pengurus Cabang di web admin.
+Tambahan: shortcut Kelola Konten di beranda, akses layar buat/edit konten dari HP.
+• Mode Pelatih: aktif jika user terdaftar sebagai Pelatih di web admin. Tambahan: FAB
+tambah jadwal di layar Jadwal, generate QR absensi per sesi, input hasil tes
+kebugaran per peserta.
+Satu orang dapat memiliki lebih dari satu mode secara bersamaan — misalnya seorang
+pelatih yang juga anggota aktif akan mendapat Mode Anggota sekaligus Mode Pelatih.
+2.3.2 Pengguna Web Admin — Pengurus
+Pengurus di berbagai tingkatan menggunakan portal web admin. Terdapat 4 role dengan
+akses dan lingkup data yang berbeda. Data yang ditampilkan otomatis tersaring sesuai
+lingkup role yang sedang login.
+Role Lingkup Data Tanggung Jawab Utama
+Admin Pusat Seluruh
+Indonesia
+Akses penuh semua fitur. Kelola cabang, konfigurasi
+sistem, laporan nasional, manajemen user, penyelenggara
+Pelatnas, konfigurasi tes kebugaran nasional
+Pengurus
+Cabang
+Cabangnya saja Kelola anggota, jadwal, BLBA, EKT/Latgab, konten, tes
+kebugaran, user di cabangnya. Jabatan: Ketua, Sekretaris,
+Bendahara, Kabid Latihan, Kabid Keanggotaan, dll
+PIC Unit Unitnya saja Kelola anggota unit, absensi, BLBA unit (termasuk
+rekening pembayaran), laporan unit
+Pelatih Unit yang dilatih Generate QR absensi per sesi via mobile, input jadwal via
+mobile, input hasil tes kebugaran via mobile, lihat jadwal
+dan rekap kehadiran unit yang dilatih
+2.4 Alur Sistem Utama
+Berikut adalah diagram alur untuk proses-proses bisnis utama dalam sistem SN. Setiap
+diagram menggambarkan interaksi antar aktor dan sistem secara berurutan.
+2.4.1 Alur Pendaftaran Anggota Baru
+Calon anggota mendaftar mandiri melalui aplikasi mobile. Setelah mengisi data diri dan
+memilih unit latihan, status pendaftaran menjadi PENDING hingga disetujui oleh
+admin/pengurus. Setelah disetujui, nomor anggota diterbitkan otomatis dengan format [Kode
+Provinsi]-[Kode Kota/Kab]-[Nomor Urut].
+--- Page 10 ---
+2.4.2 Alur Absensi QR
+Pelatih men-generate QR code per sesi latihan melalui aplikasi mobile. QR berlaku selama
+durasi yang dikonfigurasi (default 4 jam). Anggota melakukan scan QR untuk mencatat
+kehadiran. Setiap kehadiran yang tercatat akan menambah counter kehadiran per tingkat
+yang digunakan sebagai syarat EKT.
+--- Page 11 ---
+2.4.3 Alur Pembayaran BLBA
+Anggota membayar BLBA melalui aplikasi mobile menggunakan e-wallet pilihan. Pembayaran
+diproses melalui Midtrans sebagai payment gateway. Setelah pembayaran berhasil, status
+BLBA otomatis diperbarui menjadi LUNAS dan notifikasi dikirim ke anggota serta PIC Unit.
+Sebagai fitur tambahan, anggota dapat mengirimkan bukti pembayaran ke pelatih unit secara
+opsional melalui tombol deep link WhatsApp di layar konfirmasi pembayaran.
+2.4.4 Alur EKT (Evaluasi Kenaikan Tingkat)
+A. ALUR EKT JURUS
+EKT Jurus diselenggarakan bersamaan dengan Latgab (event "Latgab + EKT Jurus") oleh
+Pengurus Cabang. Anggota dapat memilih:
+(1) Daftar Latgab saja, atau
+(2) Daftar Latgab sekaligus EKT Jurus.
+Syarat EKT Jurus: memenuhi minimal kehadiran sesuai setting per tingkatan + BLBA bulan
+berjalan lunas + lulus EKT Non Jurus jika wajib di tingkatan tersebut. Biaya EKT dibayar via
+e-wallet. Pada hari pelaksanaan, kenaikan jurus terjadi OTOMATIS saat anggota berhasil
+scan QR absensi sesi EKT. Jika di jurus terakhir tingkatannya → naik otomatis ke jurus 1
+tingkatan berikutnya. Counter kehadiran direset ke 0.
+Prinsip pendaftaran event berbayar: sistem hanya mencatat anggota sebagai terdaftar setelah
+payment gateway mengonfirmasi pembayaran berhasil. Tidak ada status antara menunggu
+pembayaran di daftar peserta — yang belum membayar tidak muncul di list peserta. Dengan
+demikian, seluruh peserta yang tercatat di sistem sudah pasti telah membayar, dan rekap
+keuangan di web admin adalah murni jumlah dari peserta terdaftar.
+B. ALUR EKT NON JURUS
+EKT Non Jurus adalah evaluasi khusus sebagai syarat wajib sebelum naik ke tingkatan
+tertentu. Jenis:
+(1) Pengayaan I (wajib naik ke Gabungan, min. PH Jurus 6),
+(2) Pengayaan II (wajib naik ke PK, min. Gabungan Jurus 4),
+--- Page 12 ---
+(3) Pendalaman Wawasan I (wajib naik ke GPK, min. PK Jurus 6).
+Hanya dilakukan SEKALI per tingkatan. Diselenggarakan sebagai event tersendiri oleh
+Pengurus Cabang. Hasil dicatat di sistem dan menjadi prasyarat yang dicek otomatis saat
+anggota mendaftar EKT Jurus menuju tingkatan berikutnya.
+PRINSIP PENDAFTARAN EVENT BERBAYAR (berlaku untuk EKT Jurus, EKT Non Jurus,
+Latgab berbayar, Pelatnas):
+(1) Anggota melakukan pembayaran via e-wallet (DANA / OVO / GoPay / ShopeePay)
+melalui aplikasi.
+(2) Sistem hanya mencatat anggota sebagai TERDAFTAR setelah payment gateway
+mengonfirmasi pembayaran berhasil.
+(3) Tidak ada status antara 'menunggu pembayaran' di daftar peserta, yang belum
+membayar tidak muncul di list peserta sama sekali.
+(4) Seluruh peserta yang tercatat di sistem = sudah membayar. Rekap keuangan di web
+admin adalah murni dari peserta terdaftar.
+2.4.5 Alur Latgab (Latihan Gabungan)
+Latgab diselenggarakan oleh Pengurus Cabang dengan scope peserta fleksibel: satu provinsi
+(seluruh cabang dalam provinsi) atau multi-cabang (cabang-cabang tertentu yang diundang).
+EKT Jurus umumnya diselenggarakan bersamaan dengan Latgab (event "Latgab + EKT
+Jurus"). Admin Cabang atau Admin Pusat membuat event Latgab melalui web admin, memilih
+scope Provinsi atau Multi-Cabang. Biaya Latgab: Rp 27.500 (berbayar) atau gratis sesuai
+kebijakan penyelenggara.
+--- Page 13 ---
+• Untuk event berbayar: peserta terdaftar otomatis setelah pembayaran via e-wallet berhasil
+dikonfirmasi payment gateway (Midtrans). Tidak ada status menunggu pembayaran —
+pendaftaran hanya tersimpan jika transaksi berhasil.
+• Untuk event gratis: peserta terdaftar langsung setelah menekan tombol Daftar, tanpa
+proses pembayaran."
+2.4.6 Alur Pelatnas (Pelatihan Nasional)
+Pelatnas adalah kegiatan tahunan yang diselenggarakan oleh Admin Pusat untuk seluruh
+anggota Indonesia. Keunikannya adalah struktur biaya dua komponen: biaya pokok Pelatnas
+(sama untuk semua) dan biaya transport & akomodasi yang berbeda-beda per wilayah sesuai
+jarak ke lokasi Pelatnas (umumnya di Yogyakarta). Total biaya yang ditampilkan ke anggota
+sudah disesuaikan otomatis berdasarkan cabang asal anggota.
+Prinsip pendaftaran event berbayar: sistem hanya mencatat anggota sebagai terdaftar setelah
+payment gateway mengonfirmasi pembayaran berhasil. Tidak ada status antara menunggu
+pembayaran di daftar peserta — yang belum membayar tidak muncul di list peserta. Dengan
+demikian, seluruh peserta yang tercatat di sistem sudah pasti telah membayar, dan rekap
+keuangan di web admin adalah murni jumlah dari peserta terdaftar.
+--- Page 14 ---
+2.4.7 Alur Tes Kebugaran
+Admin Pusat atau Pengurus Cabang membuat event tes kebugaran per unit dan periode
+melalui web admin (halaman Tes Kebugaran). Event tes dapat dikaitkan dengan sesi jadwal
+latihan tertentu. Pada hari pelaksanaan, Pelatih membuka layar Detail Jadwal di aplikasi
+mobile, kemudian menginput hasil tes per peserta satu per satu melalui layar Pilih Peserta
+Tes dan Input Hasil Tes. Sistem menghitung kategori (Baik/Cukup/Kurang) secara otomatis
+berdasarkan nilai input dan usia anggota sesuai standar nilai yang dikonfigurasi Admin Pusat.
+Rekap dan ranking dapat dilihat di web admin halaman Tes Kebugaran.
+--- Page 15 ---
+2.4.8 Alur Input Jadwal oleh Pelatih (Mobile)
+Selain melalui web admin, sesi jadwal latihan dapat ditambahkan langsung oleh Pelatih dari
+aplikasi mobile. Pelatih mengakses FAB tambah jadwal di layar Jadwal, kemudian mengisi
+form: pilih unit, jenis sesi (Latihan Rutin/Latihan Khusus), tanggal, waktu, pelatih bertugas,
+dan lokasi. kemudian mengisi form: pilih unit, jenis sesi (Latihan Rutin/Latihan Pelatih),
+tanggal, waktu, pelatih bertugas, dan lokasi. Form mobile hanya mendukung dua jenis sesi
+ini; sesi EKT, Latgab, dan Pelatnas dibuat melalui web admin. Setelah disimpan, sistem
+otomatis mengirim notifikasi jadwal baru ke seluruh anggota unit terkait.
+--- Page 16 ---
+2.5 Integrasi Antar Komponen
+Dari Ke Jenis Integrasi
+Mobile App Backend API REST API over HTTPS — autentikasi JWT Bearer Token
+Web Admin Backend API REST API over HTTPS — autentikasi JWT Bearer Token
+Backend PostgreSQL Direct connection via ORM (Prisma/Sequelize)
+Backend Midtrans HTTPS API — pembuatan transaksi & webhook konfirmasi
+pembayaran
+Backend Firebase FCM HTTPS API — pengiriman push notification ke device anggota
+Midtrans Backend Webhook — callback notifikasi status pembayaran
+(sukses/gagal/expired)
+Mobile App
+(Pelatih)
+WhatsApp Deep link wa.me — kirim bukti BLBA ke pelatih (opsional, tanpa
+API)
+--- Page 17 ---
+2.6 Asumsi & Batasan Sistem
+2.6.1 Asumsi
+• Anggota memiliki smartphone Android atau iOS dengan koneksi internet
+• Pengurus memiliki akses ke browser web modern (Chrome, Firefox, Safari, Edge)
+• Pembayaran dilakukan melalui e-wallet yang terdaftar (DANA, OVO, GoPay,
+ShopeePay)
+• Satu orang dapat merangkap sebagai anggota sekaligus pengurus/pelatih — satu
+akun mobile dengan multi-mode yang aktif secara otomatis
+• Setiap cabang memiliki minimal satu Pengurus Cabang aktif yang mengelola sistem
+• Koneksi internet tersedia di lokasi latihan untuk proses scan QR absensi dan input tes
+kebugaran
+• Pelatih dapat melatih di lebih dari satu unit dalam cabang yang sama secara fleksibel
+2.6.2 Batasan
+• Sistem tidak menangani pembayaran tunai — hanya pembayaran digital via e-wallet
+• Laporan keuangan tidak terintegrasi dengan software akuntansi eksternal
+• Notifikasi hanya melalui push notification aplikasi mobile — tidak ada SMS atau
+WhatsApp otomatis (kecuali fitur kirim bukti BLBA yang bersifat manual via deep link)
+• Fitur video call, streaming latihan, atau konten video tidak termasuk dalam scope
+sistem ini
+• Sistem tidak menyimpan file video atau gambar berukuran besar — hanya gambar
+thumbnail untuk konten
+• Tes kebugaran bersifat monitoring kondisi fisik — tidak mempengaruhi status
+keanggotaan atau syarat EKT secara langsung
+--- Page 18 ---
+BAB 3 — STRUKTUR ORGANISASI
+3.1 Hierarki Organisasi
+Satria Nusantara memiliki struktur organisasi tiga tingkat yang membentang dari pusat di
+Yogyakarta hingga unit latihan di tingkat komunitas. Setiap tingkatan memiliki peran,
+kewenangan, dan tanggung jawab yang berbeda dalam sistem.
+Tingkatan Nama Lokasi/Cakupan Jumlah
+(estimasi)
+Pusat SN Pusat / LSP-SN Kota Yogyakarta, DI Yogyakarta 1 kantor pusat
+Cabang Cabang [Nama
+Kota/Kab]
+Per kota/kabupaten se-Indonesia 100+ cabang aktif
+Unit Unit [Nama Lokasi] Tempat latihan per komunitas 500+ unit aktif
+3.2 Tingkat Pusat
+Kantor Pusat SN berkedudukan di Kota Yogyakarta, DI Yogyakarta. Pusat merupakan otoritas
+tertinggi dalam organisasi dengan kewenangan:
+• Menetapkan kebijakan dan standar nasional organisasi
+• Mengesahkan pembukaan cabang baru di seluruh Indonesia
+• Menyelenggarakan Pelatnas (Pelatihan Nasional) tahunan
+• Mengirimkan Pelatih Pusat sebagai wakil resmi ke event tertentu (Pelatnas, EKT
+besar)
+• Mengelola konfigurasi sistem secara nasional melalui Admin Pusat
+• Menerbitkan standar kurikulum, tingkatan jurus, dan standar nilai tes kebugaran
+nasional
+Dalam sistem informasi, Pusat diwakili oleh role Admin Pusat yang memiliki akses penuh ke
+seluruh data nasional dan satu-satunya yang dapat mengakses menu Pengaturan.
+--- Page 19 ---
+3.3 Tingkat Cabang
+3.3.1 Pembentukan Cabang
+• Cabang baru hanya dapat dibuka oleh Admin Pusat
+• Setiap cabang memiliki kode unik yang digunakan dalam nomor anggota (contoh:
+BDG untuk Bandung, YGY untuk Yogyakarta)
+• Cabang mengelola beberapa unit latihan di dalam wilayahnya
+3.3.2 Kepengurusan Cabang
+Setiap cabang memiliki struktur kepengurusan yang terdiri dari jabatan-jabatan berikut.
+Jabatan dapat ditambah secara fleksibel sesuai kebutuhan cabang:
+Jabatan Sifat Tanggung Jawab
+Ketua Cabang Wajib Pimpinan tertinggi cabang, representasi resmi cabang
+Wakil Ketua Opsional Membantu dan menggantikan ketua bila berhalangan
+Sekretaris Wajib Administrasi, surat-menyurat, dokumentasi
+Bendahara Wajib Pengelolaan keuangan dan pelaporan BLBA cabang
+Kabid Latihan Wajib Koordinasi jadwal latihan, penugasan pelatih per sesi, rotasi
+pelatih antar unit
+Kabid Keanggotaan Wajib Verifikasi anggota baru, data keanggotaan, statistik
+Kabid Humas Opsional Publikasi kegiatan, konten informasi, hubungan eksternal
+Jabatan lain Opsional Dapat ditambahkan sesuai kebutuhan cabang
+3.3.3 Kode Cabang
+Setiap cabang memiliki kode unik 2–4 huruf yang digunakan sebagai bagian dari nomor
+anggota. Kode ditetapkan oleh Admin Pusat saat cabang dibuat.
+Cabang Kode Contoh Nomor Anggota
+Kota Yogyakarta YGY YO-YGY-00034
+Kota Bandung BDG JB-BDG-00142
+Kota Jakarta Pusat JKT JK-JKT-00201
+Kota Surabaya SBY JI-SBY-00055
+Kota Semarang SMG JT-SMG-00089
+(lainnya) [KODE] [Kode Provinsi]-[Kode Kota/Kab]-[Nomor Urut]
+3.4 Tingkat Unit
+Unit adalah tempat latihan di tingkat komunitas — lapangan, taman, atau tempat khusus
+latihan seni pernapasan. Unit berada di bawah naungan satu cabang dan menjadi tempat
+anggota berlatih secara rutin.
+3.4.1 Pembentukan Unit
+• Unit baru dapat dibuka oleh Pengurus Cabang atau Admin Pusat
+• Setiap unit memiliki satu PIC (Person In Charge) yang bertanggung jawab atas
+operasional harian
+• Unit memiliki jadwal latihan tetap (hari dan jam) yang dapat dikonfigurasi di sistem
+• Satu unit dapat memiliki lebih dari satu jadwal latihan per minggu
+--- Page 20 ---
+3.4.2 Atribut Unit
+Atribut Keterangan
+Nama Unit Nama tempat latihan, contoh: Unit Malioboro, Unit Dago, Unit Rungkut
+Cabang Induk Cabang tempat unit bernaung
+Lokasi Latihan Nama lapangan/tempat + alamat lengkap
+Jadwal Tetap Hari dan jam latihan rutin yang berulang setiap minggu
+PIC Unit Koordinator harian unit, mengelola BLBA dan anggota unit
+Rekening BLBA Nomor rekening/e-wallet untuk pembayaran BLBA unit (diset PIC, dapat
+diubah kapan saja)
+3.5 Pelatih
+Pelatih adalah anggota yang bertugas memimpin sesi latihan. Di setiap cabang terdapat
+jajaran pelatih dengan tingkatan yang berbeda-beda. Pelatih dengan tingkatan tertinggi di
+suatu cabang disebut Pelatih Utama Cabang dan berperan sebagai penguji resmi dalam EKT
+cabang tersebut.
+3.5.1 Jenis Pelatih
+Aspek Pelatih Cabang Pelatih Pusat
+Basis Per cabang Pusat — Yogyakarta
+Tingkatan Bervariasi; yang tertinggi = Pelatih
+Utama Cabang
+Tingkatan tertinggi di nasional
+Tugas rutin Melatih anggota di unit-unit dalam
+cabangnya sesuai jadwal yang di-
+assign Kabid Latihan. Dapat input
+jadwal dan hasil tes kebugaran dari
+mobile.
+Diutus khusus ke event tertentu
+(Pelatnas, EKT nasional)
+Penugasan Fleksibel — dapat melatih di
+beberapa unit dalam satu cabang
+(digilir/rotasi oleh Kabid Latihan, atau
+input mandiri via mobile)
+Diutus oleh Pusat atas permintaan
+EKT Pelatih Utama Cabang sebagai
+penguji resmi EKT cabang
+Penguji utama / pengawas di event
+nasional
+Tes Kebugaran Melaksanakan dan menginput hasil
+tes kebugaran per peserta via mobile
+Fasilitator dan pengawas tes di event
+nasional
+Latgab Peserta dan fasilitator latgab provinsi Pimpinan latgab nasional
+Pelatnas Peserta Pelatnas Instruktur utama Pelatnas
+Transport Berdasarkan kategori jarak ke unit
+yang dilatih
+Umumnya sukarela (ditanggung
+Pusat)
+3.5.2 Penugasan & Rotasi Pelatih
+Penugasan pelatih ke sesi latihan dapat dilakukan melalui dua cara:
+• Melalui web admin: Kabid Latihan membuat atau mengedit jadwal latihan melalui
+menu Kelola Jadwal, kemudian memilih pelatih yang bertugas per sesi
+• Melalui mobile app: Pelatih dapat menambahkan sesi jadwal sendiri melalui FAB
+tambah jadwal di layar Jadwal (Mode Pelatih)
+--- Page 21 ---
+Satu pelatih dapat ditugaskan di beberapa unit yang berbeda dalam satu cabang
+(rotasi/giliran). Jika pelatih berhalangan, penggantian dilakukan melalui fitur Edit Jadwal
+sebelum hari H.
+3.5.3 Latihan Internal Pelatih
+Di luar jadwal latihan rutin anggota, terdapat sesi latihan khusus untuk para pelatih itu sendiri.
+Sesi ini bertujuan meningkatkan kemampuan dan keseragaman teknik antar pelatih dalam
+satu cabang.
+Aspek Keterangan
+Jenis Sesi Latihan Pelatih — tersedia di form jadwal (web admin maupun mobile)
+Peserta Hanya pelatih cabang (bukan anggota umum)
+Dipimpin oleh Pelatih dengan tingkatan tertinggi di cabang (Pelatih Utama)
+Jadwal Di luar jadwal latihan rutin anggota, tidak bentrok
+Absensi Tetap menggunakan mekanisme QR yang sama
+Visibilitas Tidak tampil di jadwal anggota umum
+3.5.4 Transport Pelatih
+Nominal transport pelatih dihitung berdasarkan kategori jarak dari tempat tinggal pelatih ke
+lokasi unit yang dilatih. Kategori di-assign per pelatih oleh Admin Cabang melalui menu Kelola
+Cabang → Tab Pelatih. Nominal per kategori diatur oleh Admin Pusat melalui menu
+Pengaturan → Transport Pelatih.
+Kategori Deskripsi Nominal Default
+Jarak Dekat Tinggal di wilayah yang sama atau sangat dekat
+dengan lokasi latihan
+Rp 30.000 / sesi
+Jarak Sedang Tinggal di kecamatan berbeda namun masih dalam
+kota yang sama
+Rp 50.000 / sesi
+Jarak Jauh Tinggal di kota/kabupaten berbeda dari lokasi unit
+yang dilatih
+Rp 75.000 / sesi
+Sukarela Pelatih tidak menerima transport (pilihan pribadi) Rp 0 / sesi
+3.6 Keanggotaan
+3.6.1 Tingkatan & Jurus
+Sistem SN mengenal 9 tingkatan yang harus dilalui secara berurutan. Setiap tingkatan terdiri
+dari beberapa jurus yang dikuasai satu per satu melalui EKT Jurus. Kenaikan jurus/tingkatan
+hanya dapat terjadi melalui EKT yang diselenggarakan secara resmi. Untuk tingkatan tertentu
+(PH, Gabungan, PK), terdapat syarat tambahan EKT Non Jurus yang wajib diselesaikan
+sebelum dapat naik ke tingkatan berikutnya.
+# Tingkatan Jurus Keterangan
+1 Pra Dasar 10 Jurus Tingkatan awal anggota baru. Syarat EKT Jurus: min.
+10 sesi. Tidak ada EKT Non Jurus
+2 Dasar 10 Jurus Fondasi teknik dasar seni pernapasan. Syarat EKT
+Jurus: min. 8 sesi. Tidak ada EKT Non Jurus.
+3 PH (Pengendalian
+Halus)
+10 Jurus Penghalusan teknik dan pengendalian napas. Syarat
+EKT Jurus: min. 8 sesi. EKT Non Jurus: Pengayaan I
+(wajib saat min. PH Jurus 6 sebelum naik ke
+Gabungan).
+--- Page 22 ---
+# Tingkatan Jurus Keterangan
+4 Gabungan 7 jurus Kombinasi teknik PH dan PK. Syarat EKT Jurus: min.
+12 sesi. EKT Non Jurus: Pengayaan II (wajib saat
+min. Gabungan Jurus 4 sebelum naik ke PK).
+5 PK (Pengendalian
+Keras)
+10 Jurus Penguatan teknik dan tenaga dalam. Syarat EKT
+Jurus: min. 18 sesi. EKT Non Jurus: Pendalaman
+Wawasan I (wajib saat min. PK Jurus 6 sebelum naik
+ke GPK).
+6 GPK (Gabungan
+Pengendalian
+Keras)
+4 Jurus Integrasi seluruh teknik tingkat tinggi. Syarat EKT
+Jurus: min. 18 sesi. Tidak ada EKT Non Jurus.
+7 Penjuru 10 Jurus Penguasaan penuh seluruh ilmu SN. Syarat EKT
+Jurus: min. 80 sesi. EKT Non Jurus: belum ditetapkan.
+8 Selangkah Belum
+ditetapkan
+Tingkatan lanjutan di atas Penjuru. Detail syarat
+belum ditetapkan.
+9 Meditasi Belum
+ditetapkan
+Tingkatan tertinggi sistem SN. Detail syarat belum
+ditetapkan
+Counter kehadiran per jurus direset ke 0 setiap kali anggota berhasil lulus EKT Jurus (naik ke
+jurus berikutnya atau naik ke tingkatan baru). Kehadiran di sesi Latgab dan Pelatnas juga
+dihitung sebagai kehadiran untuk counter jurus.
+3.6.2 Status Keanggotaan
+Status Keterangan
+Pending Anggota baru yang sudah mendaftar namun belum diverifikasi admin. Belum bisa
+akses fitur penuh.
+Aktif Anggota terverifikasi dan aktif berlatih. Dapat menggunakan semua fitur aplikasi
+mobile.
+Nonaktif Anggota yang dinonaktifkan oleh admin. Akun masih ada namun login diblokir.
+Dapat diaktifkan kembali kapan saja.
+3.6.3 Nomor Anggota
+Setiap anggota yang disetujui akan mendapatkan nomor anggota unik yang diterbitkan
+otomatis oleh sistem dengan format:
+Format Contoh
+[Kode Provinsi]-[Kode Kota/Kab]-[Nomor Urut] JB-BDG-00142 | YO-YGY-00034 | JT-
+SMG-00089
+• Nomor urut dimulai dari 00001 per cabang per tahun dan tidak pernah diulang
+• Nomor anggota bersifat permanen — tidak berubah meskipun anggota pindah unit
+dalam cabang yang sama
+• Jika anggota pindah ke cabang lain, nomor anggota lama tetap tercatat sebagai
+riwayat
+--- Page 23 ---
+BAB 4 — FITUR APLIKASI MOBILE
+Aplikasi mobile SN adalah antarmuka utama bagi anggota untuk berinteraksi dengan sistem.
+Aplikasi tersedia untuk platform Android dan iOS, dibangun menggunakan React Native.
+Navigasi utama menggunakan bottom navigation bar dengan 5 menu: Beranda, Jadwal, Scan
+QR, BLBA, dan Profil.
+Tampilan dan fitur yang tersedia menyesuaikan mode pengguna secara otomatis berdasarkan
+role yang terdaftar di sistem: Mode Anggota (default semua anggota aktif), Mode Pengurus
+(aktif jika terdaftar sebagai Pengurus Cabang), dan Mode Pelatih (aktif jika terdaftar sebagai
+Pelatih). Satu akun dapat mengaktifkan lebih dari satu mode secara bersamaan.
+4.1 Ringkasan Layar
+# Nama Layar Grup Deskripsi Singkat
+1 Splash Screen Onboarding Logo dan nama organisasi saat aplikasi dibuka
+2 Login Onboarding Masuk dengan email/password atau Google Sign-In
+3 Daftar — Akun Onboarding Input email & password untuk akun baru
+3a Pilih Akun Google Onboarding Popup Google OAuth — pilih akun Google yang
+digunakan untuk daftar
+3b Lengkapi Data
+(Google)
+Onboarding Form isi data yang tidak tersedia di Google: No HP,
+Tanggal Lahir, Jenis Kelamin, Provinsi (cascade),
+Kota/Kab (cascade), Tingkat & Jurus (opsional)
+4 Daftar — Data Diri Onboarding Nama, tanggal lahir, no HP, jenis kelamin. Anggota
+lama: dropdown tingkatan & jurus saat ini.
+5 Daftar — Unit Onboarding Searchable pilih provinsi → cabang → unit + info
+unit terpilih
+6 Menunggu Verifikasi Onboarding Status pending sambil menunggu persetujuan
+admin
+7 Home / Beranda Beranda Info anggota, feed pengumuman & info kegiatan.
+Mode Pengurus: shortcut Kelola Konten.
+8 Detail Konten Beranda Isi lengkap pengumuman/artikel/info kegiatan
+9 Jadwal Kalender Jadwal Kalender bulanan dengan dot penanda sesi. Mode
+Pelatih: FAB tambah jadwal.
+10 Jadwal List Jadwal Daftar sesi latihan mendatang + nama pelatih
+bertugas.
+Card EKT Non Jurus tersedia langsung dari list ini.
+11 Detail Jadwal Jadwal Detail sesi latihan. Jika ada tes kebugaran: tampil
+section input tes (Mode Pelatih).
+12 Daftar Latgab / EKT Jadwal Form pendaftaran terpadu untuk event Latgab saja,
+Latgab + EKT Jurus, atau EKT Non Jurus. Cek
+syarat real-time, pilih partisipasi, daftar & bayar
+13 Daftar Latgab Jadwal Detail event EKT Non Jurus (Pengayaan I/II /
+Pendalaman Wawasan I). Cek syarat minimal jurus,
+daftar & bayar.
+14 Daftar Pelatnas Jadwal Detail Pelatnas nasional, biaya 2 komponen, daftar
+& bayar
+15 QR Pelatih Scan QR Pelatih generate QR code per sesi latihan
+--- Page 24 ---
+# Nama Layar Grup Deskripsi Singkat
+15a Daftar Hadir Sesi Scan QR Pelatih melihat daftar peserta yang sudah dan
+belum scan QR pada sesi latihan aktif. Diakses dari
+tombol "Lihat daftar hadir" di Layar 15.
+16 Scan QR Anggota Scan QR Anggota scan QR absensi + riwayat kehadiran
+terkini
+17 Scan Berhasil —
+Rutin/Khusus
+Scan QR Konfirmasi kehadiran tercatat untuk sesi Latihan
+Rutin atau Latihan Khusus (non-EKT, non-Latgab).
+Tampil counter kehadiran +1 dan progress menuju
+syarat EKT Jurus
+17a Scan Berhasil —
+Latgab
+Scan QR Konfirmasi kehadiran Latgab tercatat. Counter
+kehadiran +1. Info progress EKT Jurus. Auto
+dismiss 5 detik
+17b Scan Berhasil —
+Latgab + EKT Jurus
+Scan QR Konfirmasi setelah scan QR sesi Latgab + EKT
+Jurus. Tampil: kehadiran Latgab ✓, card naik jurus
+(mis. Dasar Jr.5 → Dasar Jr.6, atau Dasar Jr.10 →
+PH Jr.1 jika di jurus terakhir), counter reset ke 0.
+Tidak ada auto dismiss.
+17c Scan Berhasil — EKT
+Non Jurus
+Scan QR Konfirmasi lulus EKT Non Jurus. Tampil badge
+"Lulus [nama EKT Non Jurus]", info syarat naik ke
+tingkatan berikutnya kini terpenuhi. Tidak ada auto
+dismiss
+18 BLBA BLBA Status BLBA bulan ini dan riwayat pembayaran
+19 Pilih E-Wallet BLBA Pilih metode pembayaran e-wallet
+20 Pembayaran Berhasil BLBA Konfirmasi BLBA lunas + tombol kirim bukti via
+WhatsApp (opsional)
+21 Profil Profil Info profil anggota, menu navigasi profil
+22 Kartu Anggota Profil Kartu digital dua sisi, QR identitas, simpan ke galeri
+23 Data Diri Profil Detail data pribadi + riwayat kehadiran per bulan &
+per tingkat
+24 Notifikasi Profil Daftar notifikasi yang diterima anggota
+25 Pilih Peserta Tes Tes
+Kebugaran
+Mode Pelatih: pilih peserta untuk input hasil tes
+kebugaran
+26 Input Hasil Tes Tes
+Kebugaran
+Mode Pelatih: input hasil 5 jenis tes untuk satu
+peserta
+27 Kelola Konten Mode
+Pengurus
+Daftar konten + filter + tombol buat baru (shortcut
+dari Beranda)
+28 Buat / Edit Konten Mode
+Pengurus
+Form input konten dari HP + preview sebelum
+publish
+29 Pelatih — Input
+Jadwal
+Mode Pelatih Form buat sesi latihan dari HP. Jenis Sesi: Latihan
+Rutin atau Latihan Pelatih. Keduanya scope Unit.
+EKT, Latgab, dan Pelatnas hanya bisa dibuat dari
+web admin
+30 Jadwal Tersimpan Mode Pelatih Konfirmasi jadwal berhasil dibuat + ringkasan + info
+notifikasi dikirim
+Catatan: Layar 25–26 dan 29–30 hanya muncul di Mode Pelatih. Layar 27–28 hanya muncul
+di Mode Pengurus.
+--- Page 25 ---
+4.2 Navigasi & Layout Umum
+• Bottom navigation bar dengan 5 tab: Beranda, Jadwal, Scan QR, BLBA, Profil
+• Warna tema: hijau tua (#1a5c2a) sebagai warna primer, kuning (#e8c42a) sebagai
+aksen
+• Status bar menggunakan warna hijau tua
+• Semua layar mendukung scroll vertikal kecuali Splash dan Login
+• Back navigation menggunakan tombol panah kiri di header setiap sub-layar
+• Mode Pelatih: FAB (Floating Action Button) tambah jadwal di pojok kanan bawah layar
+Jadwal
+• Mode Pengurus: shortcut card Kelola Konten di layar Beranda
+4.3 Detail Setiap Layar
+4.3.1 Grup Onboarding
+Layar 1 — Splash Screen
+Deskripsi Layar pertama yang muncul saat aplikasi dibuka. Menampilkan logo dan
+nama organisasi.
+Elemen UI Logo SN (lingkaran hijau), teks 'LEMBAGA SENI PERNAPASAN', nama
+'Satria Nusantara', loading dots (3 titik animasi)
+Durasi 2–3 detik lalu otomatis navigasi ke Login (jika belum login) atau Home (jika
+sudah login)
+Background Hijau tua solid (#1a5c2a)
+Aksi otomatis Cek status autentikasi JWT di secure storage. Jika valid → Home. Jika tidak
+→ Login.
+Layar 2 — Login
+Deskripsi Halaman masuk untuk anggota yang sudah terdaftar.
+Elemen UI Logo SN kecil, field Email, field Password (dengan toggle show/hide), tombol
+Masuk, tombol Google Sign-In, link Daftar akun baru
+Validasi Email harus format valid. Password minimal 6 karakter. Tampilkan pesan
+error jika credentials salah.
+Google Sign-In Jika akun Google belum terhubung ke anggota SN → arahkan ke alur
+pendaftaran baru
+Setelah login Jika status AKTIF → Home. Jika status PENDING → layar Menunggu
+Verifikasi.
+Keamanan JWT disimpan di secure storage device. Expired setelah 30 hari. Refresh
+token otomatis.
+Layar 3 — Daftar — Akun
+Deskripsi Step 1 dari 3 alur pendaftaran anggota baru. Input kredensial akun.
+Elemen UI Progress indicator (3 langkah), field Email, field Password, field Konfirmasi
+Password, tombol Lanjut
+Validasi Email belum terdaftar, password minimal 8 karakter, konfirmasi password
+harus sama
+Navigasi Lanjut → Daftar Data Diri
+--- Page 26 ---
+Layar 3a — Pilih Akun Google
+Deskripsi Layar popup Google OAuth yang muncul saat anggota memilih
+'Daftar dengan Google' di Layar 3. Menampilkan daftar akun Google
+yang tersedia di perangkat untuk dipilih.
+Elemen UI Popup bergaya Google Sign-In: logo Google, judul 'Masuk dengan
+Google', subjudul nama aplikasi, daftar akun Google tersimpan di
+perangkat (nama + email), opsi 'Gunakan akun lain', tombol Batal
+Trigger masuk Tap tombol 'Daftar dengan Google' di Layar 3 — Daftar — Akun
+Navigasi Pilih akun → Layar 3b (Lengkapi Data). Tap Batal → kembali ke
+Layar 3.
+Catatan teknis Google OAuth 2.0 flow via library react-native-google-signin. Sistem
+mengambil data: displayName dan email dari akun yang dipilih.
+Layar 3b — Lengkapi Data (Google)
+Deskripsi Layar pengisian data yang tidak tersedia dari akun Google. Muncul
+setelah anggota berhasil memilih akun Google di Layar 3a.
+Elemen UI Card info akun Google (nama + email readonly + badge 'Terhubung
+via Google'); Form tambahan: field No HP, date picker Tanggal Lahir,
+toggle Jenis Kelamin (L/P), dropdown Provinsi (cascade), dropdown
+Kota/Kabupaten (cascade sesuai provinsi), dropdown Tingkat saat ini
+(opsional — untuk anggota lama), dropdown Jurus terakhir (opsional
+— untuk anggota lama); Tombol 'Lanjut — Pilih Unit'; Tombol 'Ganti
+akun'
+Data dari Google
+(readonly)
+Nama lengkap, alamat email — ditampilkan dan tidak dapat diubah di
+layar ini
+Validasi No HP wajib diisi (format Indonesia). Tanggal lahir wajib. Jenis
+kelamin wajib. Provinsi dan Kota/Kabupaten wajib. Tingkat dan Jurus
+bersifat opsional (untuk anggota lama).
+Navigasi Lanjut — Pilih Unit → Layar 5 (Daftar Unit). Ganti akun → Layar 3a
+(Pilih Akun Google). Cascade Provinsi → Kota/Kabupaten difilter
+sesuai provinsi yang dipilih.
+Catatan Unit latihan tidak dipilih di layar ini — dipilih di Layar 5 (Daftar Unit)
+yang sudah ada. Alur setelah Layar 3b → Layar 5 → Layar 6
+(Menunggu Verifikasi) sama seperti alur pendaftaran manual.
+Layar 4 — Daftar — Data Diri
+Deskripsi Step 2 dari 3. Input informasi pribadi calon anggota.
+Elemen UI Progress indicator, field Nama Lengkap, field Tanggal Lahir (date picker),
+field No HP, pilihan Jenis Kelamin (L/P), dropdown Provinsi (pilihan dari
+daftar provinsi Indonesia), dropdown Kota/Kabupaten (cascade — muncul
+dan terfilter sesuai provinsi yang dipilih), tombol Lanjut
+Cascade Provinsi
+→ Kota
+Dropdown Provinsi dipilih terlebih dahulu. Setelah provinsi dipilih, dropdown
+Kota/Kabupaten menampilkan daftar kota/kabupaten yang ada dalam
+provinsi tersebut. Data menggunakan standar SNI 7657:2010 sesuai format
+nomor anggota.
+--- Page 27 ---
+Anggota lama Jika calon anggota adalah anggota lama yang mendaftar ulang: tersedia
+dropdown Tingkatan Saat Ini dan Jurus Saat Ini (opsional) agar data dapat
+dipre-fill oleh admin saat verifikasi
+Validasi Semua field wajib diisi. No HP format Indonesia. Usia minimal 7 tahun.
+Navigasi Lanjut → Daftar Unit
+Layar 5 — Daftar — Unit
+Deskripsi Step 3 dari 3. Calon anggota memilih unit latihan terdekat dari lokasi mereka.
+Elemen UI Progress indicator, search field Unit (searchable/autocomplete — cari
+berdasarkan nama unit di kota anggota), card info unit terpilih (jadwal, lokasi,
+PIC), tombol Kirim Pendaftaran
+Alur Ketik nama unit → sistem menyaring unit berdasarkan kota/kabupaten dari
+data domisili anggota (terisi otomatis dari Layar 4) → pilih unit dari hasil
+pencarian → tampil card info unit (jadwal, lokasi, PIC) → submit
+Setelah submit Status akun: PENDING. Notifikasi ke admin cabang/PIC unit. Anggota
+diarahkan ke layar Menunggu Verifikasi.
+Layar 6 — Menunggu Verifikasi
+Deskripsi Layar yang ditampilkan untuk akun berstatus PENDING setelah mendaftar.
+Elemen UI Ilustrasi jam/loading, teks penjelasan status, info cabang & unit yang dipilih,
+tombol Cek Status (refresh), info kontak admin
+Jika disetujui Notifikasi push diterima → status berubah AKTIF → bisa login ke Home
+Jika ditolak Notifikasi penolakan diterima beserta alasan. Anggota bisa mendaftar ulang
+dengan data yang diperbaiki.
+4.3.2 Grup Beranda
+Layar 7 — Home / Beranda
+Deskripsi Halaman utama setelah login. Menampilkan ringkasan info anggota dan feed
+konten terkini.
+Elemen UI Header (sapaan + nama + ikon notifikasi), kartu info anggota (foto/avatar,
+nama, nomor anggota, status, tingkatan), feed 'Pengumuman & Info
+Kegiatan'
+Kartu anggota Nama, nomor anggota (SN-XXX-YYYY-NNNNN), badge status Aktif, badge
+tingkatan saat ini
+Feed konten Item pertama tampil besar dengan gambar (jika ada). Item berikutnya tampil
+compact. Konten diurutkan terbaru. Klik item → Detail Konten.
+Jenis konten Pengumuman (badge kuning), Kegiatan (badge biru), Info (badge hijau
+muda)
+Target konten Konten ditampilkan sesuai scope: nasional, provinsi, cabang, atau unit
+anggota tersebut
+Mode Pengurus Tampil tambahan shortcut card 'Kelola Konten' di bagian atas feed, untuk
+akses cepat buat/manage konten dari HP
+--- Page 28 ---
+Layar 8 — Detail Konten
+Deskripsi Layar detail yang tampil saat anggota mengklik item konten dari Beranda.
+Berlaku untuk semua jenis konten.
+Elemen UI Header dengan tombol back, badge jenis konten, judul, meta (waktu +
+sumber), gambar (jika ada), isi konten teks, tombol CTA (jika relevan)
+Badge jenis Pengumuman (kuning), Artikel (hijau), Info Kegiatan (biru)
+Tombol CTA Muncul jika konten terkait event yang bisa didaftari (contoh: tombol 'Daftar
+EKT' di konten info EKT)
+Info pembuat Tidak ditampilkan ke anggota — hanya tersimpan di web admin untuk
+keperluan audit
+4.3.3 Grup Jadwal
+Layar 9 — Jadwal Kalender
+Deskripsi Tampilan kalender bulanan untuk melihat jadwal sesi latihan.
+Elemen UI Header bulan + navigasi prev/next, grid kalender 7 kolom, dot warna di
+tanggal yang ada sesi, panel bawah: list sesi di tanggal yang dipilih
+Interaksi Tap tanggal → panel bawah menampilkan sesi pada tanggal tersebut. Tap
+sesi → navigasi ke Detail Jadwal.
+Sesi yang tampil Hanya sesi dari unit anggota tersebut terdaftar + sesi Latgab/EKT/Pelatnas
+yang relevan
+Mode Pelatih Tampil FAB (tombol + besar) di pojok kanan bawah layar untuk menambah
+sesi jadwal baru
+Layar 10 — Jadwal List
+Deskripsi Tampilan list jadwal latihan mendatang dalam format daftar berurutan.
+Elemen UI Header, dropdown filter unit, list item sesi
+(tanggal, hari, unit, jam, pelatih bertugas),
+badge jenis (Rutin/Khusus/Pelatih/EKT/Latgab/
+EKT Non Jurus/Pelatnas). Card EKT Non Jurus
+menampilkan chip jenis Pengayaan (Pengayaan I /
+Pengayaan II / Pendalaman Wawasan I) yang sesuai
+dengan tingkatan anggota yang sedang login.
+Filter Default tampil sesi mendatang. Bisa filter by jenis sesi.
+Navigasi Klik card sesi Latihan Rutin / Latihan Khusus → Layar 11 (Detail Jadwal). Klik
+card Latgab / EKT Jurus → Layar 12 (Daftar EKT, tipe Latgab+EKT). Klik card
+EKT Non Jurus → Layar 12 (Daftar EKT, tipe EKT Non Jurus). Klik card Pelatnas
+→ Layar 14 (Daftar Pelatnas).
+Item sesi Nama unit, tanggal, jam, lokasi, nama pelatih bertugas
+Layar 11 — Detail Jadwal
+Deskripsi Detail lengkap satu sesi latihan.
+Elemen UI Header, info sesi (jenis, tanggal, waktu, lokasi, pelatih bertugas, jumlah
+peserta terdaftar, status), section Absensi Sesi Ini (jumlah hadir/total)
+Jenis sesi Latihan Rutin (anggota reguler), Latihan Khusus (persiapan EKT/Latgab),
+Latihan Pelatih (internal pelatih)
+--- Page 29 ---
+Tes Kebugaran Jika sesi memiliki event tes kebugaran terlampir: tampil section 'Tes
+Kebugaran — Periode X/YYYY' dengan progress input (N dari M peserta
+sudah diinput)
+Mode Pelatih Jika ada tes kebugaran: tampil tombol 'Input Hasil Tes' yang mengarahkan
+ke layar Pilih Peserta Tes
+Layar 12 — Daftar EKT
+Deskripsi Layar terpadu untuk pendaftaran event Latihan Gabungan dan/atau EKT.
+Tipe event yang ditampilkan: (1) Latgab saja, (2) Latgab + EKT Jurus, (3)
+EKT Non Jurus (Pengayaan/Pendalaman Wawasan)
+Elemen UI Header (nama event, tipe event, tanggal, waktu, lokasi, scope peserta, batas
+daftar). Section Pilihan Pendaftaran: toggle "Latgab saja" atau "Latgab +
+EKT Jurus" (jika tipe event = Latgab+EKT). Section Syarat EKT (hanya
+muncul jika memilih ikut EKT): kehadiran min. N sesi ✓/✗, BLBA lunas ✓/✗,
+EKT Non Jurus lulus ✓/✗ (jika wajib). Section info jurus: jurus saat ini →
+jurus berikutnya (atau → [tingkatan baru] Jurus 1 jika di jurus terakhir).
+Section Biaya: Latgab Rp 27.500 + biaya EKT per tingkatan (jika ikut EKT).
+Tombol Daftar.
+Syarat Kehadiran min. N sesi (sesuai setting) dengan indikator checkmark real-time.
+Status BLBA lunas dengan indikator checkmark.
+Tingkatan Tampil tingkatan saat ini dan tingkatan yang akan dicapai jika lulus EKT
+Tombol Bayar Tombol Bayar bersifat sticky footer — selalu terlihat di bagian bawah layar,
+terpisah dari area konten yang dapat di-scroll. Label tombol dinamis sesuai
+pilihan anggota: jika memilih Latgab saja maka label Daftar Latgab Sekarang
+dengan nominal Rp 27.500; jika memilih Latgab + EKT Jurus maka label
+Daftar Latgab + EKT Jurus dengan nominal sesuai tingkatan. Tombol EKT
+aktif hanya jika seluruh syarat terpenuhi; jika ada syarat belum terpenuhi
+tombol disabled disertai keterangan spesifik. Di bawah tombol tampil teks
+kecil: Terdaftar otomatis setelah pembayaran dikonfirmasi.
+Jika tipe event = EKT Non Jurus: tombol Daftar aktif hanya jika anggota
+sudah memenuhi syarat minimal jurus untuk jenis EKT Non Jurus yang
+bersangkutan (Pengayaan I: min. PH Jurus 6; Pengayaan II: min. Gabungan
+Jurus 4; Pendalaman Wawasan I: min. PK Jurus 6). Jika belum memenuhi,
+tombol disabled dan tampil keterangan: 'Kamu belum memenuhi syarat
+minimal untuk mendaftar [nama EKT Non Jurus] ini.
+Biaya Latgab: Rp 27.500. EKT Jurus: sesuai tingkatan (Dasar/PH/Gabungan = Rp
+57.500, PK = Rp 77.500, GPK/Penjuru = Rp 85.000). Total ditampilkan
+otomatis berdasarkan pilihan anggota.
+Ukuran tombol Tinggi 52px, font 15px — tombol besar agar mudah diklik
+Stat Card Peserta Di bawah banner info event, tambahkan dua stat card berdampingan:
+(1) Card kiri berisi jumlah peserta terdaftar — card ini dapat diklik dan
+mengarah ke Layar List Pendaftar (lihat Patch 4), dengan hint teks Lihat
+daftar di bawah angka.
+(2) Card kanan berisi biaya keikutsertaan yang update dinamis sesuai pilihan
+anggota
+Batas Pendaftaran Tambahkan elemen Batas Pendaftaran di semua layar event (Layar 12, 13,
+dan 14), ditampilkan sebagai card tersendiri berwarna kuning di bagian
+bawah konten, berisi tanggal batas pendaftaran dan sisa hari
+--- Page 30 ---
+Layar 13 — Daftar Latgab
+Deskripsi Detail event Latgab per provinsi dengan informasi dan tombol pendaftaran.
+Elemen UI Header biru (nama event, tanggal, waktu, lokasi), kartu peserta & biaya
+(gratis/berbayar), section peserta dari wilayah, deskripsi event, batas
+pendaftaran, tombol Daftar
+Scope peserta Tampil info 'Seluruh cabang dan unit di Provinsi [X]' dengan list contoh
+kab/kota
+Gratis Tombol Daftar → langsung terdaftar setelah konfirmasi dialog. Tidak perlu
+bayar.
+Berbayar Tombol Daftar → masuk alur pembayaran e-wallet seperti BLBA
+Layar 14 — Daftar Pelatnas
+Deskripsi Detail Pelatnas nasional dengan struktur biaya dua komponen.
+Elemen UI Header hijau tua (nama, tanggal, durasi, lokasi), kartu peserta & biaya,
+section rincian biaya 2 komponen, deskripsi, batas pendaftaran, tombol
+Daftar & Bayar
+Biaya 2 komponen 1) Biaya Pelatnas (sama untuk semua peserta) + 2) Biaya Transport &
+Akomodasi (beda per cabang sesuai wilayah). Total ditampilkan otomatis
+sesuai cabang anggota.
+Catatan biaya Keterangan: '* Biaya transport & akomodasi berbeda untuk setiap cabang
+sesuai jarak ke Yogyakarta'
+Setelah bayar Terdaftar otomatis setelah pembayaran total (pokok + transport) dikonfirmasi
+Midtrans
+4.3.4 Grup Scan QR
+Layar 15 — QR Pelatih
+Deskripsi Layar khusus pelatih untuk generate QR code absensi per sesi latihan.
+Akses Hanya muncul jika user terdaftar sebagai pelatih di web admin. Anggota
+biasa tidak melihat opsi ini.
+Elemen UI Header, info sesi aktif (unit, tanggal, jam, pelatih bertugas), QR code besar
+di tengah, counter kehadiran real-time, timer countdown masa berlaku QR,
+tombol Refresh QR
+QR berlaku Sesuai konfigurasi Pengaturan (default 4 jam). Timer countdown tampil di
+bawah QR.
+Counter Jumlah anggota yang sudah scan tampil real-time dan update otomatis
+setiap scan baru masuk
+Refresh Pelatih bisa generate QR baru jika QR lama kadaluarsa atau bermasalah
+Layar 15a — Daftar Hadir Sesi
+Deskripsi Layar yang menampilkan daftar peserta yang sudah dan belum scan QR
+pada sesi latihan aktif. Diakses dari tombol "Lihat daftar hadir" di Layar 15
+(QR Pelatih).
+Akses Hanya tersedia untuk user yang terdaftar sebagai Pelatih (Mode Pelatih).
+Anggota biasa tidak dapat mengakses layar ini.
+Elemen UI Header dengan tombol back (kembali ke Layar 15), info sesi aktif (tanggal,
+unit, waktu), summary strip tiga kartu (Sudah Hadir, Belum Hadir, Total

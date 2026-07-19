@@ -1,0 +1,24 @@
+# Credentials & Secrets
+CREDENTIAL.MD
+*.env
+*.env.*
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Dependencies & Build Files
+node_modules/
+.nuxt/
+.output/
+dist/
+.dart_tool/
+.pub-cache/
+build/
+
+# IDE Files
+.idea/
+.vscode/
+
+# Logs
+*.log

@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  # ─── DATABASE ───────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: sn-postgres
+    environment:
+      POSTGRES_USER: sn_admin
+      POSTGRES_PASSWORD: sn_password_2026
+      POSTGRES_DB: satria_nusantara
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sn_admin -d satria_nusantara"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sn_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sn-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@satria-nusantara.org
+      PGADMIN_DEFAULT_PASSWORD: admin2026
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sn_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: sn-redis
+    command: redis-server --requirepass sn_redis_2026
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sn_network
+
+  # ─── BACKEND (MODULAR MONOLITH) ──────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sn-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      - PORT=8080
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=sn_admin
+      - DB_PASS=sn_password_2026
+      - DB_NAME=satria_nusantara
+      - DB_SSLMODE=disable
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASS=sn_redis_2026
+      - JWT_SECRET=satria-nusantara-jwt-secret-key-2026
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - MIDTRANS_SERVER_KEY=${MIDTRANS_SERVER_KEY:-}
+      - MIDTRANS_CLIENT_KEY=${MIDTRANS_CLIENT_KEY:-}
+      - MIDTRANS_ENV=sandbox
+      - FCM_SERVER_KEY=${FCM_SERVER_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - sn_network
+
+  # ─── FRONTEND (WEB ADMIN) ───────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sn-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NUXT_PUBLIC_API_BASE=http://localhost:8080/api/v1
+    depends_on:
+      - backend
+    networks:
+      - sn_network
+
+  # ─── MOBILE APP (FLUTTER WEB) ───────────────────────
+  mobile:
+    build:
+      context: ./mobile
+      dockerfile: Dockerfile
+    container_name: sn-mobile
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    networks:
+      - sn_network
+
+networks:
+  sn_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
