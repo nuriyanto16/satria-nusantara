@@ -42,6 +42,44 @@
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
 }
 
+/* ── DARK MODE SYSTEM ───────────────────────────── */
+html.dark {
+  /* Brand Colors Override */
+  --hijau:  #1e6a32;
+  --hijau2: #34a847;
+  --hijau3: rgba(52, 168, 71, 0.18);
+  --hijau4: #2e8b3a;
+
+  /* Dark Mode Neutral */
+  --bg:      #0d1410;
+  --card:    #16221b;
+  --surface: #1e2e24;
+  --text1:   #f0f5f1;
+  --text2:   #b2c6b7;
+  --text3:   #728777;
+  --border:  rgba(255,255,255,0.09);
+  --border2: rgba(255,255,255,0.16);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.6);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.7);
+}
+
+html.dark .topbar {
+  background: rgba(22, 34, 27, 0.85);
+}
+
+html.dark .tb-search-bar:focus-within {
+  background: var(--card);
+}
+
+html.dark input, 
+html.dark select, 
+html.dark textarea {
+  color: var(--text1);
+}
+
 html, body {
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 14px;

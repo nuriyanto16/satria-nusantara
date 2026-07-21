@@ -23,6 +23,7 @@
       <NuxtLink to="/absensi"  class="sb-item"><i class="ti ti-qrcode"></i> Absensi & Kehadiran</NuxtLink>
       <NuxtLink to="/latgab"   class="sb-item"><i class="ti ti-award"></i> Latgab / EKT / Pelatnas</NuxtLink>
       <NuxtLink to="/kebugaran" class="sb-item"><i class="ti ti-heartbeat"></i> Tes Kebugaran</NuxtLink>
+      <NuxtLink to="/nafas"     class="sb-item"><i class="ti ti-wind"></i> Monitoring Olah Nafas</NuxtLink>
 
       <div class="sb-section">Keuangan</div>
       <NuxtLink to="/iuran"   class="sb-item"><i class="ti ti-wallet"></i> BLBA</NuxtLink>
@@ -125,6 +126,9 @@
           </div>
         </div>
         <div class="tb-right">
+          <div class="tb-notif-btn" @click.stop="toggleTheme" :title="isDarkMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'">
+            <i :class="isDarkMode ? 'ti ti-sun' : 'ti ti-moon'"></i>
+          </div>
           <div class="tb-notif-btn" @click.stop="showNotificationsPopover = !showNotificationsPopover" title="Notifikasi terbaru">
             <i class="ti ti-bell"></i>
             <span v-if="unreadCount > 0" class="tb-notif-dot"></span>
@@ -195,6 +199,19 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const isSidebarOpen = ref(false)
+const isDarkMode = ref(false)
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value
+  if (isDarkMode.value) {
+    document.documentElement.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+    localStorage.setItem('theme', 'light')
+  }
+}
+
 const api = useApi()
 const headerSearchQuery = ref('')
 const showSearchModal = ref(false)
@@ -298,6 +315,12 @@ const openNotifDetail = (n) => {
 }
 
 onMounted(() => {
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    isDarkMode.value = true
+    document.documentElement.classList.add('dark')
+  }
+
   authStore.rehydrate()
   if (!authStore.isAuthenticated) {
     navigateTo('/login')
@@ -346,6 +369,7 @@ const titleMap = {
   '/absensi': 'Absensi & Kehadiran',
   '/latgab': 'Latgab / EKT / Pelatnas',
   '/kebugaran': 'Tes Kebugaran',
+  '/nafas': 'Monitoring Olah Nafas',
   '/iuran': 'BLBA',
   '/laporan': 'Laporan',
   '/konten': 'Konten & Artikel',

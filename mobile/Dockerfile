@@ -29,7 +29,7 @@ COPY . .
 RUN flutter create --platforms=web .
 
 # Build Flutter Web application
-RUN flutter build web --release
+RUN flutter build web --release --base-href /product/satrianusantara/mobile/
 
 # Stage 2: Serve using Nginx
 FROM nginx:alpine
