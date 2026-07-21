@@ -49,6 +49,27 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label class="form-label">Verifikasi Keamanan (Captcha)</label>
+            <div class="captcha-box">
+              <canvas ref="captchaCanvas" width="160" height="44" class="captcha-canvas" @click="generateCaptcha" title="Klik acak ulang jika kurang jelas"></canvas>
+              <button type="button" class="btn-refresh-captcha" @click="generateCaptcha" title="Acak Kode Captcha">
+                <i class="ti ti-refresh"></i>
+              </button>
+            </div>
+            <div class="input-wrapper">
+              <i class="ti ti-shield-check input-icon"></i>
+              <input
+                v-model="captchaInput"
+                type="text"
+                class="form-input captcha-input"
+                placeholder="Ketik 5 karakter di atas"
+                required
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
           <div class="login-extra">
             <label class="remember-label">
               <input type="checkbox" v-model="rememberMe" class="custom-checkbox" /> Ingat Saya
@@ -93,12 +114,94 @@ const rememberMe = ref(false)
 const loading = ref(false)
 const errorMsg = ref('')
 
+const captchaInput = ref('')
+const captchaCode = ref('')
+const captchaCanvas = ref<HTMLCanvasElement | null>(null)
+
+const generateCaptcha = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let result = ''
+  for (let i = 0; i < 5; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  captchaCode.value = result
+  captchaInput.value = ''
+
+  nextTick(() => {
+    drawCaptchaCanvas()
+  })
+}
+
+const drawCaptchaCanvas = () => {
+  const canvas = captchaCanvas.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  // Clear
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  // Background
+  ctx.fillStyle = '#f8fafc'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // Border
+  ctx.strokeStyle = '#cbd5e1'
+  ctx.lineWidth = 1.5
+  ctx.strokeRect(0, 0, canvas.width, canvas.height)
+
+  // Draw noise lines
+  for (let i = 0; i < 6; i++) {
+    ctx.strokeStyle = `rgba(${Math.floor(Math.random()*120 + 20)}, ${Math.floor(Math.random()*120 + 20)}, ${Math.floor(Math.random()*120 + 20)}, 0.45)`
+    ctx.beginPath()
+    ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height)
+    ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height)
+    ctx.lineWidth = 1.2
+    ctx.stroke()
+  }
+
+  // Draw distorted Characters
+  ctx.font = 'bold 22px Outfit, monospace'
+  ctx.textBaseline = 'middle'
+  for (let i = 0; i < captchaCode.value.length; i++) {
+    const char = captchaCode.value[i]
+    ctx.save()
+    const x = 22 + i * 26
+    const y = 22 + (Math.random() * 6 - 3)
+    const angle = (Math.random() * 0.4 - 0.2)
+    ctx.translate(x, y)
+    ctx.rotate(angle)
+    ctx.fillStyle = `rgb(${Math.floor(Math.random()*100 + 10)}, ${Math.floor(Math.random()*100 + 10)}, ${Math.floor(Math.random()*120 + 20)})`
+    ctx.fillText(char, -8, 0)
+    ctx.restore()
+  }
+
+  // Draw noise dots
+  for (let i = 0; i < 35; i++) {
+    ctx.fillStyle = `rgba(15, 23, 42, ${Math.random() * 0.35})`
+    ctx.beginPath()
+    ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, Math.PI * 2)
+    ctx.fill()
+  }
+}
+
+onMounted(() => {
+  generateCaptcha()
+})
+
 const authStore = useAuthStore()
 const api = useApi()
 
 const handleLogin = async () => {
-  loading.value = true
   errorMsg.value = ''
+
+  if (!captchaInput.value || captchaInput.value.trim().toUpperCase() !== captchaCode.value.toUpperCase()) {
+    errorMsg.value = 'Kode Captcha tidak sesuai. Silakan coba lagi.'
+    generateCaptcha()
+    return
+  }
+
+  loading.value = true
   try {
     const data = await api.post('/auth/login', {
       email: email.value,
@@ -108,6 +211,7 @@ const handleLogin = async () => {
     navigateTo('/')
   } catch (e: any) {
     errorMsg.value = e.message || 'Email atau password salah. Silakan coba lagi.'
+    generateCaptcha()
   } finally {
     loading.value = false
   }
@@ -296,6 +400,48 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   padding: 4px;
+}
+
+.captcha-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.captcha-canvas {
+  border-radius: var(--r8);
+  border: 1.5px solid var(--border2);
+  background: #f8fafc;
+  cursor: pointer;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-refresh-captcha {
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface);
+  border-radius: var(--r8);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-refresh-captcha:hover {
+  background: var(--border);
+  color: var(--hijau);
+  transform: rotate(180deg);
+}
+
+.captcha-input {
+  letter-spacing: 3px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .login-extra {
