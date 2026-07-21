@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../core/theme.dart';
@@ -8,6 +9,7 @@ import '../blocs/auth_bloc.dart';
 import '../blocs/sesi_bloc.dart';
 import '../blocs/iuran_bloc.dart';
 import '../data/models.dart';
+import '../data/repositories.dart';
 
 // ─── SHIMMER SKELETON WIDGET ──────────────────────────────────────────────────
 
@@ -72,6 +74,237 @@ class _ShimmerContainerState extends State<ShimmerContainer> with SingleTickerPr
     );
   }
 }
+
+// ─── REUSABLE SKELETON LOADERS ────────────────────────────────────────────────
+
+class PanelSkeletonWidget extends StatelessWidget {
+  final double height;
+  final double borderRadius;
+  final EdgeInsets padding;
+  const PanelSkeletonWidget({
+    super.key,
+    this.height = 140,
+    this.borderRadius = 16,
+    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: padding,
+      child: Container(
+        height: height,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Row(
+              children: [
+                ShimmerContainer(width: 40, height: 40, borderRadius: 20),
+                SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ShimmerContainer(width: 120, height: 14, borderRadius: 4),
+                    SizedBox(height: 6),
+                    ShimmerContainer(width: 80, height: 10, borderRadius: 4),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const ShimmerContainer(width: double.infinity, height: 12, borderRadius: 4),
+            const SizedBox(height: 8),
+            ShimmerContainer(width: MediaQuery.of(context).size.width * 0.5, height: 12, borderRadius: 4),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class StatGridSkeletonWidget extends StatelessWidget {
+  const StatGridSkeletonWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.6,
+        children: List.generate(4, (index) {
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                )
+              ],
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ShimmerContainer(width: 32, height: 32, borderRadius: 8),
+                SizedBox(height: 10),
+                ShimmerContainer(width: 70, height: 16, borderRadius: 4),
+                SizedBox(height: 6),
+                ShimmerContainer(width: 100, height: 10, borderRadius: 4),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class ListSkeletonWidget extends StatelessWidget {
+  final int itemCount;
+  final EdgeInsets padding;
+  const ListSkeletonWidget({
+    super.key,
+    this.itemCount = 5,
+    this.padding = const EdgeInsets.all(20),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: padding,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black.withOpacity(0.05)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const ShimmerContainer(width: 48, height: 48, borderRadius: 14),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const ShimmerContainer(width: 140, height: 14, borderRadius: 4),
+                    const SizedBox(height: 8),
+                    ShimmerContainer(
+                      width: MediaQuery.of(context).size.width * 0.45,
+                      height: 10,
+                      borderRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              const ShimmerContainer(width: 60, height: 24, borderRadius: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class DetailSkeletonWidget extends StatelessWidget {
+  const DetailSkeletonWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner / Header image skeleton
+          const ShimmerContainer(width: double.infinity, height: 180, borderRadius: 20),
+          const SizedBox(height: 20),
+          // Category badge
+          const ShimmerContainer(width: 90, height: 22, borderRadius: 6),
+          const SizedBox(height: 14),
+          // Main title lines
+          const ShimmerContainer(width: double.infinity, height: 20, borderRadius: 4),
+          const SizedBox(height: 8),
+          ShimmerContainer(width: MediaQuery.of(context).size.width * 0.7, height: 20, borderRadius: 4),
+          const SizedBox(height: 20),
+          // Info row skeleton card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.black.withOpacity(0.06)),
+            ),
+            child: const Row(
+              children: [
+                ShimmerContainer(width: 40, height: 40, borderRadius: 10),
+                SizedBox(width: 14),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ShimmerContainer(width: 120, height: 12, borderRadius: 4),
+                    SizedBox(height: 6),
+                    ShimmerContainer(width: 160, height: 10, borderRadius: 4),
+                  ],
+                )
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Description paragraphs
+          const ShimmerContainer(width: 140, height: 16, borderRadius: 4),
+          const SizedBox(height: 12),
+          const ShimmerContainer(width: double.infinity, height: 10, borderRadius: 4),
+          const SizedBox(height: 6),
+          const ShimmerContainer(width: double.infinity, height: 10, borderRadius: 4),
+          const SizedBox(height: 6),
+          const ShimmerContainer(width: double.infinity, height: 10, borderRadius: 4),
+          const SizedBox(height: 6),
+          ShimmerContainer(width: MediaQuery.of(context).size.width * 0.5, height: 10, borderRadius: 4),
+          const SizedBox(height: 30),
+          // Action button skeleton
+          const ShimmerContainer(width: double.infinity, height: 50, borderRadius: 14),
+        ],
+      ),
+    );
+  }
+}
+
 
 // ─── ONBOARDING SCREEN ────────────────────────────────────────────────────────
 class OnboardingScreen extends StatefulWidget {
@@ -571,13 +804,28 @@ class _LoginScreenState extends State<LoginScreen> {
         email,
         style: const TextStyle(fontSize: 11.5, color: BrandColors.text2),
       ),
-      onTap: () {
+      onTap: () async {
         Navigator.pop(context);
-        Navigator.pushNamed(
-          context,
-          '/google_complete',
-          arguments: {'name': name, 'email': email, 'initial': initial},
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Memproses masuk via Gmail: $email...')),
         );
+        try {
+          final res = await AuthRepository().loginGoogle(email, name);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
+            );
+            Navigator.pushReplacementNamed(context, '/main');
+          }
+        } catch (e) {
+          if (context.mounted) {
+            Navigator.pushNamed(
+              context,
+              '/google_complete',
+              arguments: {'name': name, 'email': email, 'initial': initial},
+            );
+          }
+        }
       },
     );
   }
@@ -599,6 +847,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final List<Widget> pages = [
       DashboardTab(onTabSelected: (index) => setState(() => _currentIndex = index)),
       const JadwalTab(),
+      const NafasTab(),
       const IuranTab(),
       const ProfilTab(),
     ];
@@ -623,6 +872,7 @@ class _HomeScreenState extends State<HomeScreen> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Beranda'),
             BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today), label: 'Jadwal'),
+            BottomNavigationBarItem(icon: Icon(Icons.air_outlined), activeIcon: Icon(Icons.air), label: 'Nafas'),
             BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet_outlined), activeIcon: Icon(Icons.account_balance_wallet), label: 'BLBA'),
             BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profil'),
           ],
@@ -793,13 +1043,13 @@ class DashboardTab extends StatelessWidget {
                     crossAxisSpacing: 16,
                     children: [
                       _buildGridService(context, 'Jadwal', Icons.calendar_today_outlined, BrandColors.biru, '/home', targetTab: 1),
-                      _buildGridService(context, 'KTA', Icons.badge_outlined, BrandColors.hijau, '/kta'),
-                      _buildGridService(context, 'Iuran', Icons.wallet_outlined, BrandColors.kuning, '/home', targetTab: 2),
+                      _buildGridService(context, 'Nafas', Icons.air_outlined, BrandColors.hijau, '/home', targetTab: 2),
+                      _buildGridService(context, 'KTA', Icons.badge_outlined, BrandColors.biru, '/kta'),
+                      _buildGridService(context, 'Iuran', Icons.wallet_outlined, BrandColors.kuning, '/home', targetTab: 3),
                       _buildGridService(context, 'Kebugaran', Icons.monitor_heart_outlined, BrandColors.merah, '/kebugaran'),
                       _buildGridService(context, 'EKT Jurus', Icons.military_tech_outlined, Colors.purple, '/event_detail', arguments: 'ekt'),
                       _buildGridService(context, 'EKT Non', Icons.shield_outlined, Colors.orange, '/event_detail', arguments: 'ekt-nj'),
                       _buildGridService(context, 'Latgab', Icons.groups_outlined, Colors.indigo, '/event_detail', arguments: 'latgab'),
-                      _buildGridService(context, 'Pelatnas', Icons.stars_outlined, Colors.teal, '/event_detail', arguments: 'pelatnas'),
                     ],
                   ),
                   const SizedBox(height: 28),
@@ -943,37 +1193,8 @@ class JadwalTab extends StatelessWidget {
       body: BlocBuilder<SesiBloc, SesiState>(
         builder: (context, state) {
           if (state is SesiLoading) {
-            // Skeleton loader loop
-            return ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: 4,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: const Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        ShimmerContainer(width: 48, height: 48, borderRadius: 24),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ShimmerContainer(width: 140, height: 16),
-                              SizedBox(height: 12),
-                              ShimmerContainer(width: 180, height: 12),
-                              SizedBox(height: 6),
-                              ShimmerContainer(width: 100, height: 12),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+            return const SingleChildScrollView(
+              child: ListSkeletonWidget(itemCount: 5),
             );
           } else if (state is SesiLoaded) {
             if (state.list.isEmpty) {
@@ -1118,7 +1339,14 @@ class IuranTab extends StatelessWidget {
       body: BlocBuilder<IuranBloc, IuranState>(
         builder: (context, state) {
           if (state is IuranLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const SingleChildScrollView(
+              child: Column(
+                children: [
+                  PanelSkeletonWidget(height: 150),
+                  ListSkeletonWidget(itemCount: 4),
+                ],
+              ),
+            );
           } else if (state is IuranLoaded) {
             final list = state.list;
             final unpaidList = list.where((i) => i.status != 'lunas').toList();
@@ -1783,6 +2011,1141 @@ class QrScannerScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// ─── NAFAS DETAIL SCREEN & TAB ───────────────────────────────────────────────
+
+class NafasDetailScreen extends StatelessWidget {
+  const NafasDetailScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Modul Nafas SN'),
+        backgroundColor: BrandColors.hijau,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: const NafasTab(),
+    );
+  }
+}
+
+class NafasTab extends StatefulWidget {
+  const NafasTab({super.key});
+
+  @override
+  State<NafasTab> createState() => _NafasTabState();
+}
+
+class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin {
+  // Mode Tab selector: 'latihan' or 'riwayat'
+  String _activeTab = 'latihan';
+
+  // Technique: 'iso' (Sama Kaki), 'equi' (Sama Sisi), 'square' (Segi Empat)
+  String _type = 'iso';
+
+  // Step durations in seconds
+  int _tarikM = 0, _tarikS = 10;
+  int _tahanM = 0, _tahanS = 30;
+  int _keluarM = 0, _keluarS = 10;
+  int _tahan2M = 0, _tahan2S = 10;
+
+  // Total session duration
+  int _totalM = 10, _totalS = 0;
+
+  // Timer & state
+  bool _isRunning = false;
+  bool _isPaused = false;
+  bool _isFinished = false;
+
+  Timer? _timer;
+  int _elapsedSec = 0;
+  int _currentStepIndex = 0;
+  int _stepElapsedSec = 0;
+  int _currentCycle = 1;
+
+  AnimationController? _animController;
+
+  // History list
+  final List<Map<String, dynamic>> _historyList = [
+    {
+      'id': 'hist-1',
+      'teknik': 'Sama Kaki',
+      'durasi_fmt': '10:00',
+      'durasi_detik': 600,
+      'siklus': 12,
+      'timestamp': DateTime.now().subtract(const Duration(hours: 3)),
+      'status': 'Selesai',
+    },
+    {
+      'id': 'hist-2',
+      'teknik': 'Sama Sisi',
+      'durasi_fmt': '05:00',
+      'durasi_detik': 300,
+      'siklus': 10,
+      'timestamp': DateTime.now().subtract(const Duration(days: 1, hours: 2)),
+      'status': 'Selesai',
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _animController?.dispose();
+    super.dispose();
+  }
+
+  int get _tarikDur => _tarikM * 60 + _tarikS;
+  int get _tahanDur => _tahanM * 60 + _tahanS;
+  int get _keluarDur => _keluarM * 60 + _keluarS;
+  int get _tahan2Dur => _tahan2M * 60 + _tahan2S;
+  int get _totalDur => _totalM * 60 + _totalS;
+
+  List<Map<String, dynamic>> get _steps {
+    final tarik = {'key': 'tarik', 'name': 'Tarik', 'full': 'Tarik Nafas', 'voice': 'Satu. Tarik.', 'color': const Color(0xFF0091EA), 'dur': _tarikDur};
+    final tahan = {'key': 'tahan', 'name': 'Tahan & Tekan', 'full': 'Tahan dan Tekan', 'voice': 'Dua. Tahan dan tekan.', 'color': const Color(0xFFE8B923), 'dur': _tahanDur};
+    final keluar = {'key': 'keluar', 'name': 'Keluarkan', 'full': 'Keluarkan', 'voice': 'Tiga. Keluarkan.', 'color': const Color(0xFF2E8B3D), 'dur': _keluarDur};
+    final tahan2 = {'key': 'tahan2', 'name': 'Tahan', 'full': 'Tahan Nafas', 'voice': 'Empat. Tahan.', 'color': const Color(0xFFC9701A), 'dur': _tahan2Dur};
+
+    if (_type == 'square') {
+      return [tarik, tahan, keluar, tahan2];
+    }
+    return [tarik, tahan, keluar];
+  }
+
+  int get _cycleDur => _steps.fold(0, (sum, step) => sum + (step['dur'] as int));
+
+  bool get _isValidDuration {
+    final cyc = _cycleDur;
+    final total = _totalDur;
+    return cyc > 0 && total >= cyc && (total % cyc == 0);
+  }
+
+  int get _totalCycles => _cycleDur > 0 ? (_totalDur ~/ _cycleDur) : 0;
+
+  void _applyType(String newType) {
+    setState(() {
+      _type = newType;
+      if (newType == 'equi') {
+        _tarikM = 0; _tarikS = 10;
+        _tahanM = 0; _tahanS = 10;
+        _keluarM = 0; _keluarS = 10;
+      } else if (newType == 'square') {
+        _tarikM = 0; _tarikS = 10;
+        _tahanM = 0; _tahanS = 10;
+        _keluarM = 0; _keluarS = 10;
+        _tahan2M = 0; _tahan2S = 10;
+      } else {
+        _tarikM = 0; _tarikS = 10;
+        _tahanM = 0; _tahanS = 30;
+        _keluarM = 0; _keluarS = 10;
+      }
+
+      int cycNow = newType == 'square' ? 40 : (newType == 'iso' ? 50 : 30);
+      int mult = (600 / cycNow).round();
+      if (mult < 1) mult = 1;
+      int validTotal = mult * cycNow;
+      _totalM = validTotal ~/ 60;
+      _totalS = validTotal % 60;
+    });
+  }
+
+  void _handleStepInput(String stepKey, bool isMin, int delta) {
+    setState(() {
+      if (stepKey == 'tarik') {
+        if (isMin) _tarikM = (_tarikM + delta).clamp(0, 59);
+        else _tarikS = (_tarikS + delta).clamp(0, 59);
+      } else if (stepKey == 'tahan') {
+        if (isMin) _tahanM = (_tahanM + delta).clamp(0, 59);
+        else _tahanS = (_tahanS + delta).clamp(0, 59);
+      } else if (stepKey == 'keluar') {
+        if (isMin) _keluarM = (_keluarM + delta).clamp(0, 59);
+        else _keluarS = (_keluarS + delta).clamp(0, 59);
+      } else if (stepKey == 'tahan2') {
+        if (isMin) _tahan2M = (_tahan2M + delta).clamp(0, 59);
+        else _tahan2S = (_tahan2S + delta).clamp(0, 59);
+      }
+
+      if (_type == 'equi' || _type == 'square') {
+        int mVal = stepKey == 'tarik' ? _tarikM : (stepKey == 'tahan' ? _tahanM : (stepKey == 'keluar' ? _keluarM : _tahan2M));
+        int sVal = stepKey == 'tarik' ? _tarikS : (stepKey == 'tahan' ? _tahanS : (stepKey == 'keluar' ? _keluarS : _tahan2S));
+        _tarikM = mVal; _tarikS = sVal;
+        _tahanM = mVal; _tahanS = sVal;
+        _keluarM = mVal; _keluarS = sVal;
+        _tahan2M = mVal; _tahan2S = sVal;
+      } else if (_type == 'iso' && (stepKey == 'tarik' || stepKey == 'keluar')) {
+        int mVal = stepKey == 'tarik' ? _tarikM : _keluarM;
+        int sVal = stepKey == 'tarik' ? _tarikS : _keluarS;
+        _tarikM = mVal; _tarikS = sVal;
+        _keluarM = mVal; _keluarS = sVal;
+      }
+    });
+  }
+
+  void _handleTotalInput(bool isMin, int delta) {
+    setState(() {
+      if (isMin) _totalM = (_totalM + delta).clamp(0, 120);
+      else _totalS = (_totalS + delta).clamp(0, 59);
+    });
+  }
+
+  void _startSession() {
+    if (!_isValidDuration) return;
+    setState(() {
+      _isRunning = true;
+      _isPaused = false;
+      _isFinished = false;
+      _elapsedSec = 0;
+      _currentCycle = 1;
+      _currentStepIndex = 0;
+      _stepElapsedSec = 0;
+    });
+
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) => _tick());
+  }
+
+  void _tick() {
+    if (_isPaused || !_isRunning) return;
+
+    setState(() {
+      _elapsedSec++;
+      _stepElapsedSec++;
+
+      if (_elapsedSec >= _totalDur) {
+        _finishSession();
+        return;
+      }
+
+      final currentStepDur = _steps[_currentStepIndex]['dur'] as int;
+      if (_stepElapsedSec >= currentStepDur) {
+        _stepElapsedSec = 0;
+        _currentStepIndex++;
+        if (_currentStepIndex >= _steps.length) {
+          _currentStepIndex = 0;
+          _currentCycle++;
+        }
+      }
+    });
+  }
+
+  void _pauseSession() {
+    setState(() {
+      _isPaused = !_isPaused;
+    });
+  }
+
+  void _resetSession() {
+    _timer?.cancel();
+    setState(() {
+      _isRunning = false;
+      _isPaused = false;
+      _isFinished = false;
+      _elapsedSec = 0;
+      _stepElapsedSec = 0;
+      _currentCycle = 1;
+      _currentStepIndex = 0;
+    });
+  }
+
+  void _finishSession() {
+    _timer?.cancel();
+    final techniqueLabel = _type == 'square' ? 'Segi Empat' : (_type == 'equi' ? 'Sama Sisi' : 'Sama Kaki');
+    final record = {
+      'id': 'hist-${DateTime.now().millisecondsSinceEpoch}',
+      'teknik': techniqueLabel,
+      'durasi_fmt': _fmt(_totalDur),
+      'durasi_detik': _totalDur,
+      'siklus': _totalCycles,
+      'timestamp': DateTime.now(),
+      'status': 'Selesai',
+    };
+
+    setState(() {
+      _isRunning = false;
+      _isPaused = false;
+      _isFinished = true;
+      _historyList.insert(0, record);
+    });
+
+    // Try posting to backend API
+    try {
+      http.post(
+        Uri.parse('http://localhost:8080/api/v1/nafas/history'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'anggota_id': 'a0000001-0000-0000-0000-000000000001',
+          'anggota_nama': 'Ahmad Santoso',
+          'cabang_nama': 'Kota Yogyakarta',
+          'unit_nama': 'Malioboro',
+          'teknik': techniqueLabel,
+          'durasi_detik': _totalDur,
+          'durasi_fmt': _fmt(_totalDur),
+          'siklus': _totalCycles,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  String _fmt(int sec) {
+    int m = sec ~/ 60;
+    int s = sec % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Hero Header Banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0072B8), Color(0xFF0091EA)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
+                    ],
+                  ),
+                  child: const Icon(Icons.air, color: Color(0xFF0072B8), size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'SATRIA NUSANTARA',
+                        style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Nafas Buka Tutup',
+                        style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Modul Olah Nafas & Energi Diri',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Sub-Tab Switcher (Latihan vs Riwayat)
+          if (!_isRunning && !_isFinished)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() => _activeTab = 'latihan'),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _activeTab == 'latihan' ? BrandColors.hijau : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'LATIHAN PERNAFASAN',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: _activeTab == 'latihan' ? Colors.white : BrandColors.text2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() => _activeTab = 'riwayat'),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _activeTab == 'riwayat' ? BrandColors.hijau : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'RIWAYAT (${_historyList.length})',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: _activeTab == 'riwayat' ? Colors.white : BrandColors.text2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: _isRunning
+                ? _buildSessionView()
+                : (_isFinished
+                    ? _buildFinishedView()
+                    : (_activeTab == 'riwayat' ? _buildHistoryView() : _buildSetupView())),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryView() {
+    int totalSec = _historyList.fold(0, (sum, item) => sum + (item['durasi_detik'] as int));
+    int totalMin = totalSec ~/ 60;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Summary Cards
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: BrandColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Total Sesi', style: TextStyle(fontSize: 11, color: BrandColors.text3)),
+                    const SizedBox(height: 4),
+                    Text('${_historyList.length} Sesi', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.hijau)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: BrandColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Total Durasi', style: TextStyle(fontSize: 11, color: BrandColors.text3)),
+                    const SizedBox(height: 4),
+                    Text('$totalMin Menit', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.biru)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        const Text(
+          'CATATAN RIWAYAT LATIHAN',
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text3, letterSpacing: 0.5),
+        ),
+        const SizedBox(height: 10),
+
+        if (_historyList.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: BrandColors.border),
+            ),
+            child: Column(
+              children: const [
+                Icon(Icons.history_toggle_off, size: 48, color: BrandColors.text3),
+                SizedBox(height: 8),
+                Text('Belum ada riwayat latihan', style: TextStyle(color: BrandColors.text2, fontSize: 13)),
+              ],
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _historyList.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final item = _historyList[index];
+              final DateTime dt = item['timestamp'] as DateTime;
+              final dateStr = '${dt.day}/${dt.month}/${dt.year} • ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+              final String teknik = item['teknik'] as String;
+
+              Color badgeColor = const Color(0xFF0091EA);
+              if (teknik == 'Sama Kaki') badgeColor = BrandColors.hijau;
+              else if (teknik == 'Segi Empat') badgeColor = Colors.orange;
+
+              return Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: BrandColors.border),
+                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 1))],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: badgeColor.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.fitness_center, color: badgeColor, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                teknik,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.text1),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: BrandColors.hijau.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  item['status'] as String,
+                                  style: const TextStyle(color: BrandColors.hijau, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            dateStr,
+                            style: const TextStyle(fontSize: 11, color: BrandColors.text3),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          item['durasi_fmt'] as String,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: BrandColors.text1),
+                        ),
+                        Text(
+                          '${item['siklus']} Siklus',
+                          style: const TextStyle(fontSize: 11, color: BrandColors.text2),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSetupView() {
+    final cyc = _cycleDur;
+    final valid = _isValidDuration;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Technique selector
+        const Text(
+          'PILIH TEKNIK PERNAFASAN',
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text3, letterSpacing: 0.5),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _buildTypeBtn('iso', 'Sama Kaki', Icons.change_history),
+            const SizedBox(width: 8),
+            _buildTypeBtn('equi', 'Sama Sisi', Icons.details),
+            const SizedBox(width: 8),
+            _buildTypeBtn('square', 'Segi Empat', Icons.crop_square),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // Steppers Card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: BrandColors.border),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'DURASI WAKTU PER STEP',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text2, letterSpacing: 0.5),
+              ),
+              const SizedBox(height: 12),
+              _buildStepRow('tarik', 'Tarik Nafas', const Color(0xFF0091EA), _tarikM, _tarikS),
+              _buildStepRow('tahan', 'Tahan & Tekan', const Color(0xFFE8B923), _tahanM, _tahanS),
+              _buildStepRow('keluar', 'Keluarkan', const Color(0xFF2E8B3D), _keluarM, _keluarS),
+              if (_type == 'square')
+                _buildStepRow('tahan2', 'Tahan Nafas', const Color(0xFFC9701A), _tahan2M, _tahan2S),
+              const Divider(height: 24),
+              const Text(
+                'DURASI TOTAL LATIHAN',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text2, letterSpacing: 0.5),
+              ),
+              const SizedBox(height: 12),
+              _buildTotalRow(),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Info & Validation Box
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: valid ? BrandColors.hijau.withOpacity(0.08) : Colors.amber.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: valid ? BrandColors.hijau.withOpacity(0.3) : Colors.amber),
+          ),
+          child: Row(
+            children: [
+              Icon(valid ? Icons.info_outline : Icons.warning_amber_rounded, color: valid ? BrandColors.hijau : Colors.amber[800]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '1 Siklus = $cyc detik (${_steps.map((s) => s['dur']).join('-')})',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valid ? BrandColors.text1 : Colors.amber[900]),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      valid
+                          ? 'Estimasi ≈ $_totalCycles siklus penuh'
+                          : 'Durasi total harus kelipatan dari 1 siklus ($cyc detik) agar tidak terhenti di tengah.',
+                      style: TextStyle(fontSize: 12, color: valid ? BrandColors.text2 : Colors.amber[900]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Start button
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton.icon(
+            onPressed: valid ? _startSession : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: BrandColors.hijau,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 2,
+            ),
+            icon: const Icon(Icons.play_arrow_rounded, size: 28),
+            label: const Text('MULAI LATIHAN NAFAS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypeBtn(String typeKey, String label, IconData icon) {
+    final bool active = _type == typeKey;
+    return Expanded(
+      child: InkWell(
+        onTap: () => _applyType(typeKey),
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFF0091EA).withOpacity(0.12) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: active ? const Color(0xFF0091EA) : BrandColors.border,
+              width: active ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: active ? const Color(0xFF0072B8) : BrandColors.text3, size: 26),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                  color: active ? const Color(0xFF0072B8) : BrandColors.text2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepRow(String key, String title, Color color, int m, int s) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: BrandColors.text1),
+            ),
+          ),
+          _buildMiniStepper(m, (delta) => _handleStepInput(key, true, delta), 'm'),
+          const SizedBox(width: 6),
+          _buildMiniStepper(s, (delta) => _handleStepInput(key, false, delta), 'd'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTotalRow() {
+    return Row(
+      children: [
+        const Icon(Icons.timer_outlined, color: BrandColors.text2, size: 20),
+        const SizedBox(width: 8),
+        const Expanded(
+          child: Text(
+            'Total Waktu',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: BrandColors.text1),
+          ),
+        ),
+        _buildMiniStepper(_totalM, (delta) => _handleTotalInput(true, delta), 'm'),
+        const SizedBox(width: 6),
+        _buildMiniStepper(_totalS, (delta) => _handleTotalInput(false, delta), 'd'),
+      ],
+    );
+  }
+
+  Widget _buildMiniStepper(int value, Function(int) onChange, String unit) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: () => onChange(-1),
+          child: Container(
+            width: 26,
+            height: 28,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(6), bottomLeft: Radius.circular(6)),
+            ),
+            child: const Center(child: Text('-', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
+          ),
+        ),
+        Container(
+          width: 32,
+          height: 28,
+          color: Colors.grey[100],
+          child: Center(
+            child: Text(
+              value.toString().padLeft(2, '0'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+            ),
+          ),
+        ),
+        InkWell(
+          onTap: () => onChange(1),
+          child: Container(
+            width: 26,
+            height: 28,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: const BorderRadius.only(topRight: Radius.circular(6), bottomRight: Radius.circular(6)),
+            ),
+            child: const Center(child: Text('+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
+          ),
+        ),
+        const SizedBox(width: 3),
+        Text(unit, style: const TextStyle(fontSize: 11, color: BrandColors.text3)),
+      ],
+    );
+  }
+
+  Widget _buildSessionView() {
+    final currentStep = _steps[_currentStepIndex];
+    final Color phaseColor = currentStep['color'] as Color;
+    final int stepDur = currentStep['dur'] as int;
+    final int stepRemaining = (stepDur - _stepElapsedSec).clamp(0, stepDur);
+    final double stepProgress = (stepDur > 0) ? (_stepElapsedSec / stepDur) : 0.0;
+
+    final int totalRemaining = (_totalDur - _elapsedSec).clamp(0, _totalDur);
+    final double totalProgress = (_totalDur > 0) ? (_elapsedSec / _totalDur) : 0.0;
+
+    return Column(
+      children: [
+        // Geometric Visualizer Canvas Card
+        Container(
+          width: double.infinity,
+          height: 240,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: BrandColors.border),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
+          ),
+          child: AnimatedBuilder(
+            animation: _animController!,
+            builder: (context, child) {
+              return CustomPaint(
+                painter: NafasVisualizerPainter(
+                  type: _type,
+                  stepIndex: _currentStepIndex,
+                  stepProgress: stepProgress,
+                  phaseColor: phaseColor,
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Phase Banner
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          decoration: BoxDecoration(
+            color: phaseColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: phaseColor.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Column(
+            children: [
+              Text(
+                (currentStep['full'] as String).toUpperCase(),
+                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 1.1),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Sisa Waktu Step: ${_fmt(stepRemaining)}',
+                style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Progress & Metrics Card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: BrandColors.border),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Siklus: $_currentCycle / $_totalCycles', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.text1)),
+                  Text('Sisa Total: ${_fmt(totalRemaining)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.text1)),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: totalProgress,
+                  minHeight: 8,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation<Color>(phaseColor),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Control buttons
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: _pauseSession,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _isPaused ? BrandColors.hijau : Colors.amber[700],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
+                  label: Text(_isPaused ? 'LANJUT' : 'PAUSE', style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            SizedBox(
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: _resetSession,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red[700],
+                  side: BorderSide(color: Colors.red[300]!),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.refresh),
+                label: const Text('RESET', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFinishedView() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: BrandColors.border),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.check_circle_rounded, color: BrandColors.hijau, size: 72),
+          const SizedBox(height: 16),
+          const Text(
+            'LATIHAN SELESAI!',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: BrandColors.text1),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Selamat! Anda telah menyelesaikan seluruh rincian siklus olah pernafasan Satria Nusantara dengan baik.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13.5, color: BrandColors.text2, height: 1.4),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: BrandColors.bg,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  children: [
+                    const Text('Total Waktu', style: TextStyle(fontSize: 11, color: BrandColors.text3)),
+                    const SizedBox(height: 2),
+                    Text(_fmt(_totalDur), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: BrandColors.text1)),
+                  ],
+                ),
+                Column(
+                  children: [
+                    const Text('Total Siklus', style: TextStyle(fontSize: 11, color: BrandColors.text3)),
+                    const SizedBox(height: 2),
+                    Text('$_totalCycles Siklus', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: BrandColors.text1)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _resetSession,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BrandColors.hijau,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('KEMBALI KE PENGATURAN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── NAFAS GEOMETRIC VISUALIZER PAINTER ──────────────────────────────────────
+
+class NafasVisualizerPainter extends CustomPainter {
+  final String type;
+  final int stepIndex;
+  final double stepProgress;
+  final Color phaseColor;
+
+  NafasVisualizerPainter({
+    required this.type,
+    required this.stepIndex,
+    required this.stepProgress,
+    required this.phaseColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double w = size.width;
+    final double h = size.height;
+
+    final Paint outlinePaint = Paint()
+      ..color = Colors.grey[300]!
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+
+    final Paint activeLinePaint = Paint()
+      ..color = phaseColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.0
+      ..strokeCap = StrokeCap.round;
+
+    final List<Offset> points = [];
+
+    if (type == 'square') {
+      double marginX = w * 0.22;
+      double marginY = h * 0.18;
+      points.add(Offset(marginX, h - marginY));
+      points.add(Offset(marginX, marginY));
+      points.add(Offset(w - marginX, marginY));
+      points.add(Offset(w - marginX, h - marginY));
+    } else if (type == 'equi') {
+      points.add(Offset(w * 0.18, h * 0.82));
+      points.add(Offset(w * 0.50, h * 0.18));
+      points.add(Offset(w * 0.82, h * 0.82));
+    } else {
+      points.add(Offset(w * 0.50, h * 0.28));
+      points.add(Offset(w * 0.84, h * 0.72));
+      points.add(Offset(w * 0.16, h * 0.72));
+    }
+
+    final Path path = Path();
+    path.moveTo(points[0].dx, points[0].dy);
+    for (int i = 1; i < points.length; i++) {
+      path.lineTo(points[i].dx, points[i].dy);
+    }
+    path.close();
+    canvas.drawPath(path, outlinePaint);
+
+    int numPoints = points.length;
+    int currentPIndex = stepIndex % numPoints;
+    int nextPIndex = (stepIndex + 1) % numPoints;
+
+    Offset startP = points[currentPIndex];
+    Offset endP = points[nextPIndex];
+
+    Offset currentMarkerPos = Offset(
+      startP.dx + (endP.dx - startP.dx) * stepProgress,
+      startP.dy + (endP.dy - startP.dy) * stepProgress,
+    );
+
+    final Path activePath = Path();
+    activePath.moveTo(startP.dx, startP.dy);
+    activePath.lineTo(currentMarkerPos.dx, currentMarkerPos.dy);
+    canvas.drawPath(activePath, activeLinePaint);
+
+    for (int i = 0; i < points.length; i++) {
+      final isStart = i == 0;
+      final Paint nodePaint = Paint()
+        ..color = isStart ? Colors.redAccent : Colors.grey[400]!
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(points[i], isStart ? 6 : 4, nodePaint);
+    }
+
+    final Paint glowPaint = Paint()
+      ..color = phaseColor.withOpacity(0.35)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(currentMarkerPos, 16, glowPaint);
+
+    final Paint markerPaint = Paint()
+      ..color = phaseColor
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(currentMarkerPos, 8, markerPaint);
+
+    final Paint corePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(currentMarkerPos, 3, corePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant NafasVisualizerPainter oldDelegate) {
+    return oldDelegate.stepProgress != stepProgress ||
+        oldDelegate.stepIndex != stepIndex ||
+        oldDelegate.type != type ||
+        oldDelegate.phaseColor != phaseColor;
   }
 }
 
@@ -2678,13 +4041,28 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
         email,
         style: const TextStyle(fontSize: 11.5, color: BrandColors.text2),
       ),
-      onTap: () {
+      onTap: () async {
         Navigator.pop(context);
-        Navigator.pushNamed(
-          context,
-          '/google_complete',
-          arguments: {'name': name, 'email': email, 'initial': initial},
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Memproses masuk via Gmail: $email...')),
         );
+        try {
+          final res = await AuthRepository().loginGoogle(email, name);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
+            );
+            Navigator.pushReplacementNamed(context, '/main');
+          }
+        } catch (e) {
+          if (context.mounted) {
+            Navigator.pushNamed(
+              context,
+              '/google_complete',
+              arguments: {'name': name, 'email': email, 'initial': initial},
+            );
+          }
+        }
       },
     );
   }
@@ -3544,7 +4922,7 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
         body: BlocBuilder<IuranBloc, IuranState>(
           builder: (context, state) {
             if (state is IuranLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const ListSkeletonWidget(itemCount: 4);
             }
 
             return ListView.builder(
