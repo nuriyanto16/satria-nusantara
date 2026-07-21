@@ -349,7 +349,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               return Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF0F3E1B), Color(0xFF1A5C2A), Color(0xFF2E8B3A)],
+                    colors: [Color(0xFF0078C8), Color(0xFF0092EC), Color(0xFF42B8F5)],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -502,7 +502,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF0F3E1B), Color(0xFF1A5C2A), Color(0xFF2E8B3A)],
+              colors: [Color(0xFF0078C8), Color(0xFF0092EC), Color(0xFF42B8F5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -903,7 +903,7 @@ class DashboardTab extends StatelessWidget {
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF0F3E1B), BrandColors.hijau],
+                    colors: [Color(0xFF0078C8), Color(0xFF0092EC), Color(0xFF42B8F5)],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
