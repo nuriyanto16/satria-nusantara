@@ -65,6 +65,13 @@
         <div v-if="loadingStats" class="skeleton-block" style="width:100px;height:12px;"></div>
         <div v-else class="stat-sub">{{ kebugaranTotalDites }} anggota dites</div>
       </div>
+
+      <div class="stat-card green" @click="navigateTo('/nafas')">
+        <div class="stat-icon" style="background:#e8f5e9;color:var(--hijau)"><i class="ti ti-wind"></i></div>
+        <div class="stat-val">Modul Nafas</div>
+        <div class="stat-label">Monitoring Olah Nafas</div>
+        <div class="stat-sub">Pantau Riwayat Latihan →</div>
+      </div>
     </div>
 
     <!-- MAIN GRID (MAPS LIBRARY) -->
@@ -750,9 +757,9 @@ onMounted(() => {
 .period-btn.active { background: var(--hijau); color: #fff; border-color: var(--hijau); }
 .period-label { font-size: 11px; color: var(--text3); margin-left: 4px; }
 
-.stat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
-@media (max-width: 1400px) { .stat-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 800px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+@media (max-width: 1200px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .stat-grid { grid-template-columns: 1fr; } }
 
 .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r12); padding: 14px 16px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
 .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-2px); }

@@ -13,19 +13,66 @@
       </div>
       <!-- Content -->
       <div class="setting-content">
-        <div class="setting-section" v-for="s in currentSettings" :key="s.kunci">
-          <label class="setting-label">{{ s.label }}</label>
-          <div class="setting-desc">{{ s.desc }}</div>
-          <input :type="s.type||'text'" class="setting-input" :value="s.nilai" />
+        <!-- Tema Selector -->
+        <div v-if="activeKat === 'tema'" class="setting-section">
+          <label class="setting-label">Tema Tampilan Web Admin</label>
+          <div class="setting-desc">Pilih mode tampilan sesuai dengan kenyamanan mata Anda</div>
+          <div class="theme-options-grid">
+            <div :class="['theme-option-card', { active: currentTheme === 'light' }]" @click="setTheme('light')">
+              <div class="toc-icon light"><i class="ti ti-sun"></i></div>
+              <div>
+                <div class="toc-title">Mode Terang (Light Mode)</div>
+                <div class="toc-desc">Tampilan standar bersih dengan latar belakang terang</div>
+              </div>
+            </div>
+            <div :class="['theme-option-card', { active: currentTheme === 'dark' }]" @click="setTheme('dark')">
+              <div class="toc-icon dark"><i class="ti ti-moon"></i></div>
+              <div>
+                <div class="toc-title">Mode Gelap (Dark Mode)</div>
+                <div class="toc-desc">Nuansa hijau gelap elegan yang nyaman di malam hari</div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Dynamic Settings -->
+        <template v-else>
+          <div class="setting-section" v-for="s in currentSettings" :key="s.kunci">
+            <label class="setting-label">{{ s.label }}</label>
+            <div class="setting-desc">{{ s.desc }}</div>
+            <input :type="s.type||'text'" class="setting-input" :value="s.nilai" />
+          </div>
+        </template>
       </div>
     </div>
   </div>
 </template>
 <script setup>
 definePageMeta({ title: 'Pengaturan' })
-const activeKat = ref('blba')
+const activeKat = ref('tema')
+const currentTheme = ref('light')
+
+const setTheme = (mode) => {
+  currentTheme.value = mode
+  localStorage.setItem('theme', mode)
+  if (mode === 'dark') {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
+}
+
+onMounted(() => {
+  const saved = localStorage.getItem('theme')
+  if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    currentTheme.value = 'dark'
+  } else {
+    currentTheme.value = 'light'
+  }
+})
+
 const kategoriList = [
+  {label:'Tema Tampilan',value:'tema',icon:'ti-palette'},
   {label:'BLBA',value:'blba',icon:'ti-wallet'},
   {label:'Transport Pelatih',value:'transport',icon:'ti-car'},
   {label:'Syarat EKT',value:'ekt',icon:'ti-award'},
@@ -77,4 +124,15 @@ const currentSettings = computed(() => allSettings[activeKat.value] || [])
 .setting-desc{font-size:11px;color:var(--text3);margin-bottom:8px}
 .setting-input{width:100%;max-width:300px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--r8);font-size:13px;outline:none}
 .setting-input:focus{border-color:var(--hijau)}
+
+.theme-options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 10px; }
+@media (max-width: 600px) { .theme-options-grid { grid-template-columns: 1fr; } }
+.theme-option-card { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1.5px solid var(--border); border-radius: var(--r12); background: var(--surface); cursor: pointer; transition: all .15s; }
+.theme-option-card:hover { border-color: var(--hijau); }
+.theme-option-card.active { border-color: var(--hijau); background: var(--hijau3); }
+.toc-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.toc-icon.light { background: #fff8e0; color: var(--kuning); }
+.toc-icon.dark { background: #152219; color: #5bb8d4; }
+.toc-title { font-size: 13px; font-weight: 700; color: var(--text1); margin-bottom: 2px; }
+.toc-desc { font-size: 11px; color: var(--text3); line-height: 1.3; }
 </style>
