@@ -201,17 +201,25 @@ const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
 const isDarkMode = ref(false)
 
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value
-  if (isDarkMode.value) {
+const applyTheme = (isDark) => {
+  if (isDark) {
     document.documentElement.classList.add('dark')
     document.body.classList.add('dark')
+    const layout = document.querySelector('.layout')
+    if (layout) layout.classList.add('dark')
     localStorage.setItem('theme', 'dark')
   } else {
     document.documentElement.classList.remove('dark')
     document.body.classList.remove('dark')
+    const layout = document.querySelector('.layout')
+    if (layout) layout.classList.remove('dark')
     localStorage.setItem('theme', 'light')
   }
+}
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value
+  applyTheme(isDarkMode.value)
 }
 
 const api = useApi()
@@ -320,8 +328,10 @@ onMounted(() => {
   const savedTheme = localStorage.getItem('theme')
   if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     isDarkMode.value = true
-    document.documentElement.classList.add('dark')
-    document.body.classList.add('dark')
+    applyTheme(true)
+  } else {
+    isDarkMode.value = false
+    applyTheme(false)
   }
 
   authStore.rehydrate()

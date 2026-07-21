@@ -42,8 +42,9 @@
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
 }
 
-/* ── DARK MODE SYSTEM (Style: report/login) ───────── */
+/* ── DARK MODE SYSTEM (Style: report/login deep dark navy) ───────── */
 html.dark, body.dark {
+  color-scheme: dark;
   /* Brand Colors Override */
   --hijau:  #22c55e;
   --hijau2: #34d399;
@@ -56,7 +57,7 @@ html.dark, body.dark {
   --surface: #1e293b !important;
   --text1:   #f8fafc !important;
   --text2:   #cbd5e1 !important;
-  --text3:   #64748b !important;
+  --text3:   #94a3b8 !important;
   --border:  rgba(56, 189, 248, 0.16) !important;
   --border2: rgba(56, 189, 248, 0.28) !important;
 
@@ -64,28 +65,116 @@ html.dark, body.dark {
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.5);
   --shadow-md: 0 4px 20px rgba(0,0,0,0.6);
   --shadow-lg: 0 10px 30px rgba(0,0,0,0.8);
+
+  background-color: #070d14 !important;
+  color: #f8fafc !important;
 }
 
+/* Force dark mode backgrounds on layout and containers */
+html.dark .layout, body.dark .layout,
+html.dark .page-container, body.dark .page-container,
+html.dark #page-pengaturan, body.dark #page-pengaturan,
+html.dark #page-anggota, body.dark #page-anggota,
+html.dark #page-cabang, body.dark #page-cabang,
+html.dark #page-user, body.dark #page-user {
+  background-color: #070d14 !important;
+  color: #f8fafc !important;
+}
+
+/* Force dark mode on cards, panels, tables, popovers and modals */
+html.dark .card, body.dark .card,
+html.dark .stat-card, body.dark .stat-card,
+html.dark .table-card, body.dark .table-card,
+html.dark .modal-card, body.dark .modal-card,
+html.dark .modal-content, body.dark .modal-content,
+html.dark .setting-content, body.dark .setting-content,
+html.dark .setting-sidebar, body.dark .setting-sidebar,
+html.dark .chart-card, body.dark .chart-card,
+html.dark .search-dropdown, body.dark .search-dropdown,
+html.dark .notif-dropdown, body.dark .notif-dropdown,
+html.dark .popover-content, body.dark .popover-content,
+html.dark .filter-box, body.dark .filter-box,
+html.dark .cabang-card, body.dark .cabang-card {
+  background-color: #0f172a !important;
+  border-color: rgba(56, 189, 248, 0.16) !important;
+  color: #f8fafc !important;
+}
+
+/* Topbar & Sidebar in Dark Mode */
 html.dark .topbar, body.dark .topbar {
-  background: rgba(15, 23, 42, 0.85) !important;
-  border-bottom: 1px solid var(--border) !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.16) !important;
 }
 
 html.dark .sidebar, body.dark .sidebar {
   background: #09111e !important;
-  border-right: 1px solid var(--border) !important;
+  border-right: 1px solid rgba(56, 189, 248, 0.16) !important;
 }
 
-html.dark .tb-search-bar:focus-within {
-  background: var(--card);
+/* Headings & Text Colors in Dark Mode */
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6,
+body.dark h1, body.dark h2, body.dark h3, body.dark h4, body.dark h5, body.dark h6,
+html.dark .page-title, body.dark .page-title,
+html.dark .card-title, body.dark .card-title,
+html.dark .stat-val, body.dark .stat-val,
+html.dark .tb-uname, body.dark .tb-uname,
+html.dark .modal-title, body.dark .modal-title {
+  color: #f8fafc !important;
 }
 
+html.dark .page-subtitle, body.dark .page-subtitle,
+html.dark .stat-label, body.dark .stat-label,
+html.dark .card-sub, body.dark .card-sub,
+html.dark .setting-desc, body.dark .setting-desc,
+html.dark .tb-urole, body.dark .tb-urole {
+  color: #94a3b8 !important;
+}
+
+/* Form Controls & Tables in Dark Mode */
 html.dark input, 
 html.dark select, 
-html.dark textarea {
-  color: var(--text1);
-  background: var(--surface);
-  border-color: var(--border);
+html.dark textarea,
+body.dark input, 
+body.dark select, 
+body.dark textarea {
+  color: #f8fafc !important;
+  background-color: #1e293b !important;
+  border-color: rgba(56, 189, 248, 0.25) !important;
+}
+
+html.dark input::placeholder,
+body.dark input::placeholder {
+  color: #64748b !important;
+}
+
+html.dark table, body.dark table {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html.dark th, body.dark th {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-bottom-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+html.dark td, body.dark td {
+  border-bottom-color: rgba(56, 189, 248, 0.1) !important;
+  color: #cbd5e1 !important;
+}
+
+html.dark tr:hover td, body.dark tr:hover td {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+}
+
+/* Theme Option Cards in Pengaturan Page */
+html.dark .theme-option-card, body.dark .theme-option-card {
+  background: #1e293b !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+html.dark .theme-option-card.active, body.dark .theme-option-card.active {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.12) !important;
 }
 
 html, body {
