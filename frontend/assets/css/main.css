@@ -43,7 +43,7 @@
 }
 
 /* ── DARK MODE SYSTEM (Style: report/login) ───────── */
-html.dark {
+html.dark, body.dark {
   /* Brand Colors Override */
   --hijau:  #22c55e;
   --hijau2: #34d399;
@@ -51,14 +51,14 @@ html.dark {
   --hijau4: #10b981;
 
   /* Dark Mode Futuristic Deep Dark Neutral */
-  --bg:      #070d14;
-  --card:    #0f172a;
-  --surface: #1e293b;
-  --text1:   #f8fafc;
-  --text2:   #cbd5e1;
-  --text3:   #64748b;
-  --border:  rgba(56, 189, 248, 0.16);
-  --border2: rgba(56, 189, 248, 0.28);
+  --bg:      #070d14 !important;
+  --card:    #0f172a !important;
+  --surface: #1e293b !important;
+  --text1:   #f8fafc !important;
+  --text2:   #cbd5e1 !important;
+  --text3:   #64748b !important;
+  --border:  rgba(56, 189, 248, 0.16) !important;
+  --border2: rgba(56, 189, 248, 0.28) !important;
 
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.5);
@@ -66,14 +66,14 @@ html.dark {
   --shadow-lg: 0 10px 30px rgba(0,0,0,0.8);
 }
 
-html.dark .topbar {
-  background: rgba(15, 23, 42, 0.85);
-  border-bottom: 1px solid var(--border);
+html.dark .topbar, body.dark .topbar {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-bottom: 1px solid var(--border) !important;
 }
 
-html.dark .sidebar {
-  background: #09111e;
-  border-right: 1px solid var(--border);
+html.dark .sidebar, body.dark .sidebar {
+  background: #09111e !important;
+  border-right: 1px solid var(--border) !important;
 }
 
 html.dark .tb-search-bar:focus-within {
