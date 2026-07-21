@@ -72,6 +72,15 @@
         <div class="stat-label">Monitoring Olah Nafas</div>
         <div class="stat-sub">Pantau Riwayat Latihan →</div>
       </div>
+
+      <div class="stat-card purple" @click="navigateTo('/latgab')">
+        <div class="stat-icon" style="background:#f3e8ff;color:#9333ea"><i class="ti ti-award"></i></div>
+        <div v-if="loadingStats" class="skeleton-block" style="width:60px;height:28px;margin-bottom:6px;"></div>
+        <div v-else class="stat-val">12 Event</div>
+        <div class="stat-label">Latgab / EKT / Pelatnas</div>
+        <div v-if="loadingStats" class="skeleton-block" style="width:100px;height:12px;"></div>
+        <div v-else class="stat-sub">8 EKT &amp; 4 Pelatnas Aktif</div>
+      </div>
     </div>
 
     <!-- MAIN GRID (MAPS LIBRARY) -->
@@ -769,6 +778,7 @@ onMounted(() => {
 .stat-card.blue::before { background: var(--biru); }
 .stat-card.red::before { background: var(--merah); }
 .stat-card.teal::before { background: #2abcaa; }
+.stat-card.purple::before { background: #9333ea; }
 
 .stat-icon { width: 36px; height: 36px; border-radius: var(--r8); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 16px; }
 .stat-val { font-size: 20px; font-weight: 800; color: var(--text1); line-height: 1; }

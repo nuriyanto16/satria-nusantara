@@ -231,6 +231,14 @@ html.dark .stat-icon[style*="#e0f7f5"], body.dark .stat-icon[style*="#e0f7f5"] {
   box-shadow: 0 0 14px rgba(20, 184, 166, 0.35) !important;
 }
 
+html.dark .stat-card.purple .stat-icon, body.dark .stat-card.purple .stat-icon,
+html.dark .stat-icon[style*="#f3e8ff"], body.dark .stat-icon[style*="#f3e8ff"] {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(147, 51, 234, 0.18)) !important;
+  color: #c084fc !important;
+  border: 1.5px solid rgba(192, 132, 252, 0.45) !important;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.35) !important;
+}
+
 html.dark .stat-icon i, body.dark .stat-icon i {
   font-size: 20px !important;
   color: inherit !important;
