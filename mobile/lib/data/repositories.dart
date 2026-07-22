@@ -230,7 +230,11 @@ class FinanceRepository {
 
   Future<void> payIuran(String id, String method, String userId) async {
     try {
-      await api.dio.post('/finance/iuran/pay', data: {'id': id, 'method': method});
+      await api.dio.post('/finance/iuran/pay', data: {
+        'id': id, 
+        'method': method,
+        'userId': userId,
+      });
     } catch (_) {}
     
     final list = _userMockLists[userId] ?? [];

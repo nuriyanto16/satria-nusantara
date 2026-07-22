@@ -93,6 +93,11 @@ func main() {
 		r.Route("/content", contentHandler.Routes())
 		r.Route("/kebugaran", kebugaranHandler.Routes())
 		r.Route("/nafas", nafasHandler.Routes())
+
+		r.Route("/admin", func(r chi.Router) {
+			r.Get("/iuran-transactions", financeHandler.GetTransactions)
+			r.Post("/iuran-transactions/{id}/verify", financeHandler.VerifyTransaction)
+		})
 	})
 
 	// 8. Start Server
