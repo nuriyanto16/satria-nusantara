@@ -38,7 +38,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final result = await _repository.login(event.email, event.password);
         emit(Authenticated(result['token'], result['user']));
       } catch (e) {
-        emit(Unauthenticated(errorMessage: 'Email atau password salah.'));
+        final errorMsg = e.toString();
+        if (errorMsg.contains("PENDING_VERIFICATION")) {
+          final mockPendingUser = User(
+            id: 'pending',
+            email: event.email,
+            namaLengkap: 'Calon Anggota',
+            noHp: '-',
+            roleId: 4,
+            roleName: 'Anggota',
+            scope: 'anggota',
+            status: 'pending',
+          );
+          emit(Authenticated('pending_token', mockPendingUser));
+        } else {
+          emit(Unauthenticated(errorMessage: 'Email atau password salah.'));
+        }
       }
     });
 

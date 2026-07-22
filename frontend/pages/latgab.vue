@@ -266,7 +266,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="ev in filteredEvents" :key="ev.id" class="event-row" @click="openDetail(ev)">
+            <tr v-for="ev in paginatedEvents" :key="ev.id" class="event-row" @click="openDetail(ev)">
               <td>
                 <div class="event-name">{{ ev.nama }}</div>
                 <div class="event-meta">
@@ -289,7 +289,7 @@
                 </div>
               </td>
               <td>
-                <span style="font-size:12px; font-weight:700;">{{ formatBiayaLabel(ev) }}</span>
+                <div style="font-size:12px; font-weight:700;">{{ formatBiayaLabel(ev) }}</div>
               </td>
               <td>
                 <span :class="['status-badge', ev.status]">{{ ev.status === 'aktif' ? 'Buka' : 'Selesai' }}</span>
@@ -303,6 +303,11 @@
             </tr>
           </tbody>
         </table>
+        <Pagination 
+          v-model:currentPage="pageEvents" 
+          v-model:itemsPerPage="limitEvents" 
+          :totalItems="filteredEvents.length" 
+        />
       </div>
     </div>
 
@@ -373,7 +378,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="p in filteredParticipants" :key="p.id">
+                  <tr v-for="p in paginatedParticipants" :key="p.id">
                     <td>
                       <div style="font-weight: 600;">{{ p.nama }}</div>
                       <div style="font-size: 10px; color: var(--text3)">{{ p.noAnggota }}</div>
@@ -384,6 +389,11 @@
                   </tr>
                 </tbody>
               </table>
+              <Pagination 
+                v-model:currentPage="pageParticipants" 
+                v-model:itemsPerPage="limitParticipants" 
+                :totalItems="filteredParticipants.length" 
+              />
             </div>
           </div>
         </div>
@@ -523,6 +533,13 @@ const filteredEvents = computed(() => {
   })
 })
 
+// Event List Pagination states
+const pageEvents = ref(1)
+const limitEvents = ref(10)
+const paginatedEvents = computed(() => {
+  return filteredEvents.value.slice((pageEvents.value - 1) * limitEvents.value, pageEvents.value * limitEvents.value)
+})
+
 const getProgressBarColor = (jenis: string) => {
   if (jenis === 'Latgab') return 'var(--biru)'
   if (jenis === 'EKT Jurus') return 'var(--merah)'
@@ -634,6 +651,13 @@ const participants = ref<any[]>([
 const filteredParticipants = computed(() => {
   if (!pesertaSearch.value) return participants.value
   return participants.value.filter(p => p.nama.toLowerCase().includes(pesertaSearch.value.toLowerCase()))
+})
+
+// Participant List Pagination states
+const pageParticipants = ref(1)
+const limitParticipants = ref(10)
+const paginatedParticipants = computed(() => {
+  return filteredParticipants.value.slice((pageParticipants.value - 1) * limitParticipants.value, pageParticipants.value * limitParticipants.value)
 })
 
 const exportData = (format: string) => {

@@ -232,7 +232,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="u in unitList" :key="u.id" @click="selectedUnit = u" style="cursor:pointer;">
+                  <tr v-for="u in paginatedUnits" :key="u.id" @click="selectedUnit = u" style="cursor:pointer;">
                     <td>
                       <div class="unit-name-cell">
                         <div class="unit-icon"><i class="ti ti-home"></i></div>
@@ -268,6 +268,11 @@
                   </tr>
                 </tbody>
               </table>
+              <Pagination 
+                v-model:currentPage="pageUnit" 
+                v-model:itemsPerPage="limitUnit" 
+                :totalItems="unitList.length" 
+              />
             </div>
           </div>
         </div>
@@ -293,7 +298,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="t in trainerList" :key="t.id">
+                  <tr v-for="t in paginatedTrainers" :key="t.id">
                     <td>
                       <div class="pg-avatar-wrap">
                         <div class="pg-avatar" style="background:var(--hijau)">{{ getInitials(t.nama) }}</div>
@@ -317,6 +322,11 @@
                   </tr>
                 </tbody>
               </table>
+              <Pagination 
+                v-model:currentPage="pageTrainer" 
+                v-model:itemsPerPage="limitTrainer" 
+                :totalItems="trainerList.length" 
+              />
             </div>
           </div>
         </div>
@@ -811,6 +821,20 @@ const picFormName = ref('')
 const unitList = ref<any[]>([])
 const staffList = ref<any[]>([])
 const trainerList = ref<any[]>([])
+
+// Unit Pagination states
+const pageUnit = ref(1)
+const limitUnit = ref(10)
+const paginatedUnits = computed(() => {
+  return unitList.value.slice((pageUnit.value - 1) * limitUnit.value, pageUnit.value * limitUnit.value)
+})
+
+// Trainer Pagination states
+const pageTrainer = ref(1)
+const limitTrainer = ref(10)
+const paginatedTrainers = computed(() => {
+  return trainerList.value.slice((pageTrainer.value - 1) * limitTrainer.value, pageTrainer.value * limitTrainer.value)
+})
 
 const fetchProvinsi = async () => {
   provinsiList.value = [

@@ -116,7 +116,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="s in sesiData" :key="s.id">
+          <tr v-for="s in paginatedSesi" :key="s.id">
             <td>
               <div class="sesi-date">{{ formatDate(s.tanggal) }}</div>
             </td>
@@ -136,6 +136,11 @@
           </tr>
         </tbody>
       </table>
+      <Pagination 
+        v-model:currentPage="page" 
+        v-model:itemsPerPage="limit" 
+        :totalItems="sesiData.length" 
+      />
     </div>
 
     <!-- MODAL DETAIL KALENDER -->
@@ -275,6 +280,11 @@ const loadingUnits = ref(false)
 const loadingPelatih = ref(false)
 
 const sesiData = ref<any[]>([])
+const page = ref(1)
+const limit = ref(10)
+const paginatedSesi = computed(() => {
+  return sesiData.value.slice((page.value - 1) * limit.value, page.value * limit.value)
+})
 const cabangList = ref<any[]>([])
 const filterUnitList = ref<any[]>([])
 const formUnitList = ref<any[]>([])

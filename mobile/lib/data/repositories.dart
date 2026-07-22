@@ -17,18 +17,25 @@ class AuthRepository {
     required String tingkat,
   }) async {
     final cleanEmail = email.trim().toLowerCase();
-    final newUser = User(
-      id: 'u-registered-${DateTime.now().millisecondsSinceEpoch}',
-      email: cleanEmail,
-      namaLengkap: name,
-      noHp: phone,
-      roleId: 4,
-      roleName: 'Anggota',
-      scope: 'anggota',
-      status: 'pending', // Starts as pending verification!
-    );
-    _registeredUsers[cleanEmail] = newUser;
-    _registeredPasswords[cleanEmail] = password;
+    try {
+      await api.dio.post(
+        '/auth/signup-anggota',
+        data: {
+          'email': cleanEmail,
+          'password': password,
+          'nama_lengkap': name,
+          'no_hp': phone,
+          'unit_id': unit,
+          'tingkatan': tingkat,
+        },
+      );
+    } catch (e) {
+      if (e is DioException) {
+        final errMsg = e.response?.data['message'] ?? e.message;
+        throw Exception(errMsg);
+      }
+      rethrow;
+    }
   }
 
   void approveUser(String email) {
@@ -63,19 +70,30 @@ class AuthRepository {
       }
     }
 
-    // Otherwise, fall back to real backend API call
-    final response = await api.dio.post(
-      ApiConstants.login,
-      data: {'email': email, 'password': password},
-    );
-    final data = response.data['data'];
-    final token = data['token'];
-    final user = User.fromJson(data['user']);
-    
-    // Save token in API client
-    api.setToken(token);
-    
-    return {'token': token, 'user': user};
+    try {
+      // Otherwise, fall back to real backend API call
+      final response = await api.dio.post(
+        ApiConstants.login,
+        data: {'email': email, 'password': password},
+      );
+      final data = response.data['data'];
+      final token = data['token'];
+      final user = User.fromJson(data['user']);
+      
+      // Save token in API client
+      api.setToken(token);
+      
+      return {'token': token, 'user': user};
+    } catch (e) {
+      if (e is DioException) {
+        if (e.response?.statusCode == 403) {
+          throw Exception("PENDING_VERIFICATION");
+        }
+        final errMsg = e.response?.data['message'] ?? "Email atau password salah";
+        throw Exception(errMsg);
+      }
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> loginGoogle(String email, String name, {String? googleId, String? noHp, String? fotoUrl}) async {
@@ -199,6 +217,9 @@ class FinanceRepository {
   static final Map<String, List<Iuran>> _userMockLists = {};
 
   Future<List<Iuran>> getIuranHistory(String userId) async {
+    if (userId.contains('pending')) {
+      return [];
+    }
     if (!_userMockLists.containsKey(userId)) {
       if (userId.contains('admin') || userId.contains('da001') || userId.contains('Sri') || userId.contains('Ahmad') || userId.contains('google')) {
         // Pre-existing members get full default history

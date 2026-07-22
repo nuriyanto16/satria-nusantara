@@ -23,6 +23,7 @@ type Service interface {
 	GoogleLogin(ctx context.Context, req GoogleLoginRequest) (*AuthResponse, error)
 	GetMe(ctx context.Context, userID string) (*User, error)
 	Register(ctx context.Context, req RegisterRequest) (string, error)
+	SignupAnggota(ctx context.Context, req SignupAnggotaRequest) (string, error)
 	ChangePassword(ctx context.Context, userID string, req ChangePasswordRequest) error
 }
 
@@ -146,6 +147,24 @@ func (s *service) Register(ctx context.Context, req RegisterRequest) (string, er
 	}
 
 	return s.repo.Create(ctx, req, string(hash))
+}
+
+func (s *service) SignupAnggota(ctx context.Context, req SignupAnggotaRequest) (string, error) {
+	// Check if email already exists
+	existing, err := s.repo.FindByEmail(ctx, req.Email)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return "", err
+	}
+	if existing != nil {
+		return "", ErrEmailExists
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+
+	return s.repo.CreatePendingAnggota(ctx, req, string(hash))
 }
 
 func (s *service) ChangePassword(ctx context.Context, userID string, req ChangePasswordRequest) error {

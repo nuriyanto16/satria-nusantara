@@ -412,19 +412,96 @@ func (r *pgRepository) CreateAnggota(ctx context.Context, req CreateAnggotaReque
 }
 
 func (r *pgRepository) VerifikasiAnggota(ctx context.Context, id, status string) error {
-	tanggalAktif := ""
-	if status == "aktif" {
-		tanggalAktif = "NOW()"
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
 	}
-	q := fmt.Sprintf(
-		"UPDATE anggota SET status=$1, tanggal_aktif=%s WHERE id=$2",
-		func() string {
-			if tanggalAktif != "" { return "NOW()" }
-			return "NULL"
-		}(),
-	)
-	_, err := r.db.ExecContext(ctx, q, status, id)
-	return err
+	defer tx.Rollback()
+
+	if status == "aktif" {
+		// Dapatkan provinsi_kode dan cabang_kode, dan user_id
+		var userID string
+		var provKode, cabKode string
+		err = tx.QueryRowContext(ctx, `
+			SELECT a.user_id, COALESCE(p.kode, 'PST'), COALESCE(c.kode, 'PST')
+			FROM anggota a
+			LEFT JOIN unit_latihan u ON u.id = a.unit_id
+			LEFT JOIN cabang c ON c.id = u.cabang_id
+			LEFT JOIN provinsi p ON p.id = c.provinsi_id
+			WHERE a.id = $1
+		`, id).Scan(&userID, &provKode, &cabKode)
+		if err != nil {
+			return err
+		}
+
+		// Hitung nomor urut anggota di cabang tersebut
+		var count int
+		err = tx.QueryRowContext(ctx, `
+			SELECT COUNT(*) FROM anggota a
+			LEFT JOIN unit_latihan u ON u.id = a.unit_id
+			WHERE u.cabang_id = (
+				SELECT c.id FROM anggota a2
+				LEFT JOIN unit_latihan u2 ON u2.id = a2.unit_id
+				LEFT JOIN cabang c ON c.id = u2.cabang_id
+				WHERE a2.id = $1
+			) AND a.status = 'aktif'
+		`, id).Scan(&count)
+		if err != nil {
+			count = 0
+		}
+		nomorAnggota := fmt.Sprintf("%s-%s-%05d", provKode, cabKode, count+1)
+
+		// Update anggota
+		_, err = tx.ExecContext(ctx, `
+			UPDATE anggota 
+			SET status = 'aktif', nomor_anggota = $1, tanggal_aktif = NOW(), updated_at = NOW() 
+			WHERE id = $2
+		`, nomorAnggota, id)
+		if err != nil {
+			return err
+		}
+
+		// Update users status
+		_, err = tx.ExecContext(ctx, `
+			UPDATE users 
+			SET status = 'aktif', updated_at = NOW() 
+			WHERE id = $1
+		`, userID)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Dapatkan user_id
+		var userID string
+		err = tx.QueryRowContext(ctx, `SELECT user_id FROM anggota WHERE id = $1`, id).Scan(&userID)
+		if err != nil {
+			return err
+		}
+
+		// Tolak/Nonaktifkan
+		dbStatus := "nonaktif"
+		if status == "reject" {
+			dbStatus = "nonaktif"
+		} else {
+			dbStatus = status
+		}
+
+		_, err = tx.ExecContext(ctx, `
+			UPDATE anggota SET status = $1, updated_at = NOW() WHERE id = $2
+		`, dbStatus, id)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.ExecContext(ctx, `
+			UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2
+		`, dbStatus, userID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (r *pgRepository) UpdateFotoAnggota(ctx context.Context, id, fotoURL string) error {

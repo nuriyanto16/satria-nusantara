@@ -41,7 +41,7 @@
     </div>
 
     <div v-else class="konten-grid">
-      <div v-for="k in filteredKonten" :key="k.id" class="konten-card">
+      <div v-for="k in paginatedKonten" :key="k.id" class="konten-card">
         <div v-if="k.image" class="konten-card-image">
           <img :src="k.image" alt="Banner Konten" />
         </div>
@@ -67,6 +67,11 @@
         </div>
       </div>
     </div>
+    <Pagination 
+      v-model:currentPage="page" 
+      v-model:itemsPerPage="limit" 
+      :totalItems="filteredKonten.length" 
+    />
 
     <!-- MODAL: CREATE / EDIT KONTEN -->
     <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
@@ -226,6 +231,13 @@ const filteredKonten = computed(() => {
     const matchesStatus = filterStatus.value === '' || k.status === filterStatus.value
     return matchesSearch && matchesJenis && matchesScope && matchesStatus
   })
+})
+
+// Pagination states
+const page = ref(1)
+const limit = ref(10)
+const paginatedKonten = computed(() => {
+  return filteredKonten.value.slice((page.value - 1) * limit.value, page.value * limit.value)
 })
 
 const triggerFileInput = () => {

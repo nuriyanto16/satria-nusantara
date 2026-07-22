@@ -124,7 +124,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in filteredAnggotaBLBA" :key="item.id" class="table-row-clickable" @click="viewHistory(item)">
+              <tr v-for="item in paginatedAnggotaBLBA" :key="item.id" class="table-row-clickable" @click="viewHistory(item)">
                 <td>
                   <div class="anggota-cell">
                     <div class="av" :style="{ background: getAvatarBg(item.nama) }">{{ getInitials(item.nama) }}</div>
@@ -160,6 +160,11 @@
               </tr>
             </tbody>
           </table>
+          <Pagination 
+            v-model:currentPage="pageAnggota" 
+            v-model:itemsPerPage="limitAnggota" 
+            :totalItems="filteredAnggotaBLBA.length" 
+          />
         </div>
 
         <div class="list-footer">
@@ -281,7 +286,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="trx in filteredTrxList" :key="trx.id" :class="['table-row-clickable', trx.status === 'pending' ? 'row-pending' : '']">
+              <tr v-for="trx in paginatedTrxList" :key="trx.id" :class="['table-row-clickable', trx.status === 'pending' ? 'row-pending' : '']">
                 <td>
                   <div class="anggota-cell">
                     <div class="av" :style="{ background: getAvatarBg(trx.nama) }">{{ getInitials(trx.nama) }}</div>
@@ -326,6 +331,11 @@
               </tr>
             </tbody>
           </table>
+          <Pagination 
+            v-model:currentPage="pageTrx" 
+            v-model:itemsPerPage="limitTrx" 
+            :totalItems="filteredTrxList.length" 
+          />
         </div>
 
         <div class="list-footer">
@@ -778,6 +788,20 @@ const generateIuranData = async () => {
 const filteredAnggotaBLBA = computed(() => {
   if (!filterStatus.value) return anggotaBLBAList.value
   return anggotaBLBAList.value.filter(a => a.status === filterStatus.value)
+})
+
+// Anggota Pagination states
+const pageAnggota = ref(1)
+const limitAnggota = ref(10)
+const paginatedAnggotaBLBA = computed(() => {
+  return filteredAnggotaBLBA.value.slice((pageAnggota.value - 1) * limitAnggota.value, pageAnggota.value * limitAnggota.value)
+})
+
+// Transaksi Pagination states
+const pageTrx = ref(1)
+const limitTrx = ref(10)
+const paginatedTrxList = computed(() => {
+  return filteredTrxList.value.slice((pageTrx.value - 1) * limitTrx.value, pageTrx.value * limitTrx.value)
 })
 
 // Summary numbers

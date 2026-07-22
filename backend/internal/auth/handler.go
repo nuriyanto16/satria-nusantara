@@ -27,6 +27,7 @@ func (h *Handler) Routes(jwtSecret string) func(r chi.Router) {
 		// ── Public ─────────────────────────────────────────
 		r.Post("/login", h.login)
 		r.Post("/google-login", h.googleLogin)
+		r.Post("/signup-anggota", h.signupAnggota)
 		r.Get("/health", h.health)
 
 		// ── Protected ──────────────────────────────────────
@@ -131,6 +132,28 @@ func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Success(w, http.StatusCreated, "User berhasil dibuat", map[string]string{"id": id})
+}
+
+// POST /api/v1/auth/signup-anggota
+func (h *Handler) signupAnggota(w http.ResponseWriter, r *http.Request) {
+	var req SignupAnggotaRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Request body tidak valid")
+		return
+	}
+
+	id, err := h.svc.SignupAnggota(r.Context(), req)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrEmailExists):
+			response.Error(w, http.StatusConflict, err.Error())
+		default:
+			response.Error(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	response.Success(w, http.StatusCreated, "Pendaftaran anggota baru berhasil, silakan tunggu verifikasi admin", map[string]string{"id": id})
 }
 
 // POST /api/v1/auth/change-password

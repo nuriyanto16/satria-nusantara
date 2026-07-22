@@ -37,6 +37,15 @@ type GoogleLoginRequest struct {
 	UnitID      string `json:"unit_id,omitempty"`
 }
 
+type SignupAnggotaRequest struct {
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	NamaLengkap string `json:"nama_lengkap"`
+	NoHp        string `json:"no_hp"`
+	UnitID      string `json:"unit_id"`
+	Tingkatan   string `json:"tingkatan"`
+}
+
 type RegisterRequest struct {
 	Email       string `json:"email"`
 	Password    string `json:"password"`

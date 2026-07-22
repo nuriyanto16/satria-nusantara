@@ -119,7 +119,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="s in sesiTesList" :key="s.id" class="event-row" @click="viewDetail(s)">
+              <tr v-for="s in paginatedSesiTesList" :key="s.id" class="event-row" @click="viewDetail(s)">
                 <td>
                   <div style="font-weight: 700;">{{ formatDate(s.tanggal) }}</div>
                   <div style="font-size: 10px; color: var(--text3)">Sabtu</div>
@@ -157,6 +157,11 @@
               </tr>
             </tbody>
           </table>
+          <Pagination 
+            v-model:currentPage="page" 
+            v-model:itemsPerPage="limit" 
+            :totalItems="sesiTesList.length" 
+          />
         </div>
       </div>
 
@@ -413,6 +418,12 @@ const sesiTesList = ref<any[]>([
   { id: 2, tanggal: '2026-06-21', cabang: 'Kota Yogyakarta', unit: 'Unit Kotagede', periode: 'Periode 2 — 2026', selesai: 28, total: 31, avgScore: 65 },
   { id: 3, tanggal: '2026-06-22', cabang: 'Kota Bandung', unit: 'Unit Dago', periode: 'Periode 2 — 2026', selesai: 0, total: 42, avgScore: 0 }
 ])
+
+const page = ref(1)
+const limit = ref(10)
+const paginatedSesiTesList = computed(() => {
+  return sesiTesList.value.slice((page.value - 1) * limit.value, page.value * limit.value)
+})
 
 const createSesiTes = () => {
   sesiTesList.value.unshift({

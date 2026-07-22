@@ -29,7 +29,7 @@
     </div>
 
     <div v-else class="user-grid">
-      <div v-for="u in filteredUsers" :key="u.id" class="user-card" :class="{ disabled: u.status === 'nonactive' }">
+      <div v-for="u in paginatedUsers" :key="u.id" class="user-card" :class="{ disabled: u.status === 'nonactive' }">
         <div class="user-card-top">
           <div class="user-avatar" :style="{ background: u.bg }">{{ u.av }}</div>
           <div class="user-info">
@@ -60,6 +60,11 @@
         </div>
       </div>
     </div>
+    <Pagination 
+      v-model:currentPage="page" 
+      v-model:itemsPerPage="limit" 
+      :totalItems="filteredUsers.length" 
+    />
 
     <!-- MODAL: ADD / EDIT USER -->
     <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
@@ -162,6 +167,13 @@ const filteredUsers = computed(() => {
       u.email.toLowerCase().includes(search.value.toLowerCase())
     return matchesTab && matchesSearch
   })
+})
+
+// Pagination states
+const page = ref(1)
+const limit = ref(10)
+const paginatedUsers = computed(() => {
+  return filteredUsers.value.slice((page.value - 1) * limit.value, page.value * limit.value)
 })
 
 const openAddModal = () => {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 )
 
 // Repository defines the data access contract for the auth domain.
@@ -12,6 +13,7 @@ type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*userRecord, error)
 	FindByID(ctx context.Context, id string) (*userRecord, error)
 	Create(ctx context.Context, req RegisterRequest, passwordHash string) (string, error)
+	CreatePendingAnggota(ctx context.Context, req SignupAnggotaRequest, passwordHash string) (string, error)
 	CreateGoogleUser(ctx context.Context, req GoogleLoginRequest) (*userRecord, error)
 	UpdatePassword(ctx context.Context, userID, newHash string) error
 	UpdateGoogleID(ctx context.Context, userID, googleID string) error
@@ -101,6 +103,78 @@ func (r *pgRepository) Create(ctx context.Context, req RegisterRequest, password
 		return "", err
 	}
 	return id, nil
+}
+
+func (r *pgRepository) CreatePendingAnggota(ctx context.Context, req SignupAnggotaRequest, passwordHash string) (string, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+
+	// 1. Resolve Unit Latihan ID (fallback to first unit if not valid UUID)
+	var resolvedUnitID string
+	err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan WHERE id::text = $1", req.UnitID).Scan(&resolvedUnitID)
+	if err != nil {
+		// Fallback: cari unit latihan pertama
+		err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan LIMIT 1").Scan(&resolvedUnitID)
+		if err != nil {
+			// Fallback keras jika database unit kosong sama sekali
+			resolvedUnitID = "00000000-0000-0000-0000-000000000000"
+		}
+	}
+
+	// 2. Resolve Tingkatan ENUM
+	tingkatan := "Pra Dasar"
+	cleanTingkat := strings.ToLower(req.Tingkatan)
+	if strings.Contains(cleanTingkat, "pra dasar") {
+		tingkatan = "Pra Dasar"
+	} else if strings.Contains(cleanTingkat, "dasar") {
+		tingkatan = "Dasar"
+	} else if strings.Contains(cleanTingkat, "gpk") {
+		tingkatan = "GPK"
+	} else if strings.Contains(cleanTingkat, "pk") {
+		tingkatan = "PK"
+	} else if strings.Contains(cleanTingkat, "gpk") {
+		tingkatan = "GPK"
+	} else if strings.Contains(cleanTingkat, "ph") {
+		tingkatan = "PH"
+	} else if strings.Contains(cleanTingkat, "gabungan") {
+		tingkatan = "Gabungan"
+	} else if strings.Contains(cleanTingkat, "penjuru") {
+		tingkatan = "Penjuru"
+	} else if strings.Contains(cleanTingkat, "selangkah") {
+		tingkatan = "Selangkah"
+	} else if strings.Contains(cleanTingkat, "meditasi") {
+		tingkatan = "Meditasi"
+	}
+
+	// 3. Insert ke tabel users dengan status 'pending'
+	var userID string
+	err = tx.QueryRowContext(ctx, `
+		INSERT INTO users (email, password_hash, nama_lengkap, no_hp, role_id, status)
+		VALUES ($1, $2, $3, $4, 4, 'pending')
+		RETURNING id
+	`, req.Email, passwordHash, req.NamaLengkap, req.NoHp).Scan(&userID)
+	if err != nil {
+		return "", err
+	}
+
+	// 4. Insert ke tabel anggota dengan status 'pending'
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO anggota (user_id, nama_lengkap, no_hp, unit_id, tingkatan, status)
+		VALUES ($1, $2, $3, $4, $5::tingkatan_enum, 'pending')
+	`, userID, req.NamaLengkap, req.NoHp, resolvedUnitID, tingkatan)
+	if err != nil {
+		return "", err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return "", err
+	}
+
+	return userID, nil
 }
 
 func (r *pgRepository) CreateGoogleUser(ctx context.Context, req GoogleLoginRequest) (*userRecord, error) {

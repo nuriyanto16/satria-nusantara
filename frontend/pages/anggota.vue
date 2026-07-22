@@ -155,14 +155,13 @@
         </table>
 
         <!-- Pagination -->
-        <div class="table-footer">
-          <div class="table-info">Menampilkan {{ (page - 1) * limit + 1 }}–{{ Math.min(page * limit, totalAnggota) }} dari {{ totalAnggota }} anggota</div>
-          <div class="pagination">
-            <button class="page-btn" :disabled="page <= 1" @click="changePage(page - 1)"><i class="ti ti-chevron-left"></i></button>
-            <button class="page-btn active">{{ page }}</button>
-            <button class="page-btn" :disabled="page >= totalPages" @click="changePage(page + 1)"><i class="ti ti-chevron-right"></i></button>
-          </div>
-        </div>
+        <Pagination 
+          v-model:currentPage="page" 
+          v-model:itemsPerPage="limit" 
+          :totalItems="totalAnggota" 
+          @update:currentPage="fetchAnggota" 
+          @update:itemsPerPage="fetchAnggota" 
+        />
       </div>
     </div>
 

@@ -113,7 +113,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="s in sesiList" :key="s.id">
+              <tr v-for="s in paginatedSesiList" :key="s.id">
                 <td>
                   <div class="sesi-date">{{ formatDate(s.tanggal) }}</div>
                   <div class="sesi-time">{{ s.jam_mulai.substring(0, 5) }} – {{ s.jam_selesai ? s.jam_selesai.substring(0, 5) : 'Selesai' }}</div>
@@ -137,6 +137,11 @@
               </tr>
             </tbody>
           </table>
+          <Pagination 
+            v-model:currentPage="pageSesi" 
+            v-model:itemsPerPage="limitSesi" 
+            :totalItems="sesiList.length" 
+          />
         </div>
       </div>
 
@@ -162,7 +167,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="a in anggotaKehadiranList" :key="a.id">
+              <tr v-for="a in paginatedAnggotaKehadiranList" :key="a.id">
                 <td>
                   <div style="font-weight:600;">{{ a.nama }}</div>
                   <div style="font-size:10px;color:var(--text3);">{{ a.nomor }}</div>
@@ -183,6 +188,11 @@
               </tr>
             </tbody>
           </table>
+          <Pagination 
+            v-model:currentPage="pageAnggota" 
+            v-model:itemsPerPage="limitAnggota" 
+            :totalItems="anggotaKehadiranList.length" 
+          />
         </div>
       </div>
 
@@ -348,6 +358,20 @@ const getBarColor = (pct: number) => {
   if (pct >= 50) return 'var(--kuning)'
   return 'var(--merah)'
 }
+
+// Sesi Pagination states
+const pageSesi = ref(1)
+const limitSesi = ref(10)
+const paginatedSesiList = computed(() => {
+  return sesiList.value.slice((pageSesi.value - 1) * limitSesi.value, pageSesi.value * limitSesi.value)
+})
+
+// Anggota Kehadiran Pagination states
+const pageAnggota = ref(1)
+const limitAnggota = ref(10)
+const paginatedAnggotaKehadiranList = computed(() => {
+  return anggotaKehadiranList.value.slice((pageAnggota.value - 1) * limitAnggota.value, pageAnggota.value * limitAnggota.value)
+})
 
 // Tab 2 members list mockups
 const anggotaKehadiranList = computed(() => {

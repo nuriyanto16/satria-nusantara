@@ -135,8 +135,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(row, index) in filteredHistories" :key="row.id || index">
-              <td>{{ index + 1 }}</td>
+            <tr v-for="(row, index) in paginatedHistories" :key="row.id || index">
+              <td>{{ (page - 1) * limit + index + 1 }}</td>
               <td>
                 <div class="user-cell">
                   <div class="user-avatar">{{ getInitials(row.anggota_nama) }}</div>
@@ -183,6 +183,11 @@
             </tr>
           </tbody>
         </table>
+        <Pagination 
+          v-model:currentPage="page" 
+          v-model:itemsPerPage="limit" 
+          :totalItems="filteredHistories.length" 
+        />
       </div>
     </div>
 
@@ -389,6 +394,13 @@ const filteredHistories = computed(() => {
     }
     return true
   })
+})
+
+// Pagination states
+const page = ref(1)
+const limit = ref(10)
+const paginatedHistories = computed(() => {
+  return filteredHistories.value.slice((page.value - 1) * limit.value, page.value * limit.value)
 })
 
 const getInitials = (name) => {
