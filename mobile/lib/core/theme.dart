@@ -2,50 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class BrandColors {
-  // Primary Ocean Blue Theme matching SN_Mobile_Mockup_v10.html
-  static const Color biruPrimary = Color(0xFF0092EC);
-  static const Color biru = Color(0xFF0092EC);
-  static const Color biruDark = Color(0xFF0078C8);
-  static const Color biruLight = Color(0xFF42B8F5);
-  static const Color biruSoft = Color(0xFFE8F6FF);
+  // Premium Deep Navy & Cyan Theme
+  static const Color biruPrimary = Color(0xFF1E40AF); // Royal Sapphire Blue
+  static const Color biru = Color(0xFF1E40AF);
+  static const Color biruDark = Color(0xFF0F172A); // Midnight Slate
+  static const Color biruLight = Color(0xFF00D2FF); // Radiant Energy Cyan
+  static const Color biruSoft = Color(0xFFF0F9FF); // Clean Sky Blue
 
-  // Map theme variables to Ocean Blue
-  static const Color hijau = Color(0xFF0092EC);
-  static const Color hijauMuda = Color(0xFF0078C8);
-  static const Color hijauSoft = Color(0xFFE8F6FF);
+  // Map theme variables to Ocean Blue / Cyan
+  static const Color hijau = Color(0xFF10B981); // Emerald Green
+  static const Color hijauMuda = Color(0xFF059669);
+  static const Color hijauSoft = Color(0xFFECFDF5);
 
-  static const Color kuning = Color(0xFFE8C42A);
-  static const Color kuningSoft = Color(0xFFFFF8E0);
+  static const Color kuning = Color(0xFFF59E0B); // Amber Gold
+  static const Color kuningSoft = Color(0xFFFEF3C7);
 
-  static const Color merah = Color(0xFFC0272D);
+  static const Color merah = Color(0xFFEF4444); // Modern Coral Red
 
   // Light Mode Colors
-  static const Color bg = Color(0xFFF2F3F0);
+  static const Color bg = Color(0xFFF8FAFC); // Clean Slate Gray
   static const Color card = Colors.white;
-  static const Color text1 = Color(0xFF1A1A18);
-  static const Color text2 = Color(0xFF6B6B67);
-  static const Color text3 = Color(0xFF9A9A96);
-  static const Color border = Color(0x17000000);
+  static const Color text1 = Color(0xFF0F172A); // Midnight Slate text
+  static const Color text2 = Color(0xFF475569); // Slate body text
+  static const Color text3 = Color(0xFF94A3B8); // Gray placeholder text
+  static const Color border = Color(0x0F000000);
 
   // Dark Mode Colors
-  static const Color bgDark = Color(0xFF121316);
-  static const Color cardDark = Color(0xFF1E2026);
-  static const Color surfaceDark = Color(0xFF262930);
-  static const Color text1Dark = Color(0xFFF0F2F5);
-  static const Color text2Dark = Color(0xFFA0A5B1);
-  static const Color text3Dark = Color(0xFF6E7380);
+  static const Color bgDark = Color(0xFF070B19); // Midnight deep background
+  static const Color cardDark = Color(0xFF0F172A); // Slate dark cards
+  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color text1Dark = Color(0xFFF8FAFC);
+  static const Color text2Dark = Color(0xFF94A3B8);
+  static const Color text3Dark = Color(0xFF64748B);
   static const Color borderDark = Color(0x1FFFFFFF);
 
   static const LinearGradient headerGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0078C8), Color(0xFF0092EC), Color(0xFF42B8F5)],
+    colors: [Color(0xFF0F172A), Color(0xFF1E40AF), Color(0xFF00D2FF)],
   );
 
   static const LinearGradient darkHeaderGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0D253A), Color(0xFF143B5C), Color(0xFF0078C8)],
+    colors: [Color(0xFF070B19), Color(0xFF0F1E3D), Color(0xFF1E40AF)],
   );
 }
 
