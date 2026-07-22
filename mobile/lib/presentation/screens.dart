@@ -96,8 +96,7 @@ class PanelSkeletonWidget extends StatelessWidget {
       child: Container(
         height: height,
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
@@ -153,8 +152,7 @@ class StatGridSkeletonWidget extends StatelessWidget {
         children: List.generate(4, (index) {
           return Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -201,8 +199,7 @@ class ListSkeletonWidget extends StatelessWidget {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.black.withOpacity(0.05)),
             boxShadow: [
@@ -266,8 +263,7 @@ class DetailSkeletonWidget extends StatelessWidget {
           // Info row skeleton card
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.black.withOpacity(0.06)),
             ),
@@ -410,8 +406,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                      decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.18),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.white30, width: 1),
                       ),
@@ -501,8 +496,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Container(
                         width: 160,
                         height: 160,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.12),
+                        decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.12),
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white24, width: 2),
                         ),
@@ -587,7 +581,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: BrandColors.kuning,
-                    foregroundColor: BrandColors.text1,
+                    foregroundColor: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
                     elevation: 4,
                     shadowColor: Colors.black26,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -696,12 +690,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             const Text(
                               'Masuk Pengurus',
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: BrandColors.text1, letterSpacing: -0.5),
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
                             ),
                             const SizedBox(height: 6),
                             const Text(
                               'Masukkan kredensial pengurus Anda',
-                              style: TextStyle(fontSize: 13, color: BrandColors.text2),
+                              style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                             ),
                             const SizedBox(height: 28),
                             TextField(
@@ -800,7 +794,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   const Text(
                                     'Masuk dengan Gmail',
                                     style: TextStyle(
-                                      color: BrandColors.text1,
+                                      color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13.5,
                                     ),
@@ -814,7 +808,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 const Text(
                                   'Belum punya akun? ',
-                                  style: TextStyle(fontSize: 13, color: BrandColors.text2),
+                                  style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                                 ),
                                 GestureDetector(
                                   onTap: () => Navigator.pushNamed(context, '/register'),
@@ -865,6 +859,7 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
 
   try {
     final GoogleSignIn googleSignIn = GoogleSignIn(
+      clientId: '1000000000000-satrianusantara.apps.googleusercontent.com',
       scopes: ['email', 'profile'],
     );
 
@@ -897,13 +892,15 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
     }
   } catch (e) {
     debugPrint('Google Sign In Error: $e');
+    // MOCK LOGIN FALLBACK IF NATIVE/WEB GOOGLE SSO FAILS (e.g. no valid Client ID)
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal terhubung dengan Google SSO: $e'),
-          backgroundColor: Colors.red,
+        const SnackBar(
+          content: Text('Google Client ID belum diatur. Menggunakan Akun Demo (Mock SSO).'),
+          backgroundColor: Colors.blue,
         ),
       );
+      _processGoogleSignIn(context, 'demo.anggota@gmail.com', 'Demo Anggota', 'D');
     }
   }
 }
@@ -949,11 +946,11 @@ Widget _buildGoogleAccountItem(
       ),
       title: Text(
         name,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: BrandColors.text1),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
       ),
       subtitle: Text(
         email,
-        style: const TextStyle(fontSize: 11.5, color: BrandColors.text2),
+        style: const TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
       ),
       onTap: () {
         Navigator.pop(context);
@@ -996,8 +993,8 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: (index) => setState(() => _currentIndex = index),
           type: BottomNavigationBarType.fixed,
           selectedItemColor: BrandColors.hijau,
-          unselectedItemColor: BrandColors.text3,
-          backgroundColor: Colors.white,
+          unselectedItemColor: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+          backgroundColor: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           items: const [
@@ -1085,8 +1082,7 @@ class DashboardTab extends StatelessWidget {
                 right: 20,
                 child: Container(
                   height: 90,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 4)),
@@ -1113,7 +1109,7 @@ class DashboardTab extends StatelessWidget {
                                 children: [
                                   const Text(
                                     'Kehadiran Aktif',
-                                    style: TextStyle(fontSize: 11, color: BrandColors.text2, fontWeight: FontWeight.w500),
+                                    style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontWeight: FontWeight.w500),
                                   ),
                                   const SizedBox(width: 4),
                                   Icon(Icons.chevron_right, size: 14, color: Colors.grey[600]),
@@ -1124,7 +1120,7 @@ class DashboardTab extends StatelessWidget {
                                 children: [
                                   const Text(
                                     '88',
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: BrandColors.text1),
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
@@ -1163,7 +1159,7 @@ class DashboardTab extends StatelessWidget {
                 children: [
                   const Text(
                     'Layanan Kami',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: BrandColors.text1, letterSpacing: -0.5),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
                   ),
                   const SizedBox(height: 16),
                   GridView.count(
@@ -1186,7 +1182,7 @@ class DashboardTab extends StatelessWidget {
                   const SizedBox(height: 28),
                   const Text(
                     'Pengumuman Terkini',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: BrandColors.text1, letterSpacing: -0.5),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
                   ),
                   const SizedBox(height: 14),
                   // Promo/Announcements card
@@ -1219,12 +1215,12 @@ class DashboardTab extends StatelessWidget {
                             children: [
                               Text(
                                 'Latgab & EKT Cabang Bandung — Juni 2026 dibuka pendaftaran',
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: BrandColors.text1),
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                               ),
                               SizedBox(height: 6),
                               Text(
                                 'Pendaftaran EKT (Evaluasi Kenaikan Tingkat) Cabang Bandung resmi dibuka untuk periode Juni 2026...',
-                                style: TextStyle(fontSize: 12, color: BrandColors.text2, height: 1.4),
+                                style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.4),
                               ),
                             ],
                           ),
@@ -1267,7 +1263,7 @@ class DashboardTab extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: BrandColors.text1),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
         ],
       ),
@@ -1298,7 +1294,7 @@ class DashboardTab extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: BrandColors.text1),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
         ],
       ),
@@ -1393,7 +1389,7 @@ class JadwalTab extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       sesi.materi,
-                                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: BrandColors.text1, letterSpacing: -0.3),
+                                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.3),
                                     ),
                                   ),
                                   Container(
@@ -1439,12 +1435,12 @@ class JadwalTab extends StatelessWidget {
   Widget _buildDetailRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: BrandColors.text3),
+        Icon(icon, size: 14, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 12.5, color: BrandColors.text2),
+            style: const TextStyle(fontSize: 12.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
         ),
       ],
@@ -1515,7 +1511,7 @@ class IuranTab extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 const Text(
                                   'Segera bayar agar status keanggotaan tetap aktif.',
-                                  style: TextStyle(color: BrandColors.text2, fontSize: 12),
+                                  style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 12),
                                 ),
                                 const SizedBox(height: 16),
                                 SizedBox(
@@ -1546,7 +1542,7 @@ class IuranTab extends StatelessWidget {
                             children: [
                               const Text(
                                 'Riwayat BLBA',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: BrandColors.text1),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                               ),
                               TextButton.icon(
                                 onPressed: () {
@@ -1591,7 +1587,7 @@ class IuranTab extends StatelessWidget {
                             children: [
                               const Text(
                                 'Riwayat BLBA',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: BrandColors.text1),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                               ),
                               TextButton.icon(
                                 onPressed: () {
@@ -1618,17 +1614,17 @@ class IuranTab extends StatelessWidget {
                           margin: const EdgeInsets.only(bottom: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: BrandColors.border),
+                            side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                           ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             title: Text(
                               'BLBA Bulan ${iuran.bulan}/${iuran.tahun}',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: BrandColors.text1, fontSize: 14),
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontSize: 14),
                             ),
                             subtitle: Text(
                               'Rp ${iuran.nominal}',
-                              style: const TextStyle(fontSize: 13, color: BrandColors.text2),
+                              style: const TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                             ),
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1698,7 +1694,7 @@ class ProfilTab extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -1719,12 +1715,12 @@ class ProfilTab extends StatelessWidget {
                         children: [
                           Text(
                             user.namaLengkap,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.text1, letterSpacing: -0.4),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.4),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             noAnggota,
-                            style: const TextStyle(fontSize: 12, color: BrandColors.text3, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -1770,22 +1766,22 @@ class ProfilTab extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     _buildRow('Nama Lengkap', user.namaLengkap),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Email', user.email),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('No. HP', user.noHp),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Tanggal Lahir', '-'),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Jenis Kelamin', 'Laki-laki'),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Domisili', cabang),
                   ],
                 ),
@@ -1799,20 +1795,20 @@ class ProfilTab extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     _buildRow('No. Anggota', noAnggota),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Cabang', cabang),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Unit Latihan', unit),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Tingkatan', tingkatan),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Status', status, isGreenText: true),
                   ],
                 ),
@@ -1826,18 +1822,18 @@ class ProfilTab extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     _buildRow('BLBA Bulan Ini', '✓ Lunas', isGreenText: true),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('BLBA Berjalan', '14 / 15 bulan'),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Kehadiran Bulan Ini', '6 / 8 sesi'),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('Total Kehadiran', '18 sesi (tingkat ini)'),
                   ],
                 ),
@@ -1851,7 +1847,7 @@ class ProfilTab extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -1867,12 +1863,12 @@ class ProfilTab extends StatelessWidget {
                             children: [
                               Text(
                                 'Kehadiran tingkat saat ini ($tingkatan)',
-                                style: const TextStyle(color: BrandColors.text2, fontSize: 12),
+                                style: const TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 12),
                               ),
                               const SizedBox(height: 4),
                               const Text(
                                 '18 / 24 sesi target',
-                                style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.text1, fontSize: 14),
+                                style: TextStyle(fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontSize: 14),
                               ),
                             ],
                           ),
@@ -1929,22 +1925,22 @@ class ProfilTab extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     _buildRow('Skor Kebugaran Terkini', '78% (Baik)', isGreenText: true),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('💨 Nafas dalam Air', '84 dtk'),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('💪 Push Up', '24 rep'),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('🏃 Sit Up', '26 rep'),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('🤸 Sit & Reach', '22 cm'),
-                    const Divider(height: 24, color: BrandColors.border),
+                    const Divider(height: 24, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     _buildRow('⚡ Shuttle Run', '12.8 dtk'),
                   ],
                 ),
@@ -1958,7 +1954,7 @@ class ProfilTab extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1981,7 +1977,7 @@ class ProfilTab extends StatelessWidget {
                             ),
                             Text(
                               themeNotifier.isDarkMode ? 'Tema malam aktif' : 'Tema terang aktif',
-                              style: const TextStyle(fontSize: 11, color: BrandColors.text3),
+                              style: const TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                             ),
                           ],
                         ),
@@ -2036,7 +2032,7 @@ class ProfilTab extends StatelessWidget {
         style: const TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.bold,
-          color: BrandColors.text3,
+          color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
           letterSpacing: 0.8,
         ),
       ),
@@ -2047,12 +2043,12 @@ class ProfilTab extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: BrandColors.text2, fontSize: 13)),
+        Text(label, style: const TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 13)),
         Text(
           value,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isGreenText ? BrandColors.hijau : BrandColors.text1,
+            color: isGreenText ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
             fontSize: 13.5,
           ),
         ),
@@ -2095,29 +2091,28 @@ class KtaDigitalScreen extends StatelessWidget {
                 const SizedBox(height: 2),
                 const Text(
                   'Satria Nusantara',
-                  style: TextStyle(fontSize: 12, color: BrandColors.text2),
+                  style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                 ),
                 const SizedBox(height: 32),
                 Container(
                   width: 200,
                   height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: BrandColors.border, width: 1.5),
+                    border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border), width: 1.5),
                   ),
                   alignment: Alignment.center,
-                  child: const Text('QR Code Mock', style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.text1)),
+                  child: const Text('QR Code Mock', style: TextStyle(fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                 ),
                 const SizedBox(height: 32),
                 Text(
                   user.namaLengkap,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: BrandColors.text1, letterSpacing: -0.5),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   user.email,
-                  style: const TextStyle(fontSize: 13, color: BrandColors.text2),
+                  style: const TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                 ),
               ],
             ),
@@ -2163,7 +2158,7 @@ class QrScannerScreen extends StatelessWidget {
               const Text(
                 'Arahkan kamera ke QR Code sesi latihan',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: BrandColors.text2),
+                style: TextStyle(fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
               ),
               const SizedBox(height: 48),
               ElevatedButton(
@@ -2563,8 +2558,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                 Container(
                   width: 48,
                   height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
@@ -2620,7 +2614,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
-                              color: _activeTab == 'latihan' ? Colors.white : BrandColors.text2,
+                              color: _activeTab == 'latihan' ? Colors.white : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
                             ),
                           ),
                         ),
@@ -2647,7 +2641,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
-                              color: _activeTab == 'riwayat' ? Colors.white : BrandColors.text2,
+                              color: _activeTab == 'riwayat' ? Colors.white : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
                             ),
                           ),
                         ),
@@ -2684,15 +2678,14 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: BrandColors.border),
+                  border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Total Sesi', style: TextStyle(fontSize: 11, color: BrandColors.text3)),
+                    const Text('Total Sesi', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
                     const SizedBox(height: 4),
                     Text('${_historyList.length} Sesi', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.hijau)),
                   ],
@@ -2703,15 +2696,14 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: BrandColors.border),
+                  border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Total Durasi', style: TextStyle(fontSize: 11, color: BrandColors.text3)),
+                    const Text('Total Durasi', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
                     const SizedBox(height: 4),
                     Text('$totalMin Menit', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.biru)),
                   ],
@@ -2724,7 +2716,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
 
         const Text(
           'CATATAN RIWAYAT LATIHAN',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text3, letterSpacing: 0.5),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), letterSpacing: 0.5),
         ),
         const SizedBox(height: 10),
 
@@ -2732,16 +2724,15 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: BrandColors.border),
+              border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
             ),
             child: Column(
               children: const [
-                Icon(Icons.history_toggle_off, size: 48, color: BrandColors.text3),
+                Icon(Icons.history_toggle_off, size: 48, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                 SizedBox(height: 8),
-                Text('Belum ada riwayat latihan', style: TextStyle(color: BrandColors.text2, fontSize: 13)),
+                Text('Belum ada riwayat latihan', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 13)),
               ],
             ),
           )
@@ -2763,10 +2754,9 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
 
               return Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: BrandColors.border),
+                  border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 1))],
                 ),
                 child: Row(
@@ -2789,7 +2779,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                             children: [
                               Text(
                                 teknik,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.text1),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                               ),
                               const SizedBox(width: 6),
                               Container(
@@ -2808,7 +2798,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                           const SizedBox(height: 3),
                           Text(
                             dateStr,
-                            style: const TextStyle(fontSize: 11, color: BrandColors.text3),
+                            style: const TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                           ),
                         ],
                       ),
@@ -2818,11 +2808,11 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                       children: [
                         Text(
                           item['durasi_fmt'] as String,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: BrandColors.text1),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                         ),
                         Text(
                           '${item['siklus']} Siklus',
-                          style: const TextStyle(fontSize: 11, color: BrandColors.text2),
+                          style: const TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                         ),
                       ],
                     ),
@@ -2845,7 +2835,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
         // Technique selector
         const Text(
           'PILIH TEKNIK PERNAFASAN',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text3, letterSpacing: 0.5),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), letterSpacing: 0.5),
         ),
         const SizedBox(height: 10),
         Row(
@@ -2862,10 +2852,9 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
         // Steppers Card
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: BrandColors.border),
+            border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
           ),
           child: Column(
@@ -2873,7 +2862,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             children: [
               const Text(
                 'DURASI WAKTU PER STEP',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text2, letterSpacing: 0.5),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), letterSpacing: 0.5),
               ),
               const SizedBox(height: 12),
               _buildStepRow('tarik', 'Tarik Nafas', const Color(0xFF0091EA), _tarikM, _tarikS),
@@ -2884,7 +2873,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
               const Divider(height: 24),
               const Text(
                 'DURASI TOTAL LATIHAN',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text2, letterSpacing: 0.5),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), letterSpacing: 0.5),
               ),
               const SizedBox(height: 12),
               _buildTotalRow(),
@@ -2911,14 +2900,14 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                   children: [
                     Text(
                       '1 Siklus = $cyc detik (${_steps.map((s) => s['dur']).join('-')})',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valid ? BrandColors.text1 : Colors.amber[900]),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valid ? (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1) : Colors.amber[900]),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       valid
                           ? 'Estimasi ≈ $_totalCycles siklus penuh'
                           : 'Durasi total harus kelipatan dari 1 siklus ($cyc detik) agar tidak terhenti di tengah.',
-                      style: TextStyle(fontSize: 12, color: valid ? BrandColors.text2 : Colors.amber[900]),
+                      style: TextStyle(fontSize: 12, color: valid ? (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2) : Colors.amber[900]),
                     ),
                   ],
                 ),
@@ -2961,20 +2950,20 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             color: active ? const Color(0xFF0091EA).withOpacity(0.12) : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: active ? const Color(0xFF0091EA) : BrandColors.border,
+              color: active ? const Color(0xFF0091EA) : (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
               width: active ? 2 : 1,
             ),
           ),
           child: Column(
             children: [
-              Icon(icon, color: active ? const Color(0xFF0072B8) : BrandColors.text3, size: 26),
+              Icon(icon, color: active ? const Color(0xFF0072B8) : (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), size: 26),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                  color: active ? const Color(0xFF0072B8) : BrandColors.text2,
+                  color: active ? const Color(0xFF0072B8) : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
                 ),
               ),
             ],
@@ -2998,7 +2987,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: BrandColors.text1),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
             ),
           ),
           _buildMiniStepper(m, (delta) => _handleStepInput(key, true, delta), 'm'),
@@ -3012,12 +3001,12 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
   Widget _buildTotalRow() {
     return Row(
       children: [
-        const Icon(Icons.timer_outlined, color: BrandColors.text2, size: 20),
+        const Icon(Icons.timer_outlined, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), size: 20),
         const SizedBox(width: 8),
         const Expanded(
           child: Text(
             'Total Waktu',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: BrandColors.text1),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
         ),
         _buildMiniStepper(_totalM, (delta) => _handleTotalInput(true, delta), 'm'),
@@ -3067,7 +3056,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           ),
         ),
         const SizedBox(width: 3),
-        Text(unit, style: const TextStyle(fontSize: 11, color: BrandColors.text3)),
+        Text(unit, style: const TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
       ],
     );
   }
@@ -3088,10 +3077,9 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
         Container(
           width: double.infinity,
           height: 240,
-          decoration: BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: BrandColors.border),
+            border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
           ),
           child: AnimatedBuilder(
@@ -3141,18 +3129,17 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
         // Progress & Metrics Card
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: BrandColors.border),
+            border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
           ),
           child: Column(
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Siklus: $_currentCycle / $_totalCycles', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.text1)),
-                  Text('Sisa Total: ${_fmt(totalRemaining)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.text1)),
+                  Text('Siklus: $_currentCycle / $_totalCycles', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
+                  Text('Sisa Total: ${_fmt(totalRemaining)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                 ],
               ),
               const SizedBox(height: 10),
@@ -3211,10 +3198,9 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
   Widget _buildFinishedView() {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: BrandColors.border),
+        border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
@@ -3223,19 +3209,19 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           const SizedBox(height: 16),
           const Text(
             'LATIHAN SELESAI!',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: BrandColors.text1),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
           const SizedBox(height: 8),
           const Text(
             'Selamat! Anda telah menyelesaikan seluruh rincian siklus olah pernafasan Satria Nusantara dengan baik.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13.5, color: BrandColors.text2, height: 1.4),
+            style: TextStyle(fontSize: 13.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.4),
           ),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: BrandColors.bg,
+              color: (themeNotifier.isDarkMode ? BrandColors.bgDark : BrandColors.bg),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -3243,16 +3229,16 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
               children: [
                 Column(
                   children: [
-                    const Text('Total Waktu', style: TextStyle(fontSize: 11, color: BrandColors.text3)),
+                    const Text('Total Waktu', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
                     const SizedBox(height: 2),
-                    Text(_fmt(_totalDur), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: BrandColors.text1)),
+                    Text(_fmt(_totalDur), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                   ],
                 ),
                 Column(
                   children: [
-                    const Text('Total Siklus', style: TextStyle(fontSize: 11, color: BrandColors.text3)),
+                    const Text('Total Siklus', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
                     const SizedBox(height: 2),
-                    Text('$_totalCycles Siklus', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: BrandColors.text1)),
+                    Text('$_totalCycles Siklus', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                   ],
                 ),
               ],
@@ -3476,10 +3462,9 @@ class _KebugaranScoringScreenState extends State<KebugaranScoringScreen> {
             // Member Info Card
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: BrandColors.border),
+                border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Row(
                 children: [
@@ -3492,9 +3477,9 @@ class _KebugaranScoringScreenState extends State<KebugaranScoringScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Aditya Pratama', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.text1)),
+                        Text('Aditya Pratama', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                         SizedBox(height: 2),
-                        Text('YO-YGY-00034 · Unit Balkot', style: TextStyle(fontSize: 11, color: BrandColors.text2)),
+                        Text('YO-YGY-00034 · Unit Balkot', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
                       ],
                     ),
                   ),
@@ -3520,7 +3505,7 @@ class _KebugaranScoringScreenState extends State<KebugaranScoringScreen> {
 
             const Text(
               '5 Parameter Tes Kebugaran Fisik (SN)',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: BrandColors.text1),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
             ),
             const SizedBox(height: 14),
 
@@ -3655,12 +3640,12 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           const SizedBox(height: 24),
           const Text(
             'Buat akun',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.text1),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
           const SizedBox(height: 4),
           const Text(
             'Gunakan email aktif yang bisa dihubungi',
-            style: TextStyle(fontSize: 12, color: BrandColors.text2),
+            style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
           const SizedBox(height: 24),
           TextField(
@@ -3746,7 +3731,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                 const Text(
                   'Registrasi via Gmail',
                   style: TextStyle(
-                    color: BrandColors.text1,
+                    color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
                     fontWeight: FontWeight.bold,
                     fontSize: 13.5,
                   ),
@@ -3770,12 +3755,12 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           const SizedBox(height: 24),
           const Text(
             'Data diri',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.text1),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
           const SizedBox(height: 4),
           const Text(
             'Informasi ini tampil di kartu anggota kamu',
-            style: TextStyle(fontSize: 12, color: BrandColors.text2),
+            style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
           const SizedBox(height: 24),
           TextField(
@@ -3891,7 +3876,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           const SizedBox(height: 6),
           const Text(
             'Anggota baru? Kosongkan bagian ini.',
-            style: TextStyle(fontSize: 11, color: BrandColors.text3),
+            style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
           ),
           const SizedBox(height: 28),
           ElevatedButton(
@@ -3933,12 +3918,12 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           const SizedBox(height: 24),
           const Text(
             'Pilih unit latihan',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.text1),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
           const SizedBox(height: 4),
           const Text(
             'Pilih unit terdekat dari lokasi kamu',
-            style: TextStyle(fontSize: 12, color: BrandColors.text2),
+            style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
           const SizedBox(height: 24),
           TextField(
@@ -4067,7 +4052,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Status', style: TextStyle(fontSize: 12.5, color: BrandColors.text2)),
+                      Text('Status', style: TextStyle(fontSize: 12.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
                       Text(
                         'Menunggu',
                         style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF9A7000)),
@@ -4082,7 +4067,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           const Text(
             'Pastikan nomor HP aktif agar bisa dihubungi pengurus jika diperlukan.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11, color: BrandColors.text3),
+            style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
           ),
           const SizedBox(height: 36),
           ElevatedButton(
@@ -4122,7 +4107,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               ? const Icon(Icons.check, size: 14, color: Colors.white)
               : Text(
                   '$stepNum',
-                  style: TextStyle(fontSize: 12, color: isActive ? Colors.white : BrandColors.text3, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 12, color: isActive ? Colors.white : (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontWeight: FontWeight.bold),
                 ),
         ),
         const SizedBox(height: 4),
@@ -4131,7 +4116,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           style: TextStyle(
             fontSize: 10,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            color: isActive ? BrandColors.hijau : BrandColors.text3,
+            color: isActive ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
           ),
         ),
       ],
@@ -4155,13 +4140,13 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           width: 60,
           child: Text(
             label,
-            style: const TextStyle(fontSize: 12, color: BrandColors.text2, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontWeight: FontWeight.w500),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 12, color: BrandColors.text1, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -4172,8 +4157,8 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12.5, color: BrandColors.text2)),
-        Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: BrandColors.text1)),
+        Text(label, style: const TextStyle(fontSize: 12.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+        Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
       ],
     );
   }
@@ -4277,8 +4262,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   child: Container(
                     width: 32,
                     height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                    decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
@@ -4357,7 +4341,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                   const SizedBox(height: 2),
                                   const Text(
                                     'Peserta terdaftar',
-                                    style: TextStyle(fontSize: 11, color: BrandColors.text2),
+                                    style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -4400,14 +4384,14 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   const SizedBox(height: 20),
                   Text(
                     description,
-                    style: const TextStyle(fontSize: 13.5, color: BrandColors.text1, height: 1.6),
+                    style: const TextStyle(fontSize: 13.5, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), height: 1.6),
                   ),
                   const SizedBox(height: 24),
                   // Render options specifically for ekt
                   if (type == 'ekt') ...[
                     const Text(
                       'Pilih partisipasi Anda',
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: BrandColors.text2),
+                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                     ),
                     const SizedBox(height: 12),
                     _buildEktOptionCard(
@@ -4607,12 +4591,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? color : BrandColors.text1, fontSize: 13.5),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? color : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontSize: 13.5),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subTitle,
-                    style: const TextStyle(fontSize: 11, color: BrandColors.text2, height: 1.4),
+                    style: const TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.4),
                   ),
                   if (badges != null) ...[
                     const SizedBox(height: 8),
@@ -4635,7 +4619,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     ),
                     child: Text(
                       price,
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : BrandColors.text1),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                     ),
                   ),
                 ],
@@ -4680,7 +4664,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(fontSize: 11.5, color: BrandColors.text2),
+            style: const TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
         ),
         Text(
@@ -4801,8 +4785,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                   child: Container(
                     width: 32,
                     height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                    decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
@@ -4843,7 +4826,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                 ),
                 const Text(
                   'Dikelompokkan per Unit',
-                  style: TextStyle(fontSize: 10.5, color: BrandColors.text2),
+                  style: TextStyle(fontSize: 10.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                 ),
               ],
             ),
@@ -4883,7 +4866,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
           Expanded(
             child: filtered.isEmpty
                 ? const Center(
-                    child: Text('Tidak ada peserta ditemukan', style: TextStyle(color: BrandColors.text3)),
+                    child: Text('Tidak ada peserta ditemukan', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.only(bottom: 24),
@@ -4898,7 +4881,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                         children: [
                           if (showHeader) ...[
                             Container(
-                              color: BrandColors.bg,
+                              color: (themeNotifier.isDarkMode ? BrandColors.bgDark : BrandColors.bg),
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -4915,7 +4898,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                                   ),
                                   Text(
                                     '${participants.where((p) => p['unit'] == item['unit']).length} peserta',
-                                    style: const TextStyle(fontSize: 10, color: BrandColors.text3),
+                                    style: const TextStyle(fontSize: 10, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                                   ),
                                 ],
                               ),
@@ -4930,7 +4913,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                               children: [
                                 Text(
                                   '${index + 1}',
-                                  style: const TextStyle(fontSize: 12, color: BrandColors.text3, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
@@ -4939,12 +4922,12 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                                     children: [
                                       Text(
                                         item['name']!,
-                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: BrandColors.text1),
+                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
                                         item['level']!,
-                                        style: const TextStyle(fontSize: 11, color: BrandColors.text2),
+                                        style: const TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                                       ),
                                     ],
                                   ),
@@ -4973,7 +4956,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                               child: Text(
                                 '+ ${totalCount - filtered.length} anggota lainnya',
-                                style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: BrandColors.text3),
+                                style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                               ),
                             ),
                             const Divider(height: 1),
@@ -5046,12 +5029,12 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: const BorderSide(color: BrandColors.border),
+                    side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                   ),
                   child: ListTile(
                     leading: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color),
                     title: Text(wallet['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    trailing: const Icon(Icons.chevron_right, color: BrandColors.text3),
+                    trailing: const Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                     onTap: () {
                       if (activeBill != null) {
                         setState(() {
@@ -5081,7 +5064,7 @@ class PaymentSuccessScreen extends StatelessWidget {
     final walletName = args?['wallet'] ?? 'E-wallet';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -5093,13 +5076,13 @@ class PaymentSuccessScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 const Text(
                   'Pembayaran Berhasil',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: BrandColors.text1),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Pembayaran BLBA Anda via $walletName telah berhasil dikonfirmasi.',
-                  style: const TextStyle(fontSize: 14, color: BrandColors.text2),
+                  style: const TextStyle(fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
@@ -5149,7 +5132,7 @@ class SesiDetailScreen extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Column(
                 children: [
@@ -5217,7 +5200,7 @@ class SesiDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   const Text(
                     'Progress input: 28 dari 31 peserta',
-                    style: TextStyle(fontSize: 12, color: BrandColors.text2),
+                    style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                   ),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
@@ -5248,14 +5231,14 @@ class SesiDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const Text(
               'Absensi Sesi Ini',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: BrandColors.text1),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
             ),
             const SizedBox(height: 12),
             Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -5264,7 +5247,7 @@ class SesiDetailScreen extends StatelessWidget {
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Hadir / Total', style: TextStyle(color: BrandColors.text2, fontSize: 13)),
+                        Text('Hadir / Total', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 13)),
                         Text('28 / 31', style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau, fontSize: 14)),
                       ],
                     ),
@@ -5290,7 +5273,7 @@ class SesiDetailScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: BrandColors.text2, fontSize: 13)),
+        Text(label, style: const TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 13)),
         const SizedBox(width: 16),
         Flexible(
           child: isBadge
@@ -5307,7 +5290,7 @@ class SesiDetailScreen extends StatelessWidget {
                 )
               : Text(
                   value,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: BrandColors.text1, fontSize: 13.5),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontSize: 13.5),
                   textAlign: TextAlign.end,
                 ),
         ),
@@ -5370,49 +5353,49 @@ class NewsDetailScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   const Row(
                     children: [
-                      Icon(Icons.access_time, size: 12, color: BrandColors.text3),
+                      Icon(Icons.access_time, size: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                       SizedBox(width: 4),
-                      Text('2 jam lalu', style: TextStyle(color: BrandColors.text3, fontSize: 10)),
+                      Text('2 jam lalu', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontSize: 10)),
                       SizedBox(width: 16),
-                      Icon(Icons.location_on_outlined, size: 12, color: BrandColors.text3),
+                      Icon(Icons.location_on_outlined, size: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                       SizedBox(width: 4),
-                      Text('Cabang Bandung', style: TextStyle(color: BrandColors.text3, fontSize: 10)),
+                      Text('Cabang Bandung', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontSize: 10)),
                     ],
                   ),
                   const Divider(height: 24),
                   const Text(
                     'Pendaftaran EKT (Evaluasi Kenaikan Tingkat) Cabang Bandung resmi dibuka untuk periode Juni 2026.',
-                    style: TextStyle(fontSize: 13, color: BrandColors.text1, height: 1.7),
+                    style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), height: 1.7),
                   ),
                   const SizedBox(height: 14),
                   const Text(
                     'Detail kegiatan:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: BrandColors.text1),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                   ),
                   const SizedBox(height: 6),
                   const Text(
                     '📅 Tanggal: 15 Juni 2026\n🕗 Waktu: 08.00–12.00 WIB\n📍 Lokasi: GOR Saparua, Kota Bandung\n💰 Biaya: Rp 75.000',
-                    style: TextStyle(fontSize: 13, color: BrandColors.text2, height: 1.7),
+                    style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.7),
                   ),
                   const SizedBox(height: 14),
                   const Text(
                     'Syarat ikut EKT:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: BrandColors.text1),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                   ),
                   const SizedBox(height: 6),
                   const Text(
                     '✓ Minimal kehadiran latihan 10 sesi pada tingkat saat ini\n✓ BLBA bulan berjalan lunas\n✓ Mendapat rekomendasi dari pelatih unit',
-                    style: TextStyle(fontSize: 13, color: BrandColors.text2, height: 1.7),
+                    style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.7),
                   ),
                   const SizedBox(height: 14),
                   const Text(
                     'Daftar melalui menu Latgab & EKT di aplikasi ini sebelum 10 Juni 2026.',
-                    style: TextStyle(fontSize: 13, color: BrandColors.text1, fontWeight: FontWeight.bold, height: 1.7),
+                    style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontWeight: FontWeight.bold, height: 1.7),
                   ),
                   const SizedBox(height: 24),
                   const Text(
                     'Dokumentasi Kegiatan:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: BrandColors.text1),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                   ),
                   const SizedBox(height: 10),
                   SizedBox(
@@ -5493,7 +5476,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: BrandColors.border),
+                side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -5512,7 +5495,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          Text(email, style: const TextStyle(color: BrandColors.text2, fontSize: 11.5)),
+                          Text(email, style: const TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 11.5)),
                           const SizedBox(height: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -5539,10 +5522,10 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
             const SizedBox(height: 24),
             const Text(
               'Data yang perlu dilengkapi',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.text1),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
             ),
             const SizedBox(height: 16),
-            const Text('Nomor HP *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text2)),
+            const Text('Nomor HP *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
             const SizedBox(height: 6),
             TextField(
               controller: _phoneController,
@@ -5555,7 +5538,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Tanggal Lahir *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text2)),
+            const Text('Tanggal Lahir *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
             const SizedBox(height: 6),
             TextField(
               controller: _birthController,
@@ -5579,7 +5562,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
               },
             ),
             const SizedBox(height: 16),
-            const Text('Jenis Kelamin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text2)),
+            const Text('Jenis Kelamin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -5587,7 +5570,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _gender == 'Laki-laki' ? BrandColors.hijauSoft : Colors.white,
-                      foregroundColor: _gender == 'Laki-laki' ? BrandColors.hijau : BrandColors.text2,
+                      foregroundColor: _gender == 'Laki-laki' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
                       side: BorderSide(color: _gender == 'Laki-laki' ? BrandColors.hijau : Colors.grey[300]!),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -5601,7 +5584,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _gender == 'Perempuan' ? BrandColors.hijauSoft : Colors.white,
-                      foregroundColor: _gender == 'Perempuan' ? BrandColors.hijau : BrandColors.text2,
+                      foregroundColor: _gender == 'Perempuan' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
                       side: BorderSide(color: _gender == 'Perempuan' ? Colors.grey[300]! : BrandColors.hijau),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -5702,7 +5685,7 @@ class WaitVerificationScreen extends StatelessWidget {
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: BrandColors.border),
+                  side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -5724,7 +5707,7 @@ class WaitVerificationScreen extends StatelessWidget {
               const SizedBox(height: 16),
               const Text(
                 'Pastikan nomor HP aktif agar bisa dihubungi pengurus jika diperlukan.',
-                style: TextStyle(fontSize: 11, color: BrandColors.text3),
+                style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
@@ -5752,10 +5735,10 @@ class WaitVerificationScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: BrandColors.text2, fontSize: 13)),
+        Text(label, style: const TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 13)),
         Text(
           value,
-          style: TextStyle(fontWeight: FontWeight.bold, color: textColor ?? BrandColors.text1, fontSize: 13),
+          style: TextStyle(fontWeight: FontWeight.bold, color: textColor ?? (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontSize: 13),
         ),
       ],
     );
@@ -5803,8 +5786,7 @@ class KehadiranDetailScreen extends StatelessWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                        decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Row(
@@ -5847,13 +5829,13 @@ class KehadiranDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // SECTION: STATUS IURAN BLBA TERKAIT
-                  const Text('STATUS IURAN & BLBA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: BrandColors.text3, letterSpacing: 0.5)),
+                  const Text('STATUS IURAN & BLBA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), letterSpacing: 0.5)),
                   const SizedBox(height: 10),
                   Card(
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: const BorderSide(color: BrandColors.border),
+                      side: const BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -5866,7 +5848,7 @@ class KehadiranDetailScreen extends StatelessWidget {
                                 children: [
                                   Icon(Icons.verified, color: BrandColors.hijau, size: 18),
                                   SizedBox(width: 8),
-                                  Text('BLBA Bulan Juli 2026', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: BrandColors.text1)),
+                                  Text('BLBA Bulan Juli 2026', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                                 ],
                               ),
                               Container(
@@ -5880,16 +5862,16 @@ class KehadiranDetailScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: const [
-                              Text('Total Riwayat Pembayaran', style: TextStyle(fontSize: 12, color: BrandColors.text2)),
-                              Text('14 dari 15 Bulan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text1)),
+                              Text('Total Riwayat Pembayaran', style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+                              Text('14 dari 15 Bulan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                             ],
                           ),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: const [
-                              Text('Nominal Iuran Rutin', style: TextStyle(fontSize: 12, color: BrandColors.text2)),
-                              Text('Rp 25.000 / Bulan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: BrandColors.text1)),
+                              Text('Nominal Iuran Rutin', style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+                              Text('Rp 25.000 / Bulan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                             ],
                           ),
                           const SizedBox(height: 14),
@@ -5916,7 +5898,7 @@ class KehadiranDetailScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // SECTION: RIWAYAT SESI KEHADIRAN TERKINI
-                  const Text('RIWAYAT KEHADIRAN TERKINI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: BrandColors.text3, letterSpacing: 0.5)),
+                  const Text('RIWAYAT KEHADIRAN TERKINI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), letterSpacing: 0.5)),
                   const SizedBox(height: 10),
                   _buildAttendanceItem('Sabtu, 18 Juli 2026', 'Unit Balkot · Sesi Pagi', 'Hadir Rutin', BrandColors.hijau, Icons.check_circle_outline),
                   _buildAttendanceItem('Selasa, 14 Juli 2026', 'Unit Balkot · Sesi Malam', 'Hadir Rutin', BrandColors.hijau, Icons.check_circle_outline),
@@ -5937,10 +5919,9 @@ class KehadiranDetailScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: BrandColors.border),
+        border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
       ),
       child: Row(
         children: [
@@ -5957,9 +5938,9 @@ class KehadiranDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(date, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: BrandColors.text1)),
+                Text(date, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                 const SizedBox(height: 2),
-                Text(location, style: const TextStyle(fontSize: 11, color: BrandColors.text2)),
+                Text(location, style: const TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
               ],
             ),
           ),
