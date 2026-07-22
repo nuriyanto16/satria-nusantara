@@ -679,3 +679,140 @@ html.dark .modal-close-btn:hover, body.dark .modal-close-btn:hover {
   color: #f1f5f9 !important;
   background: rgba(255,255,255,0.1) !important;
 }
+
+/* --- DETAILED DARK MODE OVERRIDES FOR SCOPED COMPONENTS --- */
+html.dark .month-nav, body.dark .month-nav {
+  background-color: #1e293b !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+html.dark .month-btn, body.dark .month-btn {
+  color: #cbd5e1 !important;
+}
+html.dark .month-btn:hover, body.dark .month-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #22c55e !important;
+}
+html.dark .month-label, body.dark .month-label {
+  color: #f8fafc !important;
+}
+
+html.dark .export-btn, body.dark .export-btn {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+html.dark .export-btn:hover, body.dark .export-btn:hover {
+  color: #22c55e !important;
+  border-color: #22c55e !important;
+  background-color: rgba(34, 197, 94, 0.1) !important;
+}
+
+html.dark .action-btn, body.dark .action-btn {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+html.dark .action-btn:hover, body.dark .action-btn:hover {
+  border-color: #22c55e !important;
+  color: #22c55e !important;
+  background-color: rgba(34, 197, 94, 0.16) !important;
+}
+html.dark .action-btn.green, body.dark .action-btn.green {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+  color: #4ade80 !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+}
+html.dark .action-btn.red, body.dark .action-btn.red {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+html.dark .view-toggle, body.dark .view-toggle {
+  background-color: #1e293b !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+html.dark .view-toggle-btn, body.dark .view-toggle-btn {
+  color: #cbd5e1 !important;
+  background: transparent !important;
+}
+html.dark .view-toggle-btn.active, body.dark .view-toggle-btn.active {
+  background-color: #22c55e !important;
+  color: #ffffff !important;
+}
+
+html.dark .alert-info-box, body.dark .alert-info-box {
+  background-color: rgba(234, 179, 8, 0.15) !important;
+  border-color: rgba(234, 179, 8, 0.3) !important;
+  color: #fef08a !important;
+}
+html.dark .rekening-current-box, body.dark .rekening-current-box {
+  background-color: #1e293b !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+html.dark .bdg-y,
+html.dark .status-badge.warning,
+html.dark .status-badge.warn,
+html.dark .status-badge.pending,
+html.dark .jenis-badge.khusus,
+html.dark .jenis-badge.pengumuman,
+html.dark .badge-yellow,
+html.dark .kategori-badge.cukup {
+  background-color: rgba(234, 179, 8, 0.16) !important;
+  color: #fef08a !important;
+  border-color: rgba(234, 179, 8, 0.3) !important;
+}
+
+html.dark .form-input, 
+html.dark .form-select,
+body.dark .form-input,
+body.dark .form-select {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: rgba(56, 189, 248, 0.25) !important;
+}
+html.dark .form-input:focus, 
+html.dark .form-select:focus,
+body.dark .form-input:focus,
+body.dark .form-select:focus {
+  border-color: #22c55e !important;
+}
+
+html.dark .kb-summary-card, body.dark .kb-summary-card {
+  background-color: #0f172a !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+html.dark .qr-image, body.dark .qr-image {
+  background-color: #ffffff !important; /* Kept white for contrast with QR scanner code readability */
+  border-color: #ffffff !important;
+  padding: 6px;
+}
+
+html.dark .btn-sm-outline, body.dark .btn-sm-outline {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
+}
+html.dark .btn-sm-outline:hover, body.dark .btn-sm-outline:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+html.dark .tab-badge, body.dark .tab-badge {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+html.dark .pending-alert-chip, body.dark .pending-alert-chip {
+  background-color: rgba(234, 179, 8, 0.16) !important;
+  color: #fef08a !important;
+  border: 1px solid rgba(234, 179, 8, 0.3) !important;
+}
+html.dark .row-pending td, body.dark .row-pending td {
+  background-color: rgba(234, 179, 8, 0.05) !important;
+}
+html.dark .metode-badge.metode-bank, body.dark .metode-badge.metode-bank {
+  background-color: rgba(56, 189, 248, 0.16) !important;
+  color: #38bdf8 !important;
+}
+

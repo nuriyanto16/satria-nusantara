@@ -83,6 +83,10 @@
         <button :class="['tab', { active: activeTab === 'unit' }]" @click="activeTab = 'unit'">
           <i class="ti ti-home"></i> Rekap Per Unit
         </button>
+        <button :class="['tab', { active: activeTab === 'transaksi' }]" @click="activeTab = 'transaksi'" style="position:relative">
+          <i class="ti ti-arrows-exchange"></i> Transaksi Terbaru
+          <span v-if="pendingCount > 0" class="tab-badge">{{ pendingCount }}</span>
+        </button>
       </div>
 
       <!-- TAB 1: PER ANGGOTA -->
@@ -237,6 +241,141 @@
           </div>
         </div>
       </div>
+
+      <!-- TAB 3: TRANSAKSI TERBARU -->
+      <div v-else-if="activeTab === 'transaksi'" class="tab-container">
+        <div class="toolbar">
+          <div style="display:flex;gap:12px;align-items:center;">
+            <select v-model="filterTrxStatus" class="filter-select-sm">
+              <option value="">Semua transaksi</option>
+              <option value="lunas">Berhasil</option>
+              <option value="pending">Menunggu konfirmasi</option>
+              <option value="ditolak">Ditolak</option>
+            </select>
+            <div class="toolbar-info">{{ filteredTrxList.length }} transaksi</div>
+          </div>
+          <div style="display:flex;gap:7px;align-items:center;">
+            <div v-if="pendingCount > 0" class="pending-alert-chip">
+              <i class="ti ti-clock-exclamation"></i>
+              {{ pendingCount }} menunggu konfirmasi
+            </div>
+            <button class="export-btn" @click="exportData('PDF')"><i class="ti ti-file-type-pdf"></i> PDF</button>
+          </div>
+        </div>
+
+        <div class="list-scroll">
+          <div v-if="filteredTrxList.length === 0" class="empty-state">
+            <i class="ti ti-inbox" style="font-size:36px;color:var(--text3);"></i>
+            <div style="font-size:13px;color:var(--text3);margin-top:8px;">Belum ada transaksi</div>
+          </div>
+          <table v-else class="data-table">
+            <thead>
+              <tr>
+                <th>Anggota</th>
+                <th>Periode</th>
+                <th>Metode</th>
+                <th>Nominal</th>
+                <th>Waktu</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="trx in filteredTrxList" :key="trx.id" :class="['table-row-clickable', trx.status === 'pending' ? 'row-pending' : '']">
+                <td>
+                  <div class="anggota-cell">
+                    <div class="av" :style="{ background: getAvatarBg(trx.nama) }">{{ getInitials(trx.nama) }}</div>
+                    <div>
+                      <div class="member-name">{{ trx.nama }}</div>
+                      <div class="member-number">{{ trx.nomor }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="font-size:11px;color:var(--text2);">BLBA {{ trx.bulan }}</td>
+                <td>
+                  <div style="display:flex;flex-direction:column;gap:3px;">
+                    <span class="metode-badge" :class="trx.metode.startsWith('Transfer') ? 'metode-bank' : ''">
+                      <i :class="trx.metode.startsWith('Transfer') ? 'ti ti-building-bank' : 'ti ti-wallet'"></i>
+                      {{ trx.metode }}
+                    </span>
+                    <span v-if="trx.buktiUrl" style="font-size:10px;color:var(--biru);cursor:pointer;" @click.stop="viewBukti(trx)"><i class="ti ti-paperclip"></i> Lihat bukti</span>
+                  </div>
+                </td>
+                <td style="font-weight:700;color:var(--text1);">Rp {{ formatRupiah(trx.nominal) }}</td>
+                <td style="font-size:11px;color:var(--text3);">
+                  <div>{{ trx.waktu }}</div>
+                  <div style="font-size:10px;color:var(--text3);">{{ trx.relativeTime }}</div>
+                </td>
+                <td>
+                  <span :class="['status-badge', trx.status === 'lunas' ? 'lunas' : trx.status === 'pending' ? 'pending' : 'belum']">
+                    <i :class="trx.status === 'lunas' ? 'ti ti-circle-check' : trx.status === 'pending' ? 'ti ti-clock' : 'ti ti-circle-x'"></i>
+                    {{ trx.status === 'lunas' ? 'Berhasil' : trx.status === 'pending' ? 'Menunggu' : 'Ditolak' }}
+                  </span>
+                </td>
+                <td @click.stop>
+                  <div v-if="trx.status === 'pending'" class="action-btns">
+                    <button class="action-btn green" title="Konfirmasi Lunas" @click="konfirmasiTrx(trx)">
+                      <i class="ti ti-check"></i> Konfirmasi
+                    </button>
+                    <button class="action-btn red" title="Tolak" @click="tolakTrx(trx)">
+                      <i class="ti ti-x"></i>
+                    </button>
+                  </div>
+                  <span v-else style="font-size:11px;color:var(--text3);">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="list-footer">
+          <div class="lf-info">
+            {{ filteredTrxList.length }} transaksi ·
+            <strong style="color:var(--hijau);">{{ trxBerhasil }} berhasil</strong> ·
+            <strong style="color:var(--kuning);">{{ pendingCount }} pending</strong> ·
+            <strong style="color:var(--merah);">{{ trxDitolak }} ditolak</strong>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">
+            Total: <strong style="color:var(--hijau);">Rp {{ formatRupiah(totalTrxBerhasil) }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: LIHAT BUKTI TRANSFER -->
+    <div v-if="showBuktiModal && selectedTrx" class="modal-overlay" @click.self="showBuktiModal = false">
+      <div class="modal-card mini">
+        <div class="modal-header">
+          <div class="modal-title">Bukti Transfer — {{ selectedTrx.nama }}</div>
+          <button class="modal-close" @click="showBuktiModal = false"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="rekening-current-box">
+              <div class="rcb-title">Detail Transaksi</div>
+              <div class="rcb-desc">{{ selectedTrx.nama }} · {{ selectedTrx.nomor }}</div>
+            </div>
+            <div class="sum-row"><span class="sum-key">Periode</span><span class="sum-val">BLBA {{ selectedTrx.bulan }}</span></div>
+            <div class="sum-row"><span class="sum-key">Metode</span><span class="sum-val">{{ selectedTrx.metode }}</span></div>
+            <div class="sum-row"><span class="sum-key">Nominal</span><span class="sum-val green">Rp {{ formatRupiah(selectedTrx.nominal) }}</span></div>
+            <div class="sum-row"><span class="sum-key">Waktu</span><span class="sum-val">{{ selectedTrx.waktu }}</span></div>
+            <div style="background:var(--bg2);border-radius:10px;padding:12px;text-align:center;border:1px dashed var(--border);">
+              <i class="ti ti-photo" style="font-size:48px;color:var(--text3);"></i>
+              <div style="font-size:12px;color:var(--text3);margin-top:6px;">{{ selectedTrx.buktiUrl || 'bukti_transfer.jpg' }}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px;">Preview tidak tersedia di mode demo</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button v-if="selectedTrx.status === 'pending'" class="btn btn-outline red" style="width:auto" @click="tolakTrx(selectedTrx); showBuktiModal = false">
+            <i class="ti ti-x"></i> Tolak
+          </button>
+          <button v-if="selectedTrx.status === 'pending'" class="btn btn-primary" style="width:auto" @click="konfirmasiTrx(selectedTrx); showBuktiModal = false">
+            <i class="ti ti-check"></i> Konfirmasi Lunas
+          </button>
+          <button v-else class="btn btn-outline" style="width:auto" @click="showBuktiModal = false">Tutup</button>
+        </div>
+      </div>
     </div>
 
     <!-- MODAL: EDIT REKENING BLBA -->
@@ -352,6 +491,7 @@ const api = useApi()
 
 const activeTab = ref('anggota')
 const filterStatus = ref('')
+const filterTrxStatus = ref('')
 const loading = ref(false)
 
 // Month details
@@ -411,6 +551,51 @@ const nominalBLBA = ref(40000)
 
 // Dynamic BLBA Member List
 const anggotaBLBAList = ref<any[]>([])
+
+// Transaksi list
+const showBuktiModal = ref(false)
+const selectedTrx = ref<any>(null)
+
+const viewBukti = (trx: any) => {
+  selectedTrx.value = trx
+  showBuktiModal.value = true
+}
+
+const transaksiList = ref<any[]>([
+  { id: 't1', nama: 'Budi Santoso', nomor: 'YO-YGY-00142', bulan: 'Juli 2026', metode: 'DANA', nominal: 40000, waktu: '22 Jul 2026, 08:14', relativeTime: 'Hari ini', status: 'lunas', buktiUrl: null },
+  { id: 't2', nama: 'Sari Rahmawati', nomor: 'YO-YGY-00098', bulan: 'Juli 2026', metode: 'Transfer Bank - BCA', nominal: 40000, waktu: '22 Jul 2026, 07:52', relativeTime: 'Hari ini', status: 'pending', buktiUrl: 'bukti_transfer_1753145520123.jpg' },
+  { id: 't3', nama: 'Hendra Kusuma', nomor: 'YO-YGY-00067', bulan: 'Juli 2026', metode: 'GoPay', nominal: 40000, waktu: '21 Jul 2026, 19:30', relativeTime: 'Kemarin', status: 'lunas', buktiUrl: null },
+  { id: 't4', nama: 'Agus Prasetyo', nomor: 'YO-YGY-00201', bulan: 'Juli 2026', metode: 'Transfer Bank - BRI', nominal: 40000, waktu: '21 Jul 2026, 15:10', relativeTime: 'Kemarin', status: 'pending', buktiUrl: 'bukti_transfer_1753098610234.jpg' },
+  { id: 't5', nama: 'Dwi Wahyuni', nomor: 'YO-YGY-00167', bulan: 'Juli 2026', metode: 'OVO', nominal: 40000, waktu: '20 Jul 2026, 10:05', relativeTime: '2 hari lalu', status: 'lunas', buktiUrl: null },
+  { id: 't6', nama: 'Farid Nugroho', nomor: 'YO-YGY-00312', bulan: 'Juni 2026', metode: 'ShopeePay', nominal: 40000, waktu: '19 Jul 2026, 09:00', relativeTime: '3 hari lalu', status: 'lunas', buktiUrl: null },
+  { id: 't7', nama: 'Nurul Rahayu', nomor: 'YO-YGY-00089', bulan: 'Juli 2026', metode: 'Transfer Bank - Mandiri', nominal: 40000, waktu: '18 Jul 2026, 14:22', relativeTime: '4 hari lalu', status: 'ditolak', buktiUrl: 'bukti_transfer_1752925320456.jpg' },
+])
+
+const filteredTrxList = computed(() => {
+  if (!filterTrxStatus.value) return transaksiList.value
+  return transaksiList.value.filter(t => t.status === filterTrxStatus.value)
+})
+
+const pendingCount = computed(() => transaksiList.value.filter(t => t.status === 'pending').length)
+const trxBerhasil = computed(() => transaksiList.value.filter(t => t.status === 'lunas').length)
+const trxDitolak = computed(() => transaksiList.value.filter(t => t.status === 'ditolak').length)
+const totalTrxBerhasil = computed(() => transaksiList.value.filter(t => t.status === 'lunas').reduce((s, t) => s + t.nominal, 0))
+
+const konfirmasiTrx = (trx: any) => {
+  trx.status = 'lunas'
+  trx.relativeTime = 'Baru dikonfirmasi'
+  // Also update anggotaBLBAList if match found
+  const member = anggotaBLBAList.value.find(a => a.nomor === trx.nomor)
+  if (member) { member.status = 'lunas'; member.tanggalBayar = trx.waktu.split(',')[0]; member.metode = trx.metode }
+  alert(`✅ Pembayaran ${trx.nama} untuk BLBA ${trx.bulan} berhasil dikonfirmasi!`)
+}
+
+const tolakTrx = (trx: any) => {
+  if (!confirm(`Tolak pembayaran transfer dari ${trx.nama}?`)) return
+  trx.status = 'ditolak'
+  trx.relativeTime = 'Baru ditolak'
+  alert(`❌ Pembayaran ${trx.nama} ditolak. Anggota akan diberitahu.`)
+}
 
 const fetchCabang = async () => {
   try {
