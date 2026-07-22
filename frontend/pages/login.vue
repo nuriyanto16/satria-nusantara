@@ -235,10 +235,12 @@ const triggerGoogleSSO = () => {
 
   if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
     try {
-      (window as any).google.accounts.id.initialize({
+      let isHandled = false
+      ;(window as any).google.accounts.id.initialize({
         client_id: '1000000000000-satrianusantara.apps.googleusercontent.com',
-        auto_select: true,
+        auto_select: false,
         callback: async (response: any) => {
+          isHandled = true
           if (response && response.credential) {
             try {
               const base64Url = response.credential.split('.')[1]
@@ -257,18 +259,27 @@ const triggerGoogleSSO = () => {
         }
       })
 
-      (window as any).google.accounts.id.prompt((notification: any) => {
+      ;(window as any).google.accounts.id.prompt((notification: any) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          isHandled = true
           handleGoogleLogin('admin@satria-nusantara.org', 'Admin Pusat Satria Nusantara')
         }
       })
+
+      // Fallback timeout in case Google's script fails silently due to invalid client ID
+      setTimeout(() => {
+        if (!isHandled) {
+          handleGoogleLogin('admin.demo@satria-nusantara.org', 'Admin Demo (Fallback SSO)')
+        }
+      }, 1500)
+
       return
     } catch (e) {
       console.error(e)
     }
   }
 
-  handleGoogleLogin('admin@satria-nusantara.org', 'Admin Pusat Satria Nusantara')
+  handleGoogleLogin('admin.demo@satria-nusantara.org', 'Admin Demo (Offline SSO)')
 }
 
 const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) => {
@@ -281,7 +292,7 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
       google_id: gId || ('goog_' + gEmail)
     })
     authStore.setAuth(data.token, data.user)
-    navigateTo('/')
+    await navigateTo('/')
   } catch (e: any) {
     // Fallback if backend API is offline during local UI test
     authStore.setAuth('mock_google_token_web_' + Date.now(), {
@@ -293,7 +304,7 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
       scope: 'pusat',
       status: 'aktif'
     } as any)
-    navigateTo('/')
+    await navigateTo('/')
   } finally {
     loading.value = false
   }
