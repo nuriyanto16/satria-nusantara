@@ -846,11 +846,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
 // ─── TOP LEVEL GOOGLE AUTH HELPERS ──────────────────────────────────────────
 Future<void> _triggerGoogleSignIn(BuildContext context) async {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Row(
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+          ),
+          SizedBox(width: 12),
+          Text('Menghubungkan ke Google SSO...'),
+        ],
+      ),
+      duration: Duration(seconds: 3),
+    ),
+  );
+
   try {
     final GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: ['email', 'profile'],
     );
-    final GoogleSignInAccount? account = await googleSignIn.signIn();
+
+    // 1. Try silent SSO sign-in first (auto-detect active browser session)
+    GoogleSignInAccount? account;
+    try {
+      account = await googleSignIn.signInSilently();
+    } catch (_) {}
+
+    // 2. Open official Google SSO OAuth popup if silent sign in returns null
+    account ??= await googleSignIn.signIn();
+
     if (account != null) {
       final email = account.email;
       final name = (account.displayName != null && account.displayName!.isNotEmpty)
@@ -859,84 +885,27 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
       final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
       final googleId = account.id;
       _processGoogleSignIn(context, email, name, initial, googleId: googleId);
-      return;
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Proses masuk Google SSO dibatalkan.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
     }
   } catch (e) {
-    debugPrint('Google Sign In Native/Web Error: $e');
-  }
-
-  if (context.mounted) {
-    _showCustomGoogleAccountDialog(context);
-  }
-}
-
-void _showCustomGoogleAccountDialog(BuildContext context) {
-  final emailController = TextEditingController();
-  final nameController = TextEditingController();
-  showDialog(
-    context: context,
-    builder: (dialogCtx) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.account_circle, color: Colors.blue, size: 28),
-            SizedBox(width: 8),
-            Text('Masuk dengan Akun Gmail', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
+    debugPrint('Google Sign In Error: $e');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal terhubung dengan Google SSO: $e'),
+          backgroundColor: Colors.red,
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              style: const TextStyle(fontSize: 13.5),
-              decoration: InputDecoration(
-                labelText: 'Nama Lengkap',
-                hintText: 'Masukkan nama Anda',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(fontSize: 13.5),
-              decoration: InputDecoration(
-                labelText: 'Alamat Email Gmail',
-                hintText: 'nama@gmail.com',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: BrandColors.hijau,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            onPressed: () {
-              final email = emailController.text.trim();
-              final name = nameController.text.trim();
-              if (email.isEmpty) return;
-              Navigator.pop(dialogCtx);
-              final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
-              _processGoogleSignIn(context, email, name.isEmpty ? email : name, initial);
-            },
-            child: const Text('Lanjut'),
-          ),
-        ],
       );
-    },
-  );
+    }
+  }
 }
 
 void _processGoogleSignIn(BuildContext context, String email, String name, String initial, {String? googleId}) async {
