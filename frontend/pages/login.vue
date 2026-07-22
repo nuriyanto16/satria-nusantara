@@ -108,6 +108,45 @@
         </div>
       </div>
     </div>
+
+    <!-- Google Account Chooser Modal -->
+    <div v-if="showGoogleModal" class="google-modal-overlay">
+      <div class="google-modal-card">
+        <div class="g-modal-header">
+          <div class="g-avatar bg-green">G</div>
+          <div>
+            <h3>Masuk dengan Google</h3>
+            <p>Pilih akun untuk melanjutkan ke Satria Nusantara</p>
+          </div>
+          <button type="button" class="g-modal-close" @click="showGoogleModal = false">&times;</button>
+        </div>
+        <div class="g-modal-body">
+          <div class="g-account-item" @click="selectGoogleAccount('nuriyanto.dev@gmail.com', 'Nuriyanto Dev')">
+            <div class="g-avatar">N</div>
+            <div class="g-info">
+              <div class="g-name">Nuriyanto Dev</div>
+              <div class="g-email">nuriyanto.dev@gmail.com</div>
+            </div>
+          </div>
+          
+          <div class="g-account-item" @click="selectGoogleAccount('demo.anggota@gmail.com', 'Demo Anggota')">
+            <div class="g-avatar bg-green">D</div>
+            <div class="g-info">
+              <div class="g-name">Demo Anggota</div>
+              <div class="g-email">demo.anggota@gmail.com</div>
+            </div>
+          </div>
+
+          <div class="g-custom-input">
+            <label>Gunakan akun Google lain:</label>
+            <div class="g-input-row">
+              <input v-model="customGoogleEmail" type="email" placeholder="contoh@gmail.com" class="form-input" style="padding-left:14px" />
+              <button type="button" class="btn-g-submit" @click="selectGoogleAccount(customGoogleEmail, customGoogleEmail.split('@')[0])">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -125,6 +164,18 @@ const showPw = ref(false)
 const rememberMe = ref(false)
 const loading = ref(false)
 const errorMsg = ref('')
+
+const showGoogleModal = ref(false)
+const customGoogleEmail = ref('')
+
+const selectGoogleAccount = (email: string, name: string) => {
+  if (!email || !email.includes('@')) {
+    alert('Masukkan email gmail yang valid!')
+    return
+  }
+  showGoogleModal.value = false
+  handleGoogleLogin(email, name)
+}
 
 const captchaInput = ref('')
 const captchaCode = ref('')
@@ -251,7 +302,8 @@ const triggerGoogleSSO = () => {
               const payload = JSON.parse(jsonPayload)
               await handleGoogleLogin(payload.email, payload.name || payload.email, payload.sub)
             } catch (err) {
-              await handleGoogleLogin('admin@satria-nusantara.org', 'Admin Pusat Satria Nusantara')
+              showGoogleModal.value = true
+              loading.value = false
             }
           } else {
             loading.value = false
@@ -262,14 +314,16 @@ const triggerGoogleSSO = () => {
       ;(window as any).google.accounts.id.prompt((notification: any) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
           isHandled = true
-          handleGoogleLogin('admin@satria-nusantara.org', 'Admin Pusat Satria Nusantara')
+          showGoogleModal.value = true
+          loading.value = false
         }
       })
 
       // Fallback timeout in case Google's script fails silently due to invalid client ID
       setTimeout(() => {
         if (!isHandled) {
-          handleGoogleLogin('admin.demo@satria-nusantara.org', 'Admin Demo (Fallback SSO)')
+          showGoogleModal.value = true
+          loading.value = false
         }
       }, 1500)
 
@@ -279,7 +333,8 @@ const triggerGoogleSSO = () => {
     }
   }
 
-  handleGoogleLogin('admin.demo@satria-nusantara.org', 'Admin Demo (Offline SSO)')
+  showGoogleModal.value = true
+  loading.value = false
 }
 
 const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) => {

@@ -839,6 +839,7 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 // ─── TOP LEVEL GOOGLE AUTH HELPERS ──────────────────────────────────────────
+// ─── TOP LEVEL GOOGLE AUTH HELPERS ──────────────────────────────────────────
 Future<void> _triggerGoogleSignIn(BuildContext context) async {
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
@@ -853,7 +854,7 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
           Text('Menghubungkan ke Google SSO...'),
         ],
       ),
-      duration: Duration(seconds: 3),
+      duration: Duration(seconds: 2),
     ),
   );
 
@@ -882,27 +883,150 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
       _processGoogleSignIn(context, email, name, initial, googleId: googleId);
     } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Proses masuk Google SSO dibatalkan.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        _showGoogleAccountChooser(context);
       }
     }
   } catch (e) {
     debugPrint('Google Sign In Error: $e');
-    // MOCK LOGIN FALLBACK IF NATIVE/WEB GOOGLE SSO FAILS (e.g. no valid Client ID)
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Google Client ID belum diatur. Menggunakan Akun Demo (Mock SSO).'),
-          backgroundColor: Colors.blue,
-        ),
-      );
-      _processGoogleSignIn(context, 'demo.anggota@gmail.com', 'Demo Anggota', 'D');
+      _showGoogleAccountChooser(context);
     }
   }
+}
+
+void _showGoogleAccountChooser(BuildContext context) {
+  final TextEditingController customEmailController = TextEditingController();
+
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext dialogContext) {
+      return AlertDialog(
+        backgroundColor: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.account_circle, color: Colors.blue, size: 40),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Sign in with Google',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Pilih akun untuk melanjutkan ke Satria Nusantara',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 320,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Divider(height: 1),
+                _buildGoogleAccountItem(
+                  dialogContext,
+                  'Nuriyanto Dev',
+                  'nuriyanto.dev@gmail.com',
+                  'N',
+                  Colors.purple,
+                ),
+                const Divider(height: 1),
+                _buildGoogleAccountItem(
+                  dialogContext,
+                  'Demo Anggota',
+                  'demo.anggota@gmail.com',
+                  'D',
+                  Colors.green,
+                ),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+                // Custom email text field to simulate typing other google email
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Atau gunakan akun Google lain:',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: customEmailController,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'nama.anda@gmail.com',
+                          hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          isDense: true,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          onPressed: () {
+                            final email = customEmailController.text.trim();
+                            if (email.isNotEmpty && email.contains('@')) {
+                              final name = email.split('@')[0];
+                              final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
+                              Navigator.pop(dialogContext);
+                              _processGoogleSignIn(context, email, name, initial);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Masukkan email gmail yang valid!')),
+                              );
+                            }
+                          },
+                          child: const Text('Masuk dengan Akun ini', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 void _processGoogleSignIn(BuildContext context, String email, String name, String initial, {String? googleId}) async {
@@ -936,28 +1060,28 @@ Widget _buildGoogleAccountItem(
   String initial,
   Color color,
 ) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: color,
-        child: Text(
-          initial,
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+  return ListTile(
+    leading: CircleAvatar(
+      backgroundColor: color,
+      child: Text(
+        initial,
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
-      title: Text(
-        name,
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
-      ),
-      subtitle: Text(
-        email,
-        style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
-      ),
-      onTap: () {
-        Navigator.pop(context);
-        _processGoogleSignIn(context, email, name, initial);
-      },
-    );
-  }
+    ),
+    title: Text(
+      name,
+      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
+    ),
+    subtitle: Text(
+      email,
+      style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
+    ),
+    onTap: () {
+      Navigator.pop(context);
+      _processGoogleSignIn(context, email, name, initial);
+    },
+  );
+}
 
 // ─── HOME SCREEN ─────────────────────────────────────────────────────────────
 class HomeScreen extends StatefulWidget {
