@@ -110,7 +110,7 @@ class PanelSkeletonWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Row(
+            Row(
               children: [
                 ShimmerContainer(width: 40, height: 40, borderRadius: 20),
                 SizedBox(width: 12),
@@ -124,9 +124,9 @@ class PanelSkeletonWidget extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             const ShimmerContainer(width: double.infinity, height: 12, borderRadius: 4),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ShimmerContainer(width: MediaQuery.of(context).size.width * 0.5, height: 12, borderRadius: 4),
           ],
         ),
@@ -161,7 +161,7 @@ class StatGridSkeletonWidget extends StatelessWidget {
                 )
               ],
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -213,13 +213,13 @@ class ListSkeletonWidget extends StatelessWidget {
           child: Row(
             children: [
               const ShimmerContainer(width: 48, height: 48, borderRadius: 14),
-              const SizedBox(width: 14),
+              SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const ShimmerContainer(width: 140, height: 14, borderRadius: 4),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     ShimmerContainer(
                       width: MediaQuery.of(context).size.width * 0.45,
                       height: 10,
@@ -228,7 +228,7 @@ class ListSkeletonWidget extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               const ShimmerContainer(width: 60, height: 24, borderRadius: 12),
             ],
           ),
@@ -251,15 +251,15 @@ class DetailSkeletonWidget extends StatelessWidget {
         children: [
           // Banner / Header image skeleton
           const ShimmerContainer(width: double.infinity, height: 180, borderRadius: 20),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           // Category badge
           const ShimmerContainer(width: 90, height: 22, borderRadius: 6),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           // Main title lines
           const ShimmerContainer(width: double.infinity, height: 20, borderRadius: 4),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           ShimmerContainer(width: MediaQuery.of(context).size.width * 0.7, height: 20, borderRadius: 4),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           // Info row skeleton card
           Container(
             padding: const EdgeInsets.all(16),
@@ -267,7 +267,7 @@ class DetailSkeletonWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.black.withOpacity(0.06)),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 ShimmerContainer(width: 40, height: 40, borderRadius: 10),
                 SizedBox(width: 14),
@@ -282,18 +282,18 @@ class DetailSkeletonWidget extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           // Description paragraphs
           const ShimmerContainer(width: 140, height: 16, borderRadius: 4),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           const ShimmerContainer(width: double.infinity, height: 10, borderRadius: 4),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           const ShimmerContainer(width: double.infinity, height: 10, borderRadius: 4),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           const ShimmerContainer(width: double.infinity, height: 10, borderRadius: 4),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           ShimmerContainer(width: MediaQuery.of(context).size.width * 0.5, height: 10, borderRadius: 4),
-          const SizedBox(height: 30),
+          SizedBox(height: 30),
           // Action button skeleton
           const ShimmerContainer(width: double.infinity, height: 50, borderRadius: 14),
         ],
@@ -350,7 +350,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -393,8 +393,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
-                    const Text(
+                    SizedBox(height: 28),
+                    Text(
                       'SATRIA NUSANTARA',
                       style: TextStyle(
                         fontSize: 24,
@@ -403,14 +403,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         letterSpacing: 2.0,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                       decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.18),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.white30, width: 1),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Olah Nafas & Keanggotaan LSP Nasional',
                         style: TextStyle(
                           fontSize: 12,
@@ -420,7 +420,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         ),
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    SizedBox(height: 48),
                     SizedBox(
                       width: 140,
                       child: LinearProgressIndicator(
@@ -481,7 +481,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             itemCount: _onboardingData.length,
             itemBuilder: (context, index) {
               return Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF0078C8), Color(0xFF0092EC), Color(0xFF42B8F5)],
                     begin: Alignment.topCenter,
@@ -512,20 +512,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               )
                             : Text(
                                 _onboardingData[index]['icon']!,
-                                style: const TextStyle(fontSize: 80),
+                                style: TextStyle(fontSize: 80),
                               ),
                       ),
-                      const SizedBox(height: 50),
+                      SizedBox(height: 50),
                       Text(
                         _onboardingData[index]['title']!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w900,
                           color: Colors.white,
                           letterSpacing: -0.8,
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      SizedBox(height: 18),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 40),
                         child: Text(
@@ -589,7 +589,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   child: Text(
                     _currentPage == _onboardingData.length - 1 ? 'Mulai' : 'Lanjut',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 )
               ],
@@ -633,7 +633,7 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         },
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF0078C8), Color(0xFF0092EC), Color(0xFF42B8F5)],
               begin: Alignment.topLeft,
@@ -654,18 +654,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Colors.white12,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: Colors.white30, width: 1.5),
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4)),
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: Text(
                         'SN',
                         style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
+                    SizedBox(height: 20),
+                    Text(
                       'Satria Nusantara',
                       style: TextStyle(
                         fontSize: 30,
@@ -674,11 +674,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         letterSpacing: -0.8,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Sistem Informasi Anggota LSP Nasional',
                       style: TextStyle(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w400),
                     ),
-                    const SizedBox(height: 36),
+                    SizedBox(height: 36),
                     Card(
                       elevation: 8,
                       shadowColor: Colors.black26,
@@ -692,33 +692,33 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Masuk Pengurus',
                               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
                             ),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6),
                             Text(
                               'Masukkan kredensial pengurus Anda',
                               style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                             ),
-                            const SizedBox(height: 28),
+                            SizedBox(height: 28),
                             TextField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
-                              style: const TextStyle(fontSize: 14),
+                              style: TextStyle(fontSize: 14),
                               decoration: InputDecoration(
                                 labelText: 'Alamat Email',
-                                labelStyle: const TextStyle(fontSize: 13),
-                                prefixIcon: const Icon(Icons.email_outlined, size: 20),
+                                labelStyle: TextStyle(fontSize: 13),
+                                prefixIcon: Icon(Icons.email_outlined, size: 20),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                               ),
                             ),
-                            const SizedBox(height: 18),
+                            SizedBox(height: 18),
                             TextField(
                               controller: _passwordController,
                               obscureText: !_showPassword,
-                              style: const TextStyle(fontSize: 14),
+                              style: TextStyle(fontSize: 14),
                               decoration: InputDecoration(
                                 labelText: 'Kata Sandi',
-                                labelStyle: const TextStyle(fontSize: 13),
-                                prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                                labelStyle: TextStyle(fontSize: 13),
+                                prefixIcon: Icon(Icons.lock_outline, size: 20),
                                 suffixIcon: IconButton(
                                   icon: Icon(_showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20),
                                   onPressed: () => setState(() => _showPassword = !_showPassword),
@@ -727,7 +727,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                               ),
                             ),
-                            const SizedBox(height: 28),
+                            SizedBox(height: 28),
                             BlocBuilder<AuthBloc, AuthState>(
                               builder: (context, state) {
                                 return ElevatedButton(
@@ -749,19 +749,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                     elevation: 2,
                                   ),
                                   child: state is AuthLoading
-                                      ? const SizedBox(
+                                      ? SizedBox(
                                           width: 22,
                                           height: 22,
                                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                                         )
-                                      : const Text(
+                                      : Text(
                                           'Masuk ke Dashboard',
                                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                         ),
                                 );
                               },
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16),
                             Row(
                               children: [
                                 Expanded(child: Divider(color: Colors.grey[300])),
@@ -775,7 +775,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Expanded(child: Divider(color: Colors.grey[300])),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: 16),
                             OutlinedButton(
                               onPressed: () => _triggerGoogleSignIn(context),
                               style: OutlinedButton.styleFrom(
@@ -790,7 +790,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     base64Decode(kGmailLogoBase64),
                                     height: 14,
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12),
                                   Text(
                                     'Masuk dengan Gmail',
                                     style: TextStyle(
@@ -802,7 +802,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 18),
+                            SizedBox(height: 18),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -812,7 +812,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 GestureDetector(
                                   onTap: () => Navigator.pushNamed(context, '/register'),
-                                  child: const Text(
+                                  child: Text(
                                     'Daftar sekarang',
                                     style: TextStyle(
                                       fontSize: 13,
@@ -941,7 +941,7 @@ Widget _buildGoogleAccountItem(
         backgroundColor: color,
         child: Text(
           initial,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       title: Text(
@@ -983,7 +983,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: pages[_currentIndex],
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2)),
           ],
@@ -995,9 +995,9 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedItemColor: BrandColors.hijau,
           unselectedItemColor: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
           backgroundColor: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-          unselectedLabelStyle: const TextStyle(fontSize: 11),
-          items: const [
+          selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+          unselectedLabelStyle: TextStyle(fontSize: 11),
+          items: [
             BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Beranda'),
             BottomNavigationBarItem(icon: Icon(Icons.calendar_today_outlined), activeIcon: Icon(Icons.calendar_today), label: 'Jadwal'),
             BottomNavigationBarItem(icon: Icon(Icons.air_outlined), activeIcon: Icon(Icons.air), label: 'Nafas'),
@@ -1029,7 +1029,7 @@ class DashboardTab extends StatelessWidget {
               Container(
                 height: 200,
                 width: double.infinity,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF0078C8), Color(0xFF0092EC), Color(0xFF42B8F5)],
                     begin: Alignment.topCenter,
@@ -1049,9 +1049,9 @@ class DashboardTab extends StatelessWidget {
                           children: [
                             Text(
                               'Halo, ${user.namaLengkap.split(" ")[0]}!',
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -0.5),
+                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -0.5),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2),
                             Text(
                               '${user.roleName} • ${user.scope}',
                               style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.7)),
@@ -1066,7 +1066,7 @@ class DashboardTab extends StatelessWidget {
                             backgroundColor: Colors.white24,
                             child: Text(
                               user.namaLengkap.substring(0, 2).toUpperCase(),
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                           ),
                         ),
@@ -1111,18 +1111,18 @@ class DashboardTab extends StatelessWidget {
                                     'Kehadiran Aktif',
                                     style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontWeight: FontWeight.w500),
                                   ),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: 4),
                                   Icon(Icons.chevron_right, size: 14, color: Colors.grey[600]),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Row(
                                 children: [
                                   Text(
                                     '88',
                                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                                   ),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: 4),
                                   Text(
                                     'Sesi',
                                     style: TextStyle(fontSize: 12, color: Colors.green[700], fontWeight: FontWeight.bold),
@@ -1137,9 +1137,9 @@ class DashboardTab extends StatelessWidget {
                       Row(
                         children: [
                           _buildGopayAction(context, Icons.qr_code_scanner, 'Scan', '/scan'),
-                          const SizedBox(width: 20),
+                          SizedBox(width: 20),
                           _buildGopayAction(context, Icons.badge_outlined, 'e-KTA', '/kta'),
-                          const SizedBox(width: 20),
+                          SizedBox(width: 20),
                           _buildGopayAction(context, Icons.payment_outlined, 'Bayar', '/home', targetTab: 3),
                         ],
                       ),
@@ -1149,7 +1149,7 @@ class DashboardTab extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 60),
+          SizedBox(height: 60),
           // Gojek-style Services Grid (2x4 Grid)
           Expanded(
             child: SingleChildScrollView(
@@ -1161,7 +1161,7 @@ class DashboardTab extends StatelessWidget {
                     'Layanan Kami',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -1179,12 +1179,12 @@ class DashboardTab extends StatelessWidget {
                       _buildGridService(context, 'Latgab', Icons.groups_outlined, Colors.indigo, '/event_detail', arguments: 'latgab'),
                     ],
                   ),
-                  const SizedBox(height: 28),
+                  SizedBox(height: 28),
                   Text(
                     'Pengumuman Terkini',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   // Promo/Announcements card
                   GestureDetector(
                     onTap: () {
@@ -1208,7 +1208,7 @@ class DashboardTab extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1229,7 +1229,7 @@ class DashboardTab extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 ],
               ),
             ),
@@ -1260,7 +1260,7 @@ class DashboardTab extends StatelessWidget {
             ),
             child: Icon(icon, size: 20, color: BrandColors.hijau),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             title,
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
@@ -1290,7 +1290,7 @@ class DashboardTab extends StatelessWidget {
             ),
             child: Icon(icon, size: 24, color: color),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             title,
             textAlign: TextAlign.center,
@@ -1312,7 +1312,7 @@ class JadwalTab extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Jadwal Latihan',
           style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20),
         ),
@@ -1320,12 +1320,12 @@ class JadwalTab extends StatelessWidget {
       body: BlocBuilder<SesiBloc, SesiState>(
         builder: (context, state) {
           if (state is SesiLoading) {
-            return const SingleChildScrollView(
+            return SingleChildScrollView(
               child: ListSkeletonWidget(itemCount: 5),
             );
           } else if (state is SesiLoaded) {
             if (state.list.isEmpty) {
-              return const Center(child: Text('Tidak ada jadwal latihan terdaftar.'));
+              return Center(child: Text('Tidak ada jadwal latihan terdaftar.'));
             }
             return ListView.builder(
               padding: const EdgeInsets.all(20),
@@ -1345,7 +1345,7 @@ class JadwalTab extends StatelessWidget {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Muat Lebih Banyak...',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -1371,14 +1371,14 @@ class JadwalTab extends StatelessWidget {
                         Container(
                           width: 48,
                           height: 48,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: BrandColors.hijauSoft,
                             shape: BoxShape.circle,
                           ),
                           alignment: Alignment.center,
-                          child: const Icon(Icons.sports_martial_arts, color: BrandColors.hijau, size: 24),
+                          child: Icon(Icons.sports_martial_arts, color: BrandColors.hijau, size: 24),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1400,18 +1400,18 @@ class JadwalTab extends StatelessWidget {
                                     ),
                                     child: Text(
                                       sesi.jenis,
-                                      style: const TextStyle(fontSize: 10, color: BrandColors.hijau, fontWeight: FontWeight.bold),
+                                      style: TextStyle(fontSize: 10, color: BrandColors.hijau, fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12),
                               _buildDetailRow(Icons.calendar_today_outlined, 'Tanggal: ${sesi.tanggal}'),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6),
                               _buildDetailRow(Icons.access_time, 'Waktu: ${sesi.jamMulai} - ${sesi.jamSelesai}'),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6),
                               _buildDetailRow(Icons.location_on_outlined, 'Lokasi: ${sesi.lokasi}'),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6),
                               _buildDetailRow(Icons.person_outline, 'Pelatih: ${sesi.pelatihNama.isNotEmpty ? sesi.pelatihNama : "Pak Budi Susanto"}'),
                             ],
                           ),
@@ -1426,7 +1426,7 @@ class JadwalTab extends StatelessWidget {
           } else if (state is SesiError) {
             return Center(child: Text(state.message));
           }
-          return const SizedBox();
+          return SizedBox();
         },
       ),
     );
@@ -1436,7 +1436,7 @@ class JadwalTab extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, size: 14, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
@@ -1458,7 +1458,7 @@ class IuranTab extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'BLBA Bulanan',
           style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20),
         ),
@@ -1466,7 +1466,7 @@ class IuranTab extends StatelessWidget {
       body: BlocBuilder<IuranBloc, IuranState>(
         builder: (context, state) {
           if (state is IuranLoading) {
-            return const SingleChildScrollView(
+            return SingleChildScrollView(
               child: Column(
                 children: [
                   PanelSkeletonWidget(height: 150),
@@ -1500,20 +1500,20 @@ class IuranTab extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.warning_amber_rounded, color: BrandColors.merah, size: 20),
-                                    const SizedBox(width: 8),
+                                    Icon(Icons.warning_amber_rounded, color: BrandColors.merah, size: 20),
+                                    SizedBox(width: 8),
                                     Text(
                                       'BLBA ${activeBill.bulan} ${activeBill.tahun} belum dibayar',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, color: BrandColors.merah, fontSize: 13),
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.merah, fontSize: 13),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: 8),
                                 Text(
                                   'Segera bayar agar status keanggotaan tetap aktif.',
                                   style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 12),
                                 ),
-                                const SizedBox(height: 16),
+                                SizedBox(height: 16),
                                 SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton(
@@ -1530,13 +1530,13 @@ class IuranTab extends StatelessWidget {
                                         arguments: activeBill,
                                       );
                                     },
-                                    child: const Text('Bayar Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    child: Text('Bayar Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -1548,8 +1548,8 @@ class IuranTab extends StatelessWidget {
                                 onPressed: () {
                                   context.read<IuranBloc>().add(AddMockIuran());
                                 },
-                                icon: const Icon(Icons.add, size: 16),
-                                label: const Text('Simulasi Tagihan', style: TextStyle(fontSize: 12)),
+                                icon: Icon(Icons.add, size: 16),
+                                label: Text('Simulasi Tagihan', style: TextStyle(fontSize: 12)),
                               ),
                             ],
                           ),
@@ -1570,7 +1570,7 @@ class IuranTab extends StatelessWidget {
                               color: BrandColors.hijauSoft,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Row(
+                            child: Row(
                               children: [
                                 Icon(Icons.check_circle, color: BrandColors.hijau, size: 20),
                                 SizedBox(width: 8),
@@ -1581,7 +1581,7 @@ class IuranTab extends StatelessWidget {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -1593,8 +1593,8 @@ class IuranTab extends StatelessWidget {
                                 onPressed: () {
                                   context.read<IuranBloc>().add(AddMockIuran());
                                 },
-                                icon: const Icon(Icons.add, size: 16),
-                                label: const Text('Simulasi Tagihan', style: TextStyle(fontSize: 12)),
+                                icon: Icon(Icons.add, size: 16),
+                                label: Text('Simulasi Tagihan', style: TextStyle(fontSize: 12)),
                               ),
                             ],
                           ),
@@ -1654,7 +1654,7 @@ class IuranTab extends StatelessWidget {
           } else if (state is IuranError) {
             return Center(child: Text(state.message));
           }
-          return const SizedBox();
+          return SizedBox();
         },
       ),
     );
@@ -1679,7 +1679,7 @@ class ProfilTab extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Profil Anggota',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -1705,10 +1705,10 @@ class ProfilTab extends StatelessWidget {
                       backgroundColor: BrandColors.hijau,
                       child: Text(
                         initial,
-                        style: const TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1717,12 +1717,12 @@ class ProfilTab extends StatelessWidget {
                             user.namaLengkap,
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.4),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             noAnggota,
                             style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Row(
                             children: [
                               Container(
@@ -1733,10 +1733,10 @@ class ProfilTab extends StatelessWidget {
                                 ),
                                 child: Text(
                                   status,
-                                  style: const TextStyle(fontSize: 10, color: BrandColors.hijau, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 10, color: BrandColors.hijau, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
@@ -1758,7 +1758,7 @@ class ProfilTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // DATA PRIBADI
             _buildSectionHeader('DATA PRIBADI'),
@@ -1787,7 +1787,7 @@ class ProfilTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // KEANGGOTAAN
             _buildSectionHeader('KEANGGOTAAN'),
@@ -1814,7 +1814,7 @@ class ProfilTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // BLBA & KEHADIRAN
             _buildSectionHeader('BLBA & KEHADIRAN'),
@@ -1839,7 +1839,7 @@ class ProfilTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // RIWAYAT & STATISTIK KEHADIRAN
             _buildSectionHeader('RIWAYAT & STATISTIK KEHADIRAN'),
@@ -1865,7 +1865,7 @@ class ProfilTab extends StatelessWidget {
                                 'Kehadiran tingkat saat ini ($tingkatan)',
                                 style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 12),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Text(
                                 '18 / 24 sesi target',
                                 style: TextStyle(fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontSize: 14),
@@ -1879,7 +1879,7 @@ class ProfilTab extends StatelessWidget {
                             color: BrandColors.hijauSoft,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
                               Text(
                                 '75%',
@@ -1894,7 +1894,7 @@ class ProfilTab extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     LinearProgressIndicator(
                       value: 18 / 24,
                       backgroundColor: Colors.grey[200],
@@ -1902,8 +1902,8 @@ class ProfilTab extends StatelessWidget {
                       minHeight: 6,
                       borderRadius: BorderRadius.circular(3),
                     ),
-                    const SizedBox(height: 10),
-                    const Row(
+                    SizedBox(height: 10),
+                    Row(
                       children: [
                         Icon(Icons.check_circle_outline, color: BrandColors.hijau, size: 14),
                         SizedBox(width: 6),
@@ -1917,7 +1917,7 @@ class ProfilTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // PROFIL KEBUGARAN
             _buildSectionHeader('PROFIL KEBUGARAN'),
@@ -1946,7 +1946,7 @@ class ProfilTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             // PENGATURAN TAMPILAN
             _buildSectionHeader('PENGATURAN TAMPILAN'),
@@ -1967,11 +1967,11 @@ class ProfilTab extends StatelessWidget {
                           themeNotifier.isDarkMode ? Icons.dark_mode : Icons.light_mode,
                           color: BrandColors.biruPrimary,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Mode Gelap (Dark Mode)',
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             ),
@@ -1999,7 +1999,7 @@ class ProfilTab extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
 
             // Logout Button
             SizedBox(
@@ -2014,10 +2014,10 @@ class ProfilTab extends StatelessWidget {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('Keluar dari Akun', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text('Keluar dari Akun', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
           ],
         ),
       ),
@@ -2067,9 +2067,9 @@ class KtaDigitalScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kartu Anggota Digital'),
+        title: Text('Kartu Anggota Digital'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -2084,16 +2084,16 @@ class KtaDigitalScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'KARTU ANGGOTA LSP',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: BrandColors.hijau, letterSpacing: 0.5),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   'Satria Nusantara',
                   style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32),
                 Container(
                   width: 200,
                   height: 200,
@@ -2104,12 +2104,12 @@ class KtaDigitalScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text('QR Code Mock', style: TextStyle(fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32),
                 Text(
                   user.namaLengkap,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   user.email,
                   style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
@@ -2131,9 +2131,9 @@ class QrScannerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan QR Presensi'),
+        title: Text('Scan QR Presensi'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -2152,20 +2152,20 @@ class QrScannerScreen extends StatelessWidget {
                   border: Border.all(color: BrandColors.hijau, width: 2),
                 ),
                 alignment: Alignment.center,
-                child: const Icon(Icons.qr_code_scanner, size: 100, color: BrandColors.hijau),
+                child: Icon(Icons.qr_code_scanner, size: 100, color: BrandColors.hijau),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
               Text(
                 'Arahkan kamera ke QR Code sesi latihan',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: 48),
               ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Presensi Berhasil Terdaftar!'),
+                      content: Text('Presensi Berhasil Terdaftar!'),
                       backgroundColor: BrandColors.hijau,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -2180,7 +2180,7 @@ class QrScannerScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                   elevation: 2,
                 ),
-                child: const Text(
+                child: Text(
                   'Simulasi Scan Sukses',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -2202,7 +2202,7 @@ class NafasDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Modul Nafas SN'),
+        title: Text('Modul Nafas SN'),
         backgroundColor: BrandColors.hijau,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -2542,7 +2542,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           // Hero Header Banner
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF0072B8), Color(0xFF0091EA)],
                 begin: Alignment.topLeft,
@@ -2564,13 +2564,13 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                       BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2)),
                     ],
                   ),
-                  child: const Icon(Icons.air, color: Color(0xFF0072B8), size: 28),
+                  child: Icon(Icons.air, color: Color(0xFF0072B8), size: 28),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'SATRIA NUSANTARA',
                         style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2),
@@ -2621,7 +2621,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     child: InkWell(
                       onTap: () {
@@ -2686,13 +2686,13 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Total Sesi', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
-                    const SizedBox(height: 4),
-                    Text('${_historyList.length} Sesi', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.hijau)),
+                    SizedBox(height: 4),
+                    Text('${_historyList.length} Sesi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.hijau)),
                   ],
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(14),
@@ -2704,21 +2704,21 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Total Durasi', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
-                    const SizedBox(height: 4),
-                    Text('$totalMin Menit', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.biru)),
+                    SizedBox(height: 4),
+                    Text('$totalMin Menit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: BrandColors.biru)),
                   ],
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         Text(
           'CATATAN RIWAYAT LATIHAN',
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), letterSpacing: 0.5),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
 
         if (_historyList.isEmpty)
           Container(
@@ -2729,7 +2729,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
               border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
             ),
             child: Column(
-              children: const [
+              children: [
                 Icon(Icons.history_toggle_off, size: 48, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                 SizedBox(height: 8),
                 Text('Belum ada riwayat latihan', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 13)),
@@ -2741,7 +2741,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _historyList.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, __) => SizedBox(height: 10),
             itemBuilder: (context, index) {
               final item = _historyList[index];
               final DateTime dt = item['timestamp'] as DateTime;
@@ -2757,7 +2757,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                 decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
-                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 1))],
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 1))],
                 ),
                 child: Row(
                   children: [
@@ -2770,7 +2770,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                       ),
                       child: Icon(Icons.fitness_center, color: badgeColor, size: 22),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2781,7 +2781,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                                 teknik,
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
@@ -2790,12 +2790,12 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                                 ),
                                 child: Text(
                                   item['status'] as String,
-                                  style: const TextStyle(color: BrandColors.hijau, fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: TextStyle(color: BrandColors.hijau, fontSize: 10, fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 3),
+                          SizedBox(height: 3),
                           Text(
                             dateStr,
                             style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
@@ -2837,17 +2837,17 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           'PILIH TEKNIK PERNAFASAN',
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), letterSpacing: 0.5),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Row(
           children: [
             _buildTypeBtn('iso', 'Sama Kaki', Icons.change_history),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             _buildTypeBtn('equi', 'Sama Sisi', Icons.details),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             _buildTypeBtn('square', 'Segi Empat', Icons.crop_square),
           ],
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
 
         // Steppers Card
         Container(
@@ -2855,7 +2855,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
-            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2864,23 +2864,23 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                 'DURASI WAKTU PER STEP',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), letterSpacing: 0.5),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               _buildStepRow('tarik', 'Tarik Nafas', const Color(0xFF0091EA), _tarikM, _tarikS),
               _buildStepRow('tahan', 'Tahan & Tekan', const Color(0xFFE8B923), _tahanM, _tahanS),
               _buildStepRow('keluar', 'Keluarkan', const Color(0xFF2E8B3D), _keluarM, _keluarS),
               if (_type == 'square')
                 _buildStepRow('tahan2', 'Tahan Nafas', const Color(0xFFC9701A), _tahan2M, _tahan2S),
-              const Divider(height: 24),
+              Divider(height: 24),
               Text(
                 'DURASI TOTAL LATIHAN',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), letterSpacing: 0.5),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               _buildTotalRow(),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // Info & Validation Box
         Container(
@@ -2893,7 +2893,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           child: Row(
             children: [
               Icon(valid ? Icons.info_outline : Icons.warning_amber_rounded, color: valid ? BrandColors.hijau : Colors.amber[800]),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2902,7 +2902,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                       '1 Siklus = $cyc detik (${_steps.map((s) => s['dur']).join('-')})',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valid ? (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1) : Colors.amber[900]),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       valid
                           ? 'Estimasi ≈ $_totalCycles siklus penuh'
@@ -2915,7 +2915,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
 
         // Start button
         SizedBox(
@@ -2929,8 +2929,8 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 2,
             ),
-            icon: const Icon(Icons.play_arrow_rounded, size: 28),
-            label: const Text('MULAI LATIHAN NAFAS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            icon: Icon(Icons.play_arrow_rounded, size: 28),
+            label: Text('MULAI LATIHAN NAFAS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           ),
         ),
       ],
@@ -2957,7 +2957,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           child: Column(
             children: [
               Icon(icon, color: active ? Color(0xFF0072B8) : (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), size: 26),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
@@ -2983,7 +2983,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             height: 10,
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: Text(
               title,
@@ -2991,7 +2991,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             ),
           ),
           _buildMiniStepper(m, (delta) => _handleStepInput(key, true, delta), 'm'),
-          const SizedBox(width: 6),
+          SizedBox(width: 6),
           _buildMiniStepper(s, (delta) => _handleStepInput(key, false, delta), 'd'),
         ],
       ),
@@ -3002,15 +3002,15 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
     return Row(
       children: [
         Icon(Icons.timer_outlined, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), size: 20),
-        const SizedBox(width: 8),
-        const Expanded(
+        SizedBox(width: 8),
+        Expanded(
           child: Text(
             'Total Waktu',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
         ),
         _buildMiniStepper(_totalM, (delta) => _handleTotalInput(true, delta), 'm'),
-        const SizedBox(width: 6),
+        SizedBox(width: 6),
         _buildMiniStepper(_totalS, (delta) => _handleTotalInput(false, delta), 'd'),
       ],
     );
@@ -3029,7 +3029,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
               color: Colors.grey[200],
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(6), bottomLeft: Radius.circular(6)),
             ),
-            child: const Center(child: Text('-', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
+            child: Center(child: Text('-', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
           ),
         ),
         Container(
@@ -3039,7 +3039,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           child: Center(
             child: Text(
               value.toString().padLeft(2, '0'),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
             ),
           ),
         ),
@@ -3052,10 +3052,10 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
               color: Colors.grey[200],
               borderRadius: const BorderRadius.only(topRight: Radius.circular(6), bottomRight: Radius.circular(6)),
             ),
-            child: const Center(child: Text('+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
+            child: Center(child: Text('+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
           ),
         ),
-        const SizedBox(width: 3),
+        SizedBox(width: 3),
         Text(unit, style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
       ],
     );
@@ -3080,7 +3080,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
           decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
-            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
           ),
           child: AnimatedBuilder(
             animation: _animController!,
@@ -3096,7 +3096,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             },
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // Phase Banner
         AnimatedContainer(
@@ -3114,17 +3114,17 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             children: [
               Text(
                 (currentStep['full'] as String).toUpperCase(),
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 1.1),
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 1.1),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 'Sisa Waktu Step: ${_fmt(stepRemaining)}',
-                style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
 
         // Progress & Metrics Card
         Container(
@@ -3142,7 +3142,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                   Text('Sisa Total: ${_fmt(totalRemaining)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: LinearProgressIndicator(
@@ -3155,7 +3155,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
 
         // Control buttons
         Row(
@@ -3171,11 +3171,11 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
-                  label: Text(_isPaused ? 'LANJUT' : 'PAUSE', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  label: Text(_isPaused ? 'LANJUT' : 'PAUSE', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             SizedBox(
               height: 48,
               child: OutlinedButton.icon(
@@ -3185,8 +3185,8 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                   side: BorderSide(color: Colors.red[300]!),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                icon: const Icon(Icons.refresh),
-                label: const Text('RESET', style: TextStyle(fontWeight: FontWeight.bold)),
+                icon: Icon(Icons.refresh),
+                label: Text('RESET', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -3201,23 +3201,23 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
       decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         children: [
-          const Icon(Icons.check_circle_rounded, color: BrandColors.hijau, size: 72),
-          const SizedBox(height: 16),
+          Icon(Icons.check_circle_rounded, color: BrandColors.hijau, size: 72),
+          SizedBox(height: 16),
           Text(
             'LATIHAN SELESAI!',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             'Selamat! Anda telah menyelesaikan seluruh rincian siklus olah pernafasan Satria Nusantara dengan baik.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.4),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -3230,21 +3230,21 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                 Column(
                   children: [
                     Text('Total Waktu', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(_fmt(_totalDur), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                   ],
                 ),
                 Column(
                   children: [
                     Text('Total Siklus', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text('$_totalCycles Siklus', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 48,
@@ -3255,7 +3255,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('KEMBALI KE PENGATURAN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              child: Text('KEMBALI KE PENGATURAN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             ),
           ),
         ],
@@ -3430,7 +3430,7 @@ class _KebugaranScoringScreenState extends State<KebugaranScoringScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Skor kebugaran berhasil diperbarui secara lokal!'),
+          content: Text('Skor kebugaran berhasil diperbarui secara lokal!'),
           backgroundColor: BrandColors.hijau,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -3448,9 +3448,9 @@ class _KebugaranScoringScreenState extends State<KebugaranScoringScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Input Nilai Tes Kebugaran'),
+        title: Text('Input Nilai Tes Kebugaran'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -3468,12 +3468,12 @@ class _KebugaranScoringScreenState extends State<KebugaranScoringScreen> {
               ),
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     backgroundColor: BrandColors.hijauSoft,
                     child: Icon(Icons.person, color: BrandColors.hijau),
                   ),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                  SizedBox(width: 12),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -3501,33 +3501,33 @@ class _KebugaranScoringScreenState extends State<KebugaranScoringScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
-            const Text(
+            Text(
               '5 Parameter Tes Kebugaran Fisik (SN)',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // 1. Tahan Nafas
             _buildField('Tahan Nafas Dalam Air (detik)', _nafasController, Icons.timer_outlined, TextInputType.number),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // 2. Push Ups
             _buildField('Push Ups (repetisi / 1 menit)', _pushupsController, Icons.fitness_center_outlined, TextInputType.number),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // 3. Sit Ups
             _buildField('Sit Ups (repetisi / 1 menit)', _situpsController, Icons.accessibility_new_outlined, TextInputType.number),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // 4. Kelenturan / Sit & Reach
             _buildField('Sit & Reach / Kelenturan (cm)', _flexibilityController, Icons.straighten_outlined, TextInputType.number),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
 
             // 5. Shuttle Run
             _buildField('Shuttle Run (detik)', _shuttleRunController, Icons.directions_run_outlined, const TextInputType.numberWithOptions(decimal: true)),
-            const SizedBox(height: 28),
+            SizedBox(height: 28),
 
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submitScores,
@@ -3539,8 +3539,8 @@ class _KebugaranScoringScreenState extends State<KebugaranScoringScreen> {
                 elevation: 2,
               ),
               child: _isSubmitting
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('Simpan Nilai Kebugaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : Text('Simpan Nilai Kebugaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             ),
           ],
         ),
@@ -3598,11 +3598,11 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Anggota Baru'),
+        title: Text('Daftar Anggota Baru'),
         leading: _currentStep == 3
             ? null
             : IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                icon: Icon(Icons.arrow_back_ios_new, size: 20),
                 onPressed: () {
                   if (_currentStep > 0) {
                     _pageController.previousPage(
@@ -3637,17 +3637,17 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildProgressBar(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Text(
             'Buat akun',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             'Gunakan email aktif yang bisa dihubungi',
             style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -3656,7 +3656,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextField(
             controller: _passwordController,
             obscureText: true,
@@ -3666,7 +3666,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextField(
             controller: _confirmPasswordController,
             obscureText: true,
@@ -3675,7 +3675,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           ElevatedButton(
             onPressed: () {
               _pageController.nextPage(
@@ -3689,7 +3689,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('Lanjut', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -3698,7 +3698,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Row(
             children: [
               Expanded(child: Divider(color: Colors.grey[300])),
@@ -3712,7 +3712,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               Expanded(child: Divider(color: Colors.grey[300])),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           OutlinedButton(
             onPressed: () => _triggerGoogleSignIn(context),
             style: OutlinedButton.styleFrom(
@@ -3727,7 +3727,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                   base64Decode(kGmailLogoBase64),
                   height: 14,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Text(
                   'Registrasi via Gmail',
                   style: TextStyle(
@@ -3752,17 +3752,17 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildProgressBar(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Text(
             'Data diri',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             'Informasi ini tampil di kartu anggota kamu',
             style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           TextField(
             controller: _nameController,
             decoration: InputDecoration(
@@ -3771,7 +3771,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           TextField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
@@ -3781,7 +3781,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -3794,7 +3794,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: DropdownButtonFormField<String>(
                   value: _gender,
@@ -3810,7 +3810,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           DropdownButtonFormField<String>(
             value: _selectedProvince,
             decoration: InputDecoration(
@@ -3822,7 +3822,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                 .toList(),
             onChanged: (value) => setState(() => _selectedProvince = value!),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           DropdownButtonFormField<String>(
             value: _selectedCity,
             decoration: InputDecoration(
@@ -3834,14 +3834,14 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                 .toList(),
             onChanged: (value) => setState(() => _selectedCity = value!),
           ),
-          const SizedBox(height: 20),
-          const Divider(),
-          const SizedBox(height: 10),
-          const Text(
+          SizedBox(height: 20),
+          Divider(),
+          SizedBox(height: 10),
+          Text(
             'Tingkatan (khusus anggota lama)',
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: BrandColors.hijau),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -3857,7 +3857,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                   onChanged: (value) => setState(() => _selectedTingkat = value!),
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: DropdownButtonFormField<String>(
                   value: _selectedJurus,
@@ -3873,12 +3873,12 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           Text(
             'Anggota baru? Kosongkan bagian ini.',
             style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
           ),
-          const SizedBox(height: 28),
+          SizedBox(height: 28),
           ElevatedButton(
             onPressed: () {
               _pageController.nextPage(
@@ -3892,7 +3892,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('Lanjut', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -3915,26 +3915,26 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildProgressBar(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Text(
             'Pilih unit latihan',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             'Pilih unit terdekat dari lokasi kamu',
             style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           TextField(
             controller: _searchUnitController,
             decoration: InputDecoration(
               labelText: 'Unit',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           DropdownButtonFormField<String>(
             value: _selectedUnit,
             decoration: InputDecoration(
@@ -3949,7 +3949,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
             ].map((label) => DropdownMenuItem(value: label, child: Text(label))).toList(),
             onChanged: (value) => setState(() => _selectedUnit = value!),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           // Selected Unit Card
           Container(
             padding: const EdgeInsets.all(16),
@@ -3961,7 +3961,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
                     Icon(Icons.location_on_outlined, color: BrandColors.hijau, size: 16),
                     SizedBox(width: 8),
@@ -3971,16 +3971,16 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 _buildUnitDetailRow('Jadwal', 'Sabtu & Selasa'),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 _buildUnitDetailRow('Jam', '07.00 - 09.00 WIB'),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 _buildUnitDetailRow('Lokasi', 'Taman Balai Kota, Jl. Wastukencana'),
               ],
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           ElevatedButton(
             onPressed: () {
               _pageController.nextPage(
@@ -3994,7 +3994,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text('Kirim pendaftaran', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text('Kirim pendaftaran', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -4017,13 +4017,13 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
             ),
             child: Column(
               children: [
-                const Icon(Icons.access_time_filled, size: 54, color: Color(0xFF9A7000)),
-                const SizedBox(height: 12),
-                const Text(
+                Icon(Icons.access_time_filled, size: 54, color: Color(0xFF9A7000)),
+                SizedBox(height: 12),
+                Text(
                   'Pendaftaran terkirim!',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF7A5200)),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   'Sedang menunggu verifikasi dari pengurus unit. Kamu akan mendapat notifikasi setelah diproses.',
                   textAlign: TextAlign.center,
@@ -4032,7 +4032,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Card(
             elevation: 2,
             shadowColor: Colors.black12,
@@ -4042,14 +4042,14 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               child: Column(
                 children: [
                   _buildSummaryRow('Nama', _nameController.text.isEmpty ? 'Budi Santoso' : _nameController.text),
-                  const Divider(height: 20),
+                  Divider(height: 20),
                   _buildSummaryRow('Cabang', 'Bandung'),
-                  const Divider(height: 20),
+                  Divider(height: 20),
                   _buildSummaryRow('Unit', _selectedUnit.split(" · ")[0]),
-                  const Divider(height: 20),
+                  Divider(height: 20),
                   _buildSummaryRow('Tingkatan', '$_selectedTingkat — $_selectedJurus'),
-                  const Divider(height: 20),
-                  const Row(
+                  Divider(height: 20),
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Status', style: TextStyle(fontSize: 12.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
@@ -4063,13 +4063,13 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             'Pastikan nomor HP aktif agar bisa dihubungi pengurus jika diperlukan.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
           ),
-          const SizedBox(height: 36),
+          SizedBox(height: 36),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
@@ -4078,7 +4078,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text('Kembali ke Login', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text('Kembali ke Login', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -4104,13 +4104,13 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           radius: 16,
           backgroundColor: isActive ? BrandColors.hijau : Colors.grey[300],
           child: _currentStep > stepNum - 1
-              ? const Icon(Icons.check, size: 14, color: Colors.white)
+              ? Icon(Icons.check, size: 14, color: Colors.white)
               : Text(
                   '$stepNum',
                   style: TextStyle(fontSize: 12, color: isActive ? Colors.white : (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontWeight: FontWeight.bold),
                 ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           label,
           style: TextStyle(
@@ -4265,16 +4265,16 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
+                    child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ),
               ],
@@ -4305,21 +4305,21 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           subTitle,
                           style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white.withOpacity(0.85), letterSpacing: 0.8),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         Text(
                           title,
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white, height: 1.2),
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white, height: 1.2),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         _buildDetailItem(Icons.calendar_today_outlined, date),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         _buildDetailItem(Icons.access_time, time),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         _buildDetailItem(Icons.location_on_outlined, location),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   // Quota & Fee stat grid
                   Row(
                     children: [
@@ -4338,12 +4338,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                     quota,
                                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: primaryColor),
                                   ),
-                                  const SizedBox(height: 2),
+                                  SizedBox(height: 2),
                                   Text(
                                     'Peserta terdaftar',
                                     style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                                   ),
-                                  const SizedBox(height: 4),
+                                  SizedBox(height: 4),
                                   Text(
                                     'Lihat daftar →',
                                     style: TextStyle(fontSize: 9, color: primaryColor, fontWeight: FontWeight.bold),
@@ -4354,23 +4354,23 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16),
                       Expanded(
                         child: Card(
                           elevation: 2,
                           shadowColor: Colors.black12,
                           color: const Color(0xFFFFF8E0),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: BrandColors.kuning, width: 0.5)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: BrandColors.kuning, width: 0.5)),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             child: Column(
                               children: [
                                 Text(
                                   feeStr,
-                                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF7A6000)),
+                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF7A6000)),
                                 ),
-                                const SizedBox(height: 2),
-                                const Text(
+                                SizedBox(height: 2),
+                                Text(
                                   'Biaya pendaftaran',
                                   style: TextStyle(fontSize: 11, color: Color(0xFF9A7000)),
                                 ),
@@ -4381,19 +4381,19 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Text(
                     description,
                     style: TextStyle(fontSize: 13.5, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), height: 1.6),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   // Render options specifically for ekt
                   if (type == 'ekt') ...[
                     Text(
                       'Pilih partisipasi Anda',
                       style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _buildEktOptionCard(
                       'latgab',
                       'Latgab saja',
@@ -4402,7 +4402,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       _selectedEktOption == 'latgab',
                       primaryColor,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _buildEktOptionCard(
                       'ekt',
                       'Latgab + EKT Jurus',
@@ -4410,12 +4410,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       'Rp 57.500',
                       _selectedEktOption == 'ekt',
                       primaryColor,
-                      badges: const [
+                      badges: [
                         'Dasar Jurus 5',
                         'Dasar Jurus 6',
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     // Syarat box for EKT
                     if (_selectedEktOption == 'ekt') ...[
                       Container(
@@ -4428,24 +4428,24 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Syarat EKT Jurus',
                               style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A5C2A), fontSize: 13),
                             ),
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12),
                             _buildSyaratRow('Min. 8 sesi hadir jurus ini', '11 sesi', true),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6),
                             _buildSyaratRow('Status anggota aktif', 'Aktif', true),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6),
                             _buildSyaratRow('BLBA bulan berjalan lunas', 'Lunas', true),
-                            const SizedBox(height: 6),
-                            const Divider(color: Colors.black12),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 6),
+                            Divider(color: Colors.black12),
+                            SizedBox(height: 4),
                             _buildSyaratRow('Lulus EKT Non Jurus — Pengayaan I', 'Belum', false),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                     ],
                   ],
                   // Warning BLBA simulator for ekt-nj
@@ -4457,7 +4457,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: const Color(0xFFF0A0A0), width: 0.5),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Icon(Icons.warning_amber_rounded, color: Color(0xFF8C1C1C), size: 16),
                           SizedBox(width: 8),
@@ -4470,7 +4470,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                   ],
                   // Registration limit indicator
                   Container(
@@ -4479,7 +4479,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       color: const Color(0xFFFFF8E0),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
                         Icon(Icons.access_time, color: Color(0xFF7A6000), size: 20),
                         SizedBox(width: 12),
@@ -4502,7 +4502,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  SizedBox(height: 36),
                   ElevatedButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -4523,10 +4523,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     ),
                     child: Text(
                       'Daftar & Bayar Sekarang — $feeStr',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                 ],
               ),
             ),
@@ -4540,7 +4540,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     return Row(
       children: [
         Icon(icon, size: 14, color: Colors.white.withOpacity(0.85)),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: Text(
             text,
@@ -4581,10 +4581,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                 color: isSelected ? color : Colors.transparent,
               ),
               child: isSelected
-                  ? const Icon(Icons.check, size: 12, color: Colors.white)
+                  ? Icon(Icons.check, size: 12, color: Colors.white)
                   : null,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -4593,24 +4593,24 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     title,
                     style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? color : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontSize: 13.5),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     subTitle,
                     style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.4),
                   ),
                   if (badges != null) ...[
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Row(
                       children: [
                         _buildBadge(badges[0], Colors.amber),
-                        const SizedBox(width: 6),
-                        const Icon(Icons.arrow_forward, size: 10, color: Colors.grey),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
+                        Icon(Icons.arrow_forward, size: 10, color: Colors.grey),
+                        SizedBox(width: 6),
                         _buildBadge(badges[1], Colors.green),
                       ],
                     ),
                   ],
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
@@ -4642,7 +4642,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.military_tech_outlined, size: 11, color: color),
-          const SizedBox(width: 3),
+          SizedBox(width: 3),
           Text(
             label,
             style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: color),
@@ -4660,7 +4660,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           size: 16,
           color: isPassed ? const Color(0xFF1A5C2A) : BrandColors.merah,
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: Text(
             label,
@@ -4788,19 +4788,19 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                     decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
+                    child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Daftar Peserta',
                         style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(
                         eventDetails,
                         maxLines: 1,
@@ -4839,11 +4839,11 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
               onChanged: (val) => setState(() => _searchQuery = val),
               decoration: InputDecoration(
                 hintText: 'Cari nama, unit, atau tingkatan...',
-                hintStyle: const TextStyle(fontSize: 13),
-                prefixIcon: const Icon(Icons.search, size: 18),
+                hintStyle: TextStyle(fontSize: 13),
+                prefixIcon: Icon(Icons.search, size: 18),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, size: 18),
+                        icon: Icon(Icons.clear, size: 18),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -4865,7 +4865,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
           // Grouped list
           Expanded(
             child: filtered.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text('Tidak ada peserta ditemukan', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
                   )
                 : ListView.builder(
@@ -4889,7 +4889,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                                   Row(
                                     children: [
                                       Icon(Icons.location_on_outlined, color: primaryColor, size: 14),
-                                      const SizedBox(width: 6),
+                                      SizedBox(width: 6),
                                       Text(
                                         '${item['cabang']} · ${item['unit']}',
                                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, color: primaryColor),
@@ -4906,7 +4906,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                           ],
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
                             ),
                             child: Row(
@@ -4915,7 +4915,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                                   '${index + 1}',
                                   style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontWeight: FontWeight.bold),
                                 ),
-                                const SizedBox(width: 14),
+                                SizedBox(width: 14),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -4924,7 +4924,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                                         item['name']!,
                                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                                       ),
-                                      const SizedBox(height: 2),
+                                      SizedBox(height: 2),
                                       Text(
                                         item['level']!,
                                         style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
@@ -4959,7 +4959,7 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                                 style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                               ),
                             ),
-                            const Divider(height: 1),
+                            Divider(height: 1),
                           ],
                         ],
                       );
@@ -5011,7 +5011,7 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Pilih E-wallet', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+          title: Text('Pilih E-wallet', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
         ),
         body: BlocBuilder<IuranBloc, IuranState>(
           builder: (context, state) {
@@ -5033,7 +5033,7 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
                   ),
                   child: ListTile(
                     leading: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color),
-                    title: Text(wallet['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(wallet['name'] as String, style: TextStyle(fontWeight: FontWeight.bold)),
                     trailing: Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                     onTap: () {
                       if (activeBill != null) {
@@ -5072,20 +5072,20 @@ class PaymentSuccessScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.check_circle, color: BrandColors.hijau, size: 80),
-                const SizedBox(height: 24),
+                Icon(Icons.check_circle, color: BrandColors.hijau, size: 80),
+                SizedBox(height: 24),
                 Text(
                   'Pembayaran Berhasil',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Text(
                   'Pembayaran BLBA Anda via $walletName telah berhasil dikonfirmasi.',
                   style: TextStyle(fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -5099,7 +5099,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
                     },
-                    child: const Text('Kembali ke Beranda', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text('Kembali ke Beranda', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -5121,7 +5121,7 @@ class SesiDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Jadwal', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Detail Jadwal', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -5139,7 +5139,7 @@ class SesiDetailScreen extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: BrandColors.hijau,
                       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                     ),
@@ -5148,12 +5148,12 @@ class SesiDetailScreen extends StatelessWidget {
                       children: [
                         Text(
                           sesi.jenis == 'Rutin' ? 'Latihan Rutin' : 'Latihan Gabungan',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           '📅 ${sesi.tanggal}  ·  ${sesi.jamMulai} - ${sesi.jamSelesai} WIB',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),
@@ -5163,11 +5163,11 @@ class SesiDetailScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         _buildRow('Pelatih', sesi.pelatihNama.isNotEmpty ? sesi.pelatihNama : 'Pak Budi Susanto'),
-                        const Divider(height: 24),
+                        Divider(height: 24),
                         _buildRow('Lokasi', sesi.lokasi),
-                        const Divider(height: 24),
+                        Divider(height: 24),
                         _buildRow('Materi', sesi.materi),
-                        const Divider(height: 24),
+                        Divider(height: 24),
                         _buildRow('Status', 'Aktif', isBadge: true, badgeColor: BrandColors.hijauSoft, textColor: BrandColors.hijau),
                       ],
                     ),
@@ -5175,7 +5175,7 @@ class SesiDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             // Sesi Tes Kebugaran card
             Container(
               padding: const EdgeInsets.all(16),
@@ -5187,7 +5187,7 @@ class SesiDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.monitor_heart_outlined, color: Colors.purple),
                       SizedBox(width: 8),
@@ -5197,12 +5197,12 @@ class SesiDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     'Progress input: 28 dari 31 peserta',
                     style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: 28 / 31,
                     backgroundColor: Colors.grey[300],
@@ -5210,7 +5210,7 @@ class SesiDetailScreen extends StatelessWidget {
                     minHeight: 6,
                     borderRadius: BorderRadius.circular(3),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -5222,18 +5222,18 @@ class SesiDetailScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushNamed(context, '/kebugaran');
                       },
-                      child: const Text('Input Hasil Tes', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text('Input Hasil Tes', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Text(
               'Absensi Sesi Ini',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -5244,14 +5244,14 @@ class SesiDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Hadir / Total', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 13)),
                         Text('28 / 31', style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau, fontSize: 14)),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     LinearProgressIndicator(
                       value: 28 / 31,
                       backgroundColor: Colors.grey[200],
@@ -5274,7 +5274,7 @@ class SesiDetailScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 13)),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         Flexible(
           child: isBadge
               ? Container(
@@ -5307,7 +5307,7 @@ class NewsDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Detail', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -5333,7 +5333,7 @@ class NewsDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(color: const Color(0xFFE8C42A), width: 0.5),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.campaign_outlined, size: 12, color: Color(0xFF7A6000)),
@@ -5345,13 +5345,13 @@ class NewsDetailScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  SizedBox(height: 10),
+                  Text(
                     'Latgab & EKT Cabang Bandung — Juni 2026 dibuka pendaftaran',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: BrandColors.hijau, height: 1.4),
                   ),
-                  const SizedBox(height: 10),
-                  const Row(
+                  SizedBox(height: 10),
+                  Row(
                     children: [
                       Icon(Icons.access_time, size: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                       SizedBox(width: 4),
@@ -5362,42 +5362,42 @@ class NewsDetailScreen extends StatelessWidget {
                       Text('Cabang Bandung', style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), fontSize: 10)),
                     ],
                   ),
-                  const Divider(height: 24),
-                  const Text(
+                  Divider(height: 24),
+                  Text(
                     'Pendaftaran EKT (Evaluasi Kenaikan Tingkat) Cabang Bandung resmi dibuka untuk periode Juni 2026.',
                     style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), height: 1.7),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     'Detail kegiatan:',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Text(
                     '📅 Tanggal: 15 Juni 2026\n🕗 Waktu: 08.00–12.00 WIB\n📍 Lokasi: GOR Saparua, Kota Bandung\n💰 Biaya: Rp 75.000',
                     style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.7),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     'Syarat ikut EKT:',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Text(
                     '✓ Minimal kehadiran latihan 10 sesi pada tingkat saat ini\n✓ BLBA bulan berjalan lunas\n✓ Mendapat rekomendasi dari pelatih unit',
                     style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.7),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     'Daftar melalui menu Latgab & EKT di aplikasi ini sebelum 10 Juni 2026.',
                     style: TextStyle(fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), fontWeight: FontWeight.bold, height: 1.7),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   Text(
                     'Dokumentasi Kegiatan:',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   SizedBox(
                     height: 90,
                     child: ListView(
@@ -5410,7 +5410,7 @@ class NewsDetailScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                 ],
               ),
             ),
@@ -5436,7 +5436,7 @@ class NewsDetailScreen extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => Container(
             color: Colors.grey[100],
-            child: const Icon(Icons.image_outlined, color: Colors.grey),
+            child: Icon(Icons.image_outlined, color: Colors.grey),
           ),
         ),
       ),
@@ -5465,7 +5465,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lengkapi Data', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Lengkapi Data', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -5486,24 +5486,24 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                       backgroundColor: Colors.blue,
                       child: Text(
                         initial,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                           Text(email, style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 11.5)),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: BrandColors.hijauSoft,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.check_circle, size: 10, color: BrandColors.hijau),
@@ -5519,14 +5519,14 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Text(
               'Data yang perlu dilengkapi',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text('Nomor HP *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
@@ -5537,15 +5537,15 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text('Tanggal Lahir *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             TextField(
               controller: _birthController,
               readOnly: true,
               decoration: InputDecoration(
                 hintText: 'Pilih Tanggal Lahir',
-                suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
+                suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
@@ -5561,9 +5561,9 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                 }
               },
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text('Jenis Kelamin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -5575,11 +5575,11 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () => setState(() => _gender = 'Laki-laki'),
-                    icon: const Icon(Icons.male, size: 16),
-                    label: const Text('Laki-laki', style: TextStyle(fontWeight: FontWeight.bold)),
+                    icon: Icon(Icons.male, size: 16),
+                    label: Text('Laki-laki', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
@@ -5589,13 +5589,13 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () => setState(() => _gender = 'Perempuan'),
-                    icon: const Icon(Icons.female, size: 16),
-                    label: const Text('Perempuan', style: TextStyle(fontWeight: FontWeight.bold)),
+                    icon: Icon(Icons.female, size: 16),
+                    label: Text('Perempuan', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
             SizedBox(
               height: 48,
               child: ElevatedButton(
@@ -5628,7 +5628,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                     Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
                   }
                 },
-                child: const Text('Daftar Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text('Daftar Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -5662,7 +5662,7 @@ class WaitVerificationScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: BrandColors.kuning),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
                     Icon(Icons.access_time_filled, color: Colors.orange, size: 48),
                     SizedBox(height: 12),
@@ -5680,7 +5680,7 @@ class WaitVerificationScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Card(
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -5692,36 +5692,36 @@ class WaitVerificationScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       _buildRow('Nama', name),
-                      const Divider(height: 20),
+                      Divider(height: 20),
                       _buildRow('Cabang', 'Bandung'),
-                      const Divider(height: 20),
+                      Divider(height: 20),
                       _buildRow('Unit', 'Unit Balkot'),
-                      const Divider(height: 20),
+                      Divider(height: 20),
                       _buildRow('Tingkatan', 'Dasar — Jurus 5'),
-                      const Divider(height: 20),
+                      Divider(height: 20),
                       _buildRow('Status', 'Menunggu', textColor: Colors.orange),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(
                 'Pastikan nomor HP aktif agar bisa dihubungi pengurus jika diperlukan.',
                 style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               SizedBox(
                 height: 48,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: BrandColors.hijau),
+                    side: BorderSide(color: BrandColors.hijau),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: () {
                     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                   },
-                  child: const Text('Kembali ke Login', style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau)),
+                  child: Text('Kembali ke Login', style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau)),
                 ),
               ),
             ],
@@ -5754,7 +5754,7 @@ class KehadiranDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Kehadiran & Iuran', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Detail Kehadiran & Iuran', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -5763,7 +5763,7 @@ class KehadiranDetailScreen extends StatelessWidget {
             // Header Progress Card
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [BrandColors.hijau, BrandColors.hijauMuda],
                   begin: Alignment.topLeft,
@@ -5778,7 +5778,7 @@ class KehadiranDetailScreen extends StatelessWidget {
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text('Kehadiran Aktif', style: TextStyle(color: Colors.white70, fontSize: 12)),
                           SizedBox(height: 4),
                           Text('88 Sesi', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
@@ -5789,7 +5789,7 @@ class KehadiranDetailScreen extends StatelessWidget {
                         decoration: BoxDecoration(color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(Icons.military_tech, color: Colors.amber, size: 16),
                             SizedBox(width: 4),
@@ -5799,9 +5799,9 @@ class KehadiranDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Progress Tingkat saat ini (18 / 24 sesi target)', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 16),
+                  Text('Progress Tingkat saat ini (18 / 24 sesi target)', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
+                  SizedBox(height: 6),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
                     child: LinearProgressIndicator(
@@ -5811,8 +5811,8 @@ class KehadiranDetailScreen extends StatelessWidget {
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.amber[400]!),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Row(
+                  SizedBox(height: 8),
+                  Row(
                     children: [
                       Icon(Icons.check_circle, color: Colors.white, size: 12),
                       SizedBox(width: 4),
@@ -5830,7 +5830,7 @@ class KehadiranDetailScreen extends StatelessWidget {
                 children: [
                   // SECTION: STATUS IURAN BLBA TERKAIT
                   Text('STATUS IURAN & BLBA', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), letterSpacing: 0.5)),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Card(
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -5844,7 +5844,7 @@ class KehadiranDetailScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Row(
+                              Row(
                                 children: [
                                   Icon(Icons.verified, color: BrandColors.hijau, size: 18),
                                   SizedBox(width: 8),
@@ -5854,40 +5854,40 @@ class KehadiranDetailScreen extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(color: BrandColors.hijauSoft, borderRadius: BorderRadius.circular(6)),
-                                child: const Text('Lunas', style: TextStyle(color: BrandColors.hijau, fontWeight: FontWeight.bold, fontSize: 10)),
+                                child: Text('Lunas', style: TextStyle(color: BrandColors.hijau, fontWeight: FontWeight.bold, fontSize: 10)),
                               ),
                             ],
                           ),
-                          const Divider(height: 20),
+                          Divider(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
+                            children: [
                               Text('Total Riwayat Pembayaran', style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
                               Text('14 dari 15 Bulan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
+                            children: [
                               Text('Nominal Iuran Rutin', style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
                               Text('Rp 25.000 / Bulan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
                             ],
                           ),
-                          const SizedBox(height: 14),
+                          SizedBox(height: 14),
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton.icon(
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: BrandColors.hijau),
+                                side: BorderSide(color: BrandColors.hijau),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                               ),
                               onPressed: () {
                                 Navigator.pushNamed(context, '/home', arguments: {'tab': 2});
                               },
-                              icon: const Icon(Icons.receipt_long, size: 16, color: BrandColors.hijau),
-                              label: const Text('Lihat Riwayat Histori Iuran Lengkap', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: BrandColors.hijau)),
+                              icon: Icon(Icons.receipt_long, size: 16, color: BrandColors.hijau),
+                              label: Text('Lihat Riwayat Histori Iuran Lengkap', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: BrandColors.hijau)),
                             ),
                           ),
                         ],
@@ -5895,11 +5895,11 @@ class KehadiranDetailScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // SECTION: RIWAYAT SESI KEHADIRAN TERKINI
                   Text('RIWAYAT KEHADIRAN TERKINI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3), letterSpacing: 0.5)),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   _buildAttendanceItem('Sabtu, 18 Juli 2026', 'Unit Balkot · Sesi Pagi', 'Hadir Rutin', BrandColors.hijau, Icons.check_circle_outline),
                   _buildAttendanceItem('Selasa, 14 Juli 2026', 'Unit Balkot · Sesi Malam', 'Hadir Rutin', BrandColors.hijau, Icons.check_circle_outline),
                   _buildAttendanceItem('Sabtu, 11 Juli 2026', 'GOR Saparua · Latgab Cabang', 'Latgab', Colors.blue, Icons.stars),
@@ -5933,13 +5933,13 @@ class KehadiranDetailScreen extends StatelessWidget {
             ),
             child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(date, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(location, style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
               ],
             ),
