@@ -1010,6 +1010,8 @@ void _processGoogleSignIn(BuildContext context, String email, String name, Strin
       );
     }
   }
+}
+
 Widget _buildGoogleAccountItem(
   BuildContext context,
   String name,
