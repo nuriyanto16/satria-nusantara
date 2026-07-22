@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
 import '../blocs/auth_bloc.dart';
@@ -782,7 +783,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             const SizedBox(height: 16),
                             OutlinedButton(
-                              onPressed: () => _showGoogleAccountPicker(context),
+                              onPressed: () => _triggerGoogleSignIn(context),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(color: Colors.grey[300]!),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -841,84 +842,34 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  void _showGoogleAccountPicker(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.center,
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[350],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Pilih Akun Gmail',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: BrandColors.text1),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'untuk melanjutkan ke Satria Nusantara',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: BrandColors.text2),
-              ),
-              const SizedBox(height: 24),
-              _buildGoogleAccountItem(
-                context,
-                'Ahmad Santoso',
-                'ahmad.santoso@gmail.com',
-                'A',
-                Colors.blue,
-              ),
-              const Divider(),
-              _buildGoogleAccountItem(
-                context,
-                'Budi Hartono',
-                'budi.hartono@gmail.com',
-                'B',
-                Colors.green,
-              ),
-              const Divider(),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.grey[200],
-                  child: const Icon(Icons.person_add_alt_1_outlined, color: Colors.grey),
-                ),
-                title: const Text(
-                  'Gunakan akun lain',
-                  style: TextStyle(fontSize: 13.5, color: Colors.blue, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showCustomGoogleAccountDialog(context);
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }
 
 // ─── TOP LEVEL GOOGLE AUTH HELPERS ──────────────────────────────────────────
+Future<void> _triggerGoogleSignIn(BuildContext context) async {
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile'],
+    );
+    final GoogleSignInAccount? account = await googleSignIn.signIn();
+    if (account != null) {
+      final email = account.email;
+      final name = (account.displayName != null && account.displayName!.isNotEmpty)
+          ? account.displayName!
+          : email.split('@')[0];
+      final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
+      final googleId = account.id;
+      _processGoogleSignIn(context, email, name, initial, googleId: googleId);
+      return;
+    }
+  } catch (e) {
+    debugPrint('Google Sign In Native/Web Error: $e');
+  }
+
+  if (context.mounted) {
+    _showCustomGoogleAccountDialog(context);
+  }
+}
+
 void _showCustomGoogleAccountDialog(BuildContext context) {
   final emailController = TextEditingController();
   final nameController = TextEditingController();
@@ -931,7 +882,7 @@ void _showCustomGoogleAccountDialog(BuildContext context) {
           children: [
             Icon(Icons.account_circle, color: Colors.blue, size: 28),
             SizedBox(width: 8),
-            Text('Akun Gmail Lain', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('Masuk dengan Akun Gmail', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
         content: Column(
@@ -942,7 +893,7 @@ void _showCustomGoogleAccountDialog(BuildContext context) {
               style: const TextStyle(fontSize: 13.5),
               decoration: InputDecoration(
                 labelText: 'Nama Lengkap',
-                hintText: 'Ahmad Santoso',
+                hintText: 'Masukkan nama Anda',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
@@ -954,7 +905,7 @@ void _showCustomGoogleAccountDialog(BuildContext context) {
               style: const TextStyle(fontSize: 13.5),
               decoration: InputDecoration(
                 labelText: 'Alamat Email Gmail',
-                hintText: 'ahmad.santoso@gmail.com',
+                hintText: 'nama@gmail.com',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
@@ -988,12 +939,12 @@ void _showCustomGoogleAccountDialog(BuildContext context) {
   );
 }
 
-void _processGoogleSignIn(BuildContext context, String email, String name, String initial) async {
+void _processGoogleSignIn(BuildContext context, String email, String name, String initial, {String? googleId}) async {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text('Memproses masuk via Gmail: $email...')),
   );
   try {
-    final res = await AuthRepository().loginGoogle(email, name, googleId: 'goog_$email');
+    final res = await AuthRepository().loginGoogle(email, name, googleId: googleId ?? 'goog_$email');
     if (context.mounted) {
       context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
       ScaffoldMessenger.of(context).showSnackBar(
@@ -3809,7 +3760,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           ),
           const SizedBox(height: 16),
           OutlinedButton(
-            onPressed: () => _showGoogleAccountPicker(context),
+            onPressed: () => _triggerGoogleSignIn(context),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: Colors.grey[300]!),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -4255,111 +4206,6 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
         Text(label, style: const TextStyle(fontSize: 12.5, color: BrandColors.text2)),
         Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: BrandColors.text1)),
       ],
-    );
-  }
-
-  void _showGoogleAccountPicker(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.center,
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[350],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Pilih Akun Gmail / Gmail',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: BrandColors.text1),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'untuk melanjutkan ke Satria Nusantara',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: BrandColors.text2),
-              ),
-              const SizedBox(height: 24),
-              _buildGoogleAccountItem(
-                context,
-                'Ahmad Santoso',
-                'ahmad.santoso@gmail.com',
-                'A',
-                Colors.blue,
-              ),
-              const Divider(),
-              _buildGoogleAccountItem(
-                context,
-                'Budi Hartono',
-                'budi.hartono@gmail.com',
-                'B',
-                Colors.green,
-              ),
-              const Divider(),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.grey[200],
-                  child: const Icon(Icons.person_add_alt_1_outlined, color: Colors.grey),
-                ),
-                title: const Text(
-                  'Gunakan akun lain',
-                  style: TextStyle(fontSize: 13.5, color: Colors.blue, fontWeight: FontWeight.bold),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showCustomGoogleAccountDialog(context);
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGoogleAccountItem(
-    BuildContext context,
-    String name,
-    String email,
-    String initial,
-    Color color,
-  ) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: color,
-        child: Text(
-          initial,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ),
-      title: Text(
-        name,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: BrandColors.text1),
-      ),
-      subtitle: Text(
-        email,
-        style: const TextStyle(fontSize: 11.5, color: BrandColors.text2),
-      ),
-      onTap: () {
-        Navigator.pop(context);
-        _processGoogleSignIn(context, email, name, initial);
-      },
     );
   }
 }
