@@ -1010,15 +1010,13 @@ void _processGoogleSignIn(BuildContext context, String email, String name, Strin
       );
     }
   }
-}
-
-  Widget _buildGoogleAccountItem(
-    BuildContext context,
-    String name,
-    String email,
-    String initial,
-    Color color,
-  ) {
+Widget _buildGoogleAccountItem(
+  BuildContext context,
+  String name,
+  String email,
+  String initial,
+  Color color,
+) {
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: color,
@@ -1041,7 +1039,6 @@ void _processGoogleSignIn(BuildContext context, String email, String name, Strin
       },
     );
   }
-}
 
 // ─── HOME SCREEN ─────────────────────────────────────────────────────────────
 class HomeScreen extends StatefulWidget {
