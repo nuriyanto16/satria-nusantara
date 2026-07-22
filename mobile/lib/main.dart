@@ -57,6 +57,7 @@ class MyApp extends StatelessWidget {
               '/google_complete': (context) => const GoogleDataCompleteScreen(),
               '/e_wallet_selection': (context) => const EWalletSelectionScreen(),
               '/payment_success': (context) => const PaymentSuccessScreen(),
+              '/transfer_bukti': (context) => const TransferBuktiScreen(),
               '/sesi_detail': (context) => const SesiDetailScreen(),
               '/news_detail': (context) => const NewsDetailScreen(),
               '/kehadiran_detail': (context) => const KehadiranDetailScreen(),

@@ -5225,20 +5225,31 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Pilih E-wallet', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+          title: Text('Pilih Metode Pembayaran', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
         ),
         body: BlocBuilder<IuranBloc, IuranState>(
           builder: (context, state) {
             if (state is IuranLoading) {
-              return const ListSkeletonWidget(itemCount: 4);
+              return const ListSkeletonWidget(itemCount: 5);
             }
 
-            return ListView.builder(
+            return ListView(
               padding: const EdgeInsets.all(20),
-              itemCount: wallets.length,
-              itemBuilder: (context, index) {
-                final wallet = wallets[index];
-                return Card(
+              children: [
+                // ── E-Wallet section ──────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'E-Wallet',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                ...wallets.map((wallet) => Card(
                   elevation: 0,
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
@@ -5246,8 +5257,17 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
                     side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
                   ),
                   child: ListTile(
-                    leading: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color),
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: (wallet['color'] as Color).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color, size: 22),
+                    ),
                     title: Text(wallet['name'] as String, style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('Bayar instan via aplikasi', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
                     trailing: Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                     onTap: () {
                       if (activeBill != null) {
@@ -5258,12 +5278,585 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
                       }
                     },
                   ),
-                );
-              },
+                )),
+
+                // ── Divider section ───────────────────────────────────
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border))),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'Atau',
+                        style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border))),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // ── Transfer Bank Manual section ──────────────────────
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, bottom: 12),
+                  child: Text(
+                    'Transfer Bank Manual',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: BrandColors.hijau.withOpacity(0.5), width: 1.5),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/transfer_bukti',
+                        arguments: activeBill,
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: BrandColors.hijauSoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.account_balance_rounded, color: BrandColors.hijau, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Transfer Bank Manual', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
+                                const SizedBox(height: 2),
+                                Text('BCA / BRI / Mandiri · Upload bukti transfer', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: BrandColors.kuning.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'Perlu konfirmasi pengurus',
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF9A7000)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right, color: BrandColors.hijau),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
             );
           },
         ),
       ),
+    );
+  }
+}
+
+// ─── TRANSFER BUKTI SCREEN ────────────────────────────────────────────────────
+class TransferBuktiScreen extends StatefulWidget {
+  const TransferBuktiScreen({super.key});
+
+  @override
+  State<TransferBuktiScreen> createState() => _TransferBuktiScreenState();
+}
+
+class _TransferBuktiScreenState extends State<TransferBuktiScreen> {
+  String? _uploadedFileName;
+  bool _isUploaded = false;
+  bool _isSubmitting = false;
+  bool _isSubmitted = false;
+  String _selectedBank = 'BCA';
+
+  final List<Map<String, dynamic>> _banks = [
+    {
+      'name': 'BCA',
+      'noRek': '1234567890',
+      'atasNama': 'Satria Nusantara Pusat',
+      'color': const Color(0xFF005DAA),
+      'icon': Icons.account_balance,
+    },
+    {
+      'name': 'BRI',
+      'noRek': '0987654321',
+      'atasNama': 'Satria Nusantara Pusat',
+      'color': const Color(0xFF00529B),
+      'icon': Icons.account_balance,
+    },
+    {
+      'name': 'Mandiri',
+      'noRek': '1122334455',
+      'atasNama': 'Satria Nusantara Pusat',
+      'color': const Color(0xFF003087),
+      'icon': Icons.account_balance,
+    },
+  ];
+
+  void _pickFile() async {
+    // Web-compatible file selection simulation
+    setState(() {
+      _uploadedFileName = 'bukti_transfer_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      _isUploaded = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(children: [
+          Icon(Icons.check_circle, color: Colors.white, size: 18),
+          SizedBox(width: 8),
+          Text('Bukti berhasil dipilih: $_uploadedFileName'),
+        ]),
+        backgroundColor: BrandColors.hijau,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _submit(Iuran? activeBill) async {
+    if (!_isUploaded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan upload bukti transfer terlebih dahulu')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (activeBill != null) {
+      // Mark as pending in bloc
+      context.read<IuranBloc>().add(PayIuranRequested(activeBill.id, 'Transfer Bank - $_selectedBank'));
+    }
+
+    setState(() {
+      _isSubmitting = false;
+      _isSubmitted = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final activeBill = ModalRoute.of(context)?.settings.arguments as Iuran?;
+    final selectedBankData = _banks.firstWhere((b) => b['name'] == _selectedBank);
+
+    if (_isSubmitted) {
+      return _buildSuccessState();
+    }
+
+    return BlocListener<IuranBloc, IuranState>(
+      listener: (context, state) {
+        if (state is PaymentSuccess) {
+          context.read<IuranBloc>().add(LoadIuranHistory());
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Transfer Bank Manual', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Tagihan info ──────────────────────────────────────────
+              if (activeBill != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: BrandColors.hijauSoft,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.receipt_long_rounded, color: BrandColors.hijau, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('BLBA Bulan ${activeBill.bulan}/${activeBill.tahun}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: BrandColors.hijau)),
+                            const SizedBox(height: 2),
+                            Text('Total: Rp ${activeBill.nominal}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: BrandColors.hijau)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // ── Step 1: Pilih bank tujuan ─────────────────────────────
+              _buildStepHeader('1', 'Pilih Bank Tujuan Transfer'),
+              const SizedBox(height: 12),
+              Row(
+                children: _banks.map((bank) {
+                  final isSelected = _selectedBank == bank['name'];
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedBank = bank['name'] as String),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: EdgeInsets.only(right: bank['name'] != 'Mandiri' ? 8 : 0),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? (bank['color'] as Color).withOpacity(0.1) : (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected ? (bank['color'] as Color) : (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(bank['icon'] as IconData, color: isSelected ? (bank['color'] as Color) : (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey), size: 22),
+                            const SizedBox(height: 4),
+                            Text(
+                              bank['name'] as String,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: isSelected ? (bank['color'] as Color) : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              // ── Rekening tujuan card ──────────────────────────────────
+              const SizedBox(height: 16),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: (selectedBankData['color'] as Color).withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: (selectedBankData['color'] as Color).withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: selectedBankData['color'] as Color,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Bank ${selectedBankData['name']}',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(Icons.verified_outlined, color: selectedBankData['color'] as Color, size: 16),
+                        const SizedBox(width: 4),
+                        Text('Rekening Resmi', style: TextStyle(fontSize: 10, color: selectedBankData['color'] as Color, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text('No. Rekening', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          selectedBankData['noRek'] as String,
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: 2),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Nomor rekening disalin!'), backgroundColor: BrandColors.hijau, duration: const Duration(seconds: 1)),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: BrandColors.hijauSoft,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.copy_rounded, size: 14, color: BrandColors.hijau),
+                                const SizedBox(width: 4),
+                                Text('Salin', style: TextStyle(fontSize: 11, color: BrandColors.hijau, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'a/n ${selectedBankData['atasNama']}',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── Step 2: Upload bukti ──────────────────────────────────
+              _buildStepHeader('2', 'Upload Bukti Transfer'),
+              const SizedBox(height: 12),
+
+              GestureDetector(
+                onTap: _pickFile,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  height: 160,
+                  decoration: BoxDecoration(
+                    color: _isUploaded
+                        ? BrandColors.hijauSoft
+                        : (themeNotifier.isDarkMode ? BrandColors.cardDark : const Color(0xFFF9F9F9)),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _isUploaded ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
+                      width: _isUploaded ? 2 : 1,
+                      style: _isUploaded ? BorderStyle.solid : BorderStyle.solid,
+                    ),
+                  ),
+                  child: _isUploaded
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.check_circle_rounded, color: BrandColors.hijau, size: 44),
+                            const SizedBox(height: 10),
+                            Text('Bukti Transfer Dipilih', style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau, fontSize: 14)),
+                            const SizedBox(height: 4),
+                            Text(_uploadedFileName ?? '', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)), textAlign: TextAlign.center),
+                            const SizedBox(height: 8),
+                            TextButton.icon(
+                              onPressed: _pickFile,
+                              icon: Icon(Icons.swap_horiz, size: 16, color: BrandColors.hijau),
+                              label: Text('Ganti File', style: TextStyle(fontSize: 12, color: BrandColors.hijau)),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border).withOpacity(0.3),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.cloud_upload_outlined, size: 36, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey)),
+                            ),
+                            const SizedBox(height: 10),
+                            Text('Tap untuk pilih gambar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+                            const SizedBox(height: 4),
+                            Text('JPG, PNG, atau PDF • Maks. 5 MB', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
+                          ],
+                        ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Info note ─────────────────────────────────────────────
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: BrandColors.kuning.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: BrandColors.kuning.withOpacity(0.4)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline_rounded, color: const Color(0xFF9A7000), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Pembayaran via transfer akan diverifikasi oleh pengurus dalam 1×24 jam. Pastikan nominal transfer sesuai tagihan.',
+                        style: TextStyle(fontSize: 12, color: const Color(0xFF9A7000), height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // ── Submit button ─────────────────────────────────────────
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _isUploaded ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]),
+                    foregroundColor: _isUploaded ? Colors.white : (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  onPressed: _isSubmitting ? null : () => _submit(activeBill),
+                  child: _isSubmitting
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                            SizedBox(width: 10),
+                            Text('Mengirim...', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.send_rounded, size: 20),
+                            SizedBox(width: 8),
+                            Text('Kirim Bukti Transfer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepHeader(String step, String title) {
+    return Row(
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            color: BrandColors.hijau,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(step, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSuccessState() {
+    return Scaffold(
+      backgroundColor: (themeNotifier.isDarkMode ? BrandColors.bgDark : Colors.white),
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: BrandColors.kuning.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.access_time_filled_rounded, color: const Color(0xFF9A7000), size: 52),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Bukti Transfer Terkirim!',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Bukti transfer Anda sedang diverifikasi oleh pengurus. Status akan diperbarui dalam 1×24 jam.',
+                  style: TextStyle(fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.5),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 28),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: (themeNotifier.isDarkMode ? BrandColors.cardDark : const Color(0xFFF9F9F9)),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildInfoRow(Icons.description_outlined, 'File', _uploadedFileName ?? '-'),
+                      const SizedBox(height: 10),
+                      _buildInfoRow(Icons.account_balance_rounded, 'Bank', 'Bank $_selectedBank'),
+                      const SizedBox(height: 10),
+                      _buildInfoRow(Icons.pending_outlined, 'Status', 'Menunggu verifikasi'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 36),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BrandColors.hijau,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false),
+                    child: const Text('Kembali ke Beranda', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey)),
+        const SizedBox(width: 10),
+        Text('$label:', style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }
