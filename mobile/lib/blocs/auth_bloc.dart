@@ -8,6 +8,11 @@ class LoginRequested extends AuthEvent {
   final String password;
   LoginRequested(this.email, this.password);
 }
+class LoggedIn extends AuthEvent {
+  final String token;
+  final User user;
+  LoggedIn({required this.token, required this.user});
+}
 class LogoutRequested extends AuthEvent {}
 
 abstract class AuthState {}
@@ -35,6 +40,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } catch (e) {
         emit(Unauthenticated(errorMessage: 'Email atau password salah.'));
       }
+    });
+
+    on<LoggedIn>((event, emit) {
+      emit(Authenticated(event.token, event.user));
     });
 
     on<LogoutRequested>((event, emit) {
