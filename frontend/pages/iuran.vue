@@ -296,7 +296,9 @@
                     </div>
                   </div>
                 </td>
-                <td style="font-size:11px;color:var(--text2);">BLBA {{ trx.bulan }}</td>
+                <td style="font-size:11px;color:var(--text2);">
+                  {{ trx.bulan.startsWith('BLBA') || trx.bulan.startsWith('EKT') || trx.bulan.startsWith('Latgab') || trx.bulan.startsWith('Pelatnas') ? trx.bulan : 'BLBA ' + trx.bulan }}
+                </td>
                 <td>
                   <div style="display:flex;flex-direction:column;gap:3px;">
                     <span class="metode-badge" :class="trx.metode.startsWith('Transfer') ? 'metode-bank' : ''">
@@ -365,7 +367,12 @@
               <div class="rcb-title">Detail Transaksi</div>
               <div class="rcb-desc">{{ selectedTrx.nama }} · {{ selectedTrx.nomor }}</div>
             </div>
-            <div class="sum-row"><span class="sum-key">Periode</span><span class="sum-val">BLBA {{ selectedTrx.bulan }}</span></div>
+            <div class="sum-row">
+               <span class="sum-key">Periode</span>
+               <span class="sum-val">
+                 {{ selectedTrx.bulan.startsWith('BLBA') || selectedTrx.bulan.startsWith('EKT') || selectedTrx.bulan.startsWith('Latgab') || selectedTrx.bulan.startsWith('Pelatnas') ? selectedTrx.bulan : 'BLBA ' + selectedTrx.bulan }}
+               </span>
+             </div>
             <div class="sum-row"><span class="sum-key">Metode</span><span class="sum-val">{{ selectedTrx.metode }}</span></div>
             <div class="sum-row"><span class="sum-key">Nominal</span><span class="sum-val green">Rp {{ formatRupiah(selectedTrx.nominal) }}</span></div>
             <div class="sum-row"><span class="sum-key">Waktu</span><span class="sum-val">{{ selectedTrx.waktu }}</span></div>

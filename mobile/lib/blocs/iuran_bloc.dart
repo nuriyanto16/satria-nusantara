@@ -15,7 +15,9 @@ class PayIuranRequested extends IuranEvent {
   final String id;
   final String method;
   final String userId;
-  PayIuranRequested(this.id, this.method, this.userId);
+  final String? bulan;
+  final int? amount;
+  PayIuranRequested(this.id, this.method, this.userId, {this.bulan, this.amount});
 }
 
 abstract class IuranState {}
@@ -64,7 +66,7 @@ class IuranBloc extends Bloc<IuranEvent, IuranState> {
     on<PayIuranRequested>((event, emit) async {
       emit(IuranLoading());
       try {
-        await _repository.payIuran(event.id, event.method, event.userId);
+        await _repository.payIuran(event.id, event.method, event.userId, bulan: event.bulan, amount: event.amount);
         emit(PaymentSuccess());
       } catch (e) {
         emit(PaymentError('Pembayaran gagal. Silakan coba lagi.'));

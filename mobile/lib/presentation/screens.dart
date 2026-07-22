@@ -4722,15 +4722,27 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   SizedBox(height: 36),
                   ElevatedButton(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Pendaftaran $title berhasil terkirim!'),
-                          backgroundColor: BrandColors.hijau,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      int feeVal = 0;
+                      if (type == 'ekt') {
+                        feeVal = _selectedEktOption == 'latgab' ? 27500 : 57500;
+                      } else if (type == 'ekt-nj') {
+                        feeVal = 20000;
+                      } else if (type == 'latgab') {
+                        feeVal = 30000;
+                      } else if (type == 'pelatnas') {
+                        feeVal = 150000;
+                      }
+
+                      Navigator.pushNamed(
+                        context,
+                        '/event_payment',
+                        arguments: EventPaymentArguments(
+                          id: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+                          title: title,
+                          feeStr: feeStr,
+                          feeVal: feeVal,
                         ),
                       );
-                      Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
@@ -6845,6 +6857,257 @@ class KehadiranDetailScreen extends StatelessWidget {
             child: Text(tag, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 9.5)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class EventPaymentArguments {
+  final String id;
+  final String title;
+  final String feeStr;
+  final int feeVal;
+  EventPaymentArguments({
+    required this.id,
+    required this.title,
+    required this.feeStr,
+    required this.feeVal,
+  });
+}
+
+class EventPaymentScreen extends StatefulWidget {
+  const EventPaymentScreen({super.key});
+
+  @override
+  State<EventPaymentScreen> createState() => _EventPaymentScreenState();
+}
+
+class _EventPaymentScreenState extends State<EventPaymentScreen> {
+  String? _selectedWallet;
+
+  @override
+  Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)!.settings.arguments as EventPaymentArguments;
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+
+    final wallets = [
+      {'name': 'GoPay', 'icon': Icons.account_balance_wallet, 'color': Colors.blue},
+      {'name': 'OVO', 'icon': Icons.toll, 'color': Colors.purple},
+      {'name': 'DANA', 'icon': Icons.money, 'color': Colors.blueAccent},
+      {'name': 'ShopeePay', 'icon': Icons.shopping_bag, 'color': Colors.orange},
+    ];
+
+    return BlocListener<IuranBloc, IuranState>(
+      listener: (context, state) {
+        if (state is PaymentSuccess) {
+          Navigator.pushNamed(
+            context,
+            '/payment_success',
+            arguments: {'wallet': _selectedWallet},
+          );
+        } else if (state is PaymentError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Pembayaran Event / EKT', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            // ── Event Info Box ──────────────────────────────────
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: BrandColors.hijauSoft,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: BrandColors.hijau, width: 0.5),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Detail Pendaftaran',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau, fontSize: 13),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          args.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                      ),
+                      Text(
+                        args.feeStr,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.hijau),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // ── E-Wallet section ──────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                'E-Wallet',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            ...wallets.map((wallet) => Card(
+              elevation: 0,
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
+              ),
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: (wallet['color'] as Color).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color, size: 22),
+                ),
+                title: Text(wallet['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('Bayar instan via aplikasi', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
+                trailing: Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
+                onTap: () {
+                  setState(() {
+                    _selectedWallet = wallet['name'] as String;
+                  });
+                  context.read<IuranBloc>().add(PayIuranRequested(
+                    args.id,
+                    wallet['name'] as String,
+                    user.id,
+                    bulan: args.title,
+                    amount: args.feeVal,
+                  ));
+                },
+              ),
+            )),
+
+            // ── Divider section ───────────────────────────────────
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border))),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    'Atau',
+                    style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
+                  ),
+                ),
+                Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border))),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // ── Transfer Bank Manual section ──────────────────────
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 12),
+              child: Text(
+                'Transfer Bank Manual',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: BrandColors.hijau.withOpacity(0.5), width: 1.5),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  final ektIuran = Iuran(
+                    id: args.id,
+                    anggotaId: user.id,
+                    bulan: 0, // Dideteksi untuk event
+                    tahun: 2026,
+                    nominal: args.feeVal,
+                    status: 'belum_bayar',
+                    tanggalBayar: args.title, // Nama event dilewatkan ke tanggalBayar
+                  );
+                  Navigator.pushNamed(
+                    context,
+                    '/transfer_bukti',
+                    arguments: ektIuran,
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: BrandColors.hijauSoft,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.account_balance_rounded, color: BrandColors.hijau, size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Transfer Bank Manual', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
+                            const SizedBox(height: 2),
+                            Text('BCA / BRI / Mandiri · Upload bukti transfer', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: BrandColors.kuning.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                inline: true,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.lock_outline, color: Color(0xFF8A6D00), size: 12),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Verifikasi Manual 1-24 Jam',
+                                    style: TextStyle(color: Color(0xFF8A6D00), fontSize: 9.5, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

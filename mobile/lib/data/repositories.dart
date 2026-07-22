@@ -249,12 +249,14 @@ class FinanceRepository {
     }
   }
 
-  Future<void> payIuran(String id, String method, String userId) async {
+  Future<void> payIuran(String id, String method, String userId, {String? bulan, int? amount}) async {
     try {
       await api.dio.post('/finance/iuran/pay', data: {
         'id': id, 
         'method': method,
         'userId': userId,
+        if (bulan != null) 'bulan': bulan,
+        if (amount != null) 'amount': amount,
       });
     } catch (_) {}
     

@@ -1,6 +1,7 @@
 package finance
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -72,10 +73,12 @@ var (
 	mu sync.Mutex
 )
 
-type Handler struct{}
+type Handler struct {
+	db *sql.DB
+}
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(db *sql.DB) *Handler {
+	return &Handler{db: db}
 }
 
 func (h *Handler) Routes() func(r chi.Router) {
@@ -94,6 +97,8 @@ type PayRequest struct {
 	ID     string `json:"id"`
 	Method string `json:"method"`
 	UserID string `json:"userId"`
+	Bulan  string `json:"bulan,omitempty"`
+	Amount int    `json:"amount,omitempty"`
 }
 
 func (h *Handler) payIuran(w http.ResponseWriter, r *http.Request) {
@@ -113,10 +118,30 @@ func (h *Handler) payIuran(w http.ResponseWriter, r *http.Request) {
 		buktiUrl = "bukti_transfer_sample.jpg" // mock uploaded proof file name
 	}
 
-	// Try to infer name and member number based on userId
+	// Try to fetch name and member number from DB
 	nama := "Anggota SN"
 	nomor := "YO-YGY-00142"
-	if req.UserID != "" {
+	
+	if req.UserID != "" && h.db != nil {
+		var dbNama string
+		var dbNomor sql.NullString
+		err := h.db.QueryRowContext(r.Context(), `
+			SELECT u.nama_lengkap, a.nomor_anggota
+			FROM users u
+			LEFT JOIN anggota a ON a.user_id = u.id
+			WHERE u.id::text = $1
+		`, req.UserID).Scan(&dbNama, &dbNomor)
+		if err == nil {
+			nama = dbNama
+			if dbNomor.Valid && dbNomor.String != "" {
+				nomor = dbNomor.String
+			} else {
+				nomor = "PENDING"
+			}
+		}
+	}
+
+	if nama == "Anggota SN" && req.UserID != "" {
 		if strings.Contains(req.UserID, "registered") {
 			nama = "Pendaftar Baru"
 			nomor = "SN-NEWUSER"
@@ -126,14 +151,24 @@ func (h *Handler) payIuran(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	amount := 40000
+	if req.Amount > 0 {
+		amount = req.Amount
+	}
+
+	bulan := "Juli 2026"
+	if req.Bulan != "" {
+		bulan = req.Bulan
+	}
+
 	newTrx := Transaction{
 		ID:            "pay_" + time.Now().Format("20060102150405"),
 		IuranID:       req.ID,
 		UserID:        req.UserID,
 		Nama:          nama,
 		Nomor:         nomor,
-		Bulan:         "Juli 2026",
-		Amount:        40000,
+		Bulan:         bulan,
+		Amount:        amount,
 		PaymentMethod: req.Method,
 		Status:        status,
 		BuktiUrl:      buktiUrl,

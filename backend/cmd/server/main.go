@@ -48,7 +48,7 @@ func main() {
 	orgHandler := organization.NewHandler(orgSvc)
 	trainHandler := training.NewHandler(trainSvc)
 	eventHandler := event.NewHandler()
-	financeHandler := finance.NewHandler()
+	financeHandler := finance.NewHandler(db)
 	contentHandler := content.NewHandler()
 	kebugaranHandler := kebugaran.NewHandler()
 	nafasHandler := nafas.NewHandler()
