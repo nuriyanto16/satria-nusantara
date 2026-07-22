@@ -1102,8 +1102,13 @@ void _processGoogleSignIn(BuildContext context, String email, String name, Strin
     if (context.mounted) {
       Navigator.pushNamed(
         context,
-        '/google_complete',
-        arguments: {'name': name, 'email': email, 'initial': initial},
+        '/register',
+        arguments: {
+          'name': name,
+          'email': email,
+          'initial': initial,
+          'phone': '',
+        },
       );
     }
   }
@@ -4228,46 +4233,52 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           ElevatedButton(
             onPressed: () async {
               if (_isGoogleMode) {
-                // Google mode: call loginGoogle API then go to home
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Mendaftarkan akun via Google...')),
                 );
                 try {
-                  final res = await AuthRepository().loginGoogle(
-                    _emailController.text,
-                    _nameController.text,
-                    noHp: _phoneController.text,
+                  final mockPassword = 'GoogleAuthSecured_${DateTime.now().millisecondsSinceEpoch}';
+                  await AuthRepository().registerUser(
+                    email: _emailController.text,
+                    password: mockPassword,
+                    name: _nameController.text,
+                    phone: _phoneController.text,
+                    unit: _selectedUnit,
+                    tingkat: '$_selectedTingkat — $_selectedJurus',
                   );
                   if (context.mounted) {
-                    context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
                     );
-                    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
                   }
                 } catch (e) {
-                  // fallback to waiting step
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal mendaftar: ${e.toString()}')),
                   );
                 }
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Mendaftarkan akun...')),
                 );
-                await AuthRepository().registerUser(
-                  email: _emailController.text,
-                  password: _passwordController.text,
-                  name: _nameController.text,
-                  phone: _phoneController.text,
-                  unit: _selectedUnit,
-                  tingkat: '$_selectedTingkat — $_selectedJurus',
-                );
-                if (context.mounted) {
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
+                try {
+                  await AuthRepository().registerUser(
+                    email: _emailController.text,
+                    password: _passwordController.text,
+                    name: _nameController.text,
+                    phone: _phoneController.text,
+                    unit: _selectedUnit,
+                    tingkat: '$_selectedTingkat — $_selectedJurus',
+                  );
+                  if (context.mounted) {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal mendaftar: ${e.toString()}')),
                   );
                 }
               }
