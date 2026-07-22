@@ -906,9 +906,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Simulasi tambah akun Google baru.')),
-                  );
+                  _showCustomGoogleAccountDialog(context);
                 },
               ),
               const SizedBox(height: 16),
@@ -917,6 +915,99 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       },
     );
+  }
+
+  void _showCustomGoogleAccountDialog(BuildContext context) {
+    final emailController = TextEditingController();
+    final nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogCtx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.account_circle, color: Colors.blue, size: 28),
+              SizedBox(width: 8),
+              Text('Akun Gmail Lain', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                style: const TextStyle(fontSize: 13.5),
+                decoration: InputDecoration(
+                  labelText: 'Nama Lengkap',
+                  hintText: 'Ahmad Santoso',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(fontSize: 13.5),
+                decoration: InputDecoration(
+                  labelText: 'Alamat Email Gmail',
+                  hintText: 'ahmad.santoso@gmail.com',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BrandColors.hijau,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                final email = emailController.text.trim();
+                final name = nameController.text.trim();
+                if (email.isEmpty) return;
+                Navigator.pop(dialogCtx);
+                final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
+                _processGoogleSignIn(context, email, name.isEmpty ? email : name, initial);
+              },
+              child: const Text('Lanjut'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _processGoogleSignIn(BuildContext context, String email, String name, String initial) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Memproses masuk via Gmail: $email...')),
+    );
+    try {
+      final res = await AuthRepository().loginGoogle(email, name, googleId: 'goog_$email');
+      if (context.mounted) {
+        context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
+        );
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pushNamed(
+          context,
+          '/google_complete',
+          arguments: {'name': name, 'email': email, 'initial': initial},
+        );
+      }
+    }
   }
 
   Widget _buildGoogleAccountItem(
@@ -942,29 +1033,9 @@ class _LoginScreenState extends State<LoginScreen> {
         email,
         style: const TextStyle(fontSize: 11.5, color: BrandColors.text2),
       ),
-      onTap: () async {
+      onTap: () {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Memproses masuk via Gmail: $email...')),
-        );
-        try {
-          final res = await AuthRepository().loginGoogle(email, name);
-          if (context.mounted) {
-            context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
-            );
-            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-          }
-        } catch (e) {
-          if (context.mounted) {
-            Navigator.pushNamed(
-              context,
-              '/google_complete',
-              arguments: {'name': name, 'email': email, 'initial': initial},
-            );
-          }
-        }
+        _processGoogleSignIn(context, email, name, initial);
       },
     );
   }
@@ -4250,9 +4321,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Simulasi tambah akun Google/Gmail baru.')),
-                  );
+                  _showCustomGoogleAccountDialog(context);
                 },
               ),
               const SizedBox(height: 16),
@@ -4286,29 +4355,9 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
         email,
         style: const TextStyle(fontSize: 11.5, color: BrandColors.text2),
       ),
-      onTap: () async {
+      onTap: () {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Memproses masuk via Gmail: $email...')),
-        );
-        try {
-          final res = await AuthRepository().loginGoogle(email, name);
-          if (context.mounted) {
-            context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
-            );
-            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-          }
-        } catch (e) {
-          if (context.mounted) {
-            Navigator.pushNamed(
-              context,
-              '/google_complete',
-              arguments: {'name': name, 'email': email, 'initial': initial},
-            );
-          }
-        }
+        _processGoogleSignIn(context, email, name, initial);
       },
     );
   }
