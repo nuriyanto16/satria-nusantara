@@ -3699,6 +3699,10 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
   final PageController _pageController = PageController();
   int _currentStep = 0;
 
+  // Google SSO mode flag
+  bool _isGoogleMode = false;
+  String _googleInitial = '';
+
   // Step 1 Controllers
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -3717,6 +3721,25 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
   // Step 3 Controllers
   final TextEditingController _searchUnitController = TextEditingController(text: 'Bandung');
   String _selectedUnit = 'Unit Balkot · Sab & Sel 07.00';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    if (args != null && args['email'] != null && !_isGoogleMode) {
+      _isGoogleMode = true;
+      _emailController.text = args['email'] ?? '';
+      _nameController.text = args['name'] ?? '';
+      _phoneController.text = args['phone'] ?? '';
+      _googleInitial = args['initial'] ?? '';
+      // Auto jump to step 2 (Data Diri) since Google handles auth
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_currentStep == 0) {
+          _pageController.jumpToPage(1);
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -3886,6 +3909,46 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
             'Informasi ini tampil di kartu anggota kamu',
             style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
+          if (_isGoogleMode) ...[
+            SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.blue,
+                    radius: 18,
+                    child: Text(
+                      _googleInitial.isNotEmpty ? _googleInitial : _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'G',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Terhubung via Google',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blue[700]),
+                        ),
+                        Text(
+                          _emailController.text,
+                          style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.verified, color: Colors.blue, size: 18),
+                ],
+              ),
+            ),
+          ],
           SizedBox(height: 24),
           TextField(
             controller: _nameController,
@@ -4106,11 +4169,38 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           ),
           SizedBox(height: 32),
           ElevatedButton(
-            onPressed: () {
-              _pageController.nextPage(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
+            onPressed: () async {
+              if (_isGoogleMode) {
+                // Google mode: call loginGoogle API then go to home
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mendaftarkan akun via Google...')),
+                );
+                try {
+                  final res = await AuthRepository().loginGoogle(
+                    _emailController.text,
+                    _nameController.text,
+                    noHp: _phoneController.text,
+                  );
+                  if (context.mounted) {
+                    context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
+                    );
+                    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                  }
+                } catch (e) {
+                  // fallback to waiting step
+                  _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              } else {
+                _pageController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: BrandColors.hijau,
@@ -5721,12 +5811,12 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
             ),
             SizedBox(height: 40),
             SizedBox(
-              height: 48,
+              height: 52,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: BrandColors.hijau,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () async {
                   final phone = _phoneController.text.trim();
@@ -5736,25 +5826,58 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                     );
                     return;
                   }
+                  final birth = _birthController.text.trim();
+                  if (birth.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Silakan pilih tanggal lahir')),
+                    );
+                    return;
+                  }
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Mendaftarkan akun Google...')),
                   );
-                  final res = await AuthRepository().loginGoogle(
-                    email,
-                    name,
-                    noHp: phone,
-                  );
-                  if (context.mounted) {
-                    context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Pendaftaran Google Berhasil! Selamat datang, ${res['user'].namaLengkap}')),
+
+                  try {
+                    final res = await AuthRepository().loginGoogle(
+                      email,
+                      name,
+                      noHp: phone,
                     );
-                    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                    if (context.mounted) {
+                      context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Pendaftaran Google berhasil! Selamat datang, ${res['user'].namaLengkap}')),
+                      );
+                      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                    }
+                  } catch (e) {
+                    // Redirect to RegisterWizard to complete full registration
+                    if (context.mounted) {
+                      Navigator.pushNamed(
+                        context,
+                        '/register',
+                        arguments: {
+                          'name': name,
+                          'email': email,
+                          'initial': initial,
+                          'phone': phone,
+                        },
+                      );
+                    }
                   }
                 },
-                child: Text('Daftar Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.how_to_reg_rounded, size: 20),
+                    const SizedBox(width: 8),
+                    const Text('Daftar Sekarang', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  ],
+                ),
               ),
             ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
