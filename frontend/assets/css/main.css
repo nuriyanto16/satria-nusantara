@@ -631,3 +631,51 @@ html, body {
 }
 
 
+
+/* --- DARK MODE BUTTON FIXES --- */
+html.dark .icon-btn, body.dark .icon-btn,
+html.dark .icon-btn-sm, body.dark .icon-btn-sm {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+html.dark .icon-btn:hover, body.dark .icon-btn:hover,
+html.dark .icon-btn-sm:hover, body.dark .icon-btn-sm:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+html.dark .icon-btn.danger, body.dark .icon-btn.danger,
+html.dark .icon-btn-sm.danger, body.dark .icon-btn-sm.danger {
+  color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.1) !important;
+}
+html.dark .icon-btn.danger:hover, body.dark .icon-btn.danger:hover,
+html.dark .icon-btn-sm.danger:hover, body.dark .icon-btn-sm.danger:hover {
+  background: rgba(248, 113, 113, 0.25) !important;
+}
+
+html.dark .btn-ghost, body.dark .btn-ghost {
+  color: #e2e8f0 !important;
+}
+html.dark .btn-ghost:hover, body.dark .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .btn-outline, body.dark .btn-outline {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #e2e8f0 !important;
+  background: transparent !important;
+}
+html.dark .btn-outline:hover, body.dark .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Ensure modal buttons and general buttons have proper contrast */
+html.dark .modal-close, body.dark .modal-close,
+html.dark .modal-close-btn, body.dark .modal-close-btn {
+  color: #94a3b8 !important;
+}
+html.dark .modal-close:hover, body.dark .modal-close:hover,
+html.dark .modal-close-btn:hover, body.dark .modal-close-btn:hover {
+  color: #f1f5f9 !important;
+  background: rgba(255,255,255,0.1) !important;
+}

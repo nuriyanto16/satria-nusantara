@@ -66,7 +66,7 @@ class _ShimmerContainerState extends State<ShimmerContainer> with SingleTickerPr
             width: widget.width,
             height: widget.height,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]),
               borderRadius: BorderRadius.circular(widget.borderRadius),
             ),
           ),
@@ -764,22 +764,22 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(height: 16),
                             Row(
                               children: [
-                                Expanded(child: Divider(color: Colors.grey[300])),
+                                Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]))),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 12),
                                   child: Text(
                                     'atau',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                    style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[500])),
                                   ),
                                 ),
-                                Expanded(child: Divider(color: Colors.grey[300])),
+                                Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]))),
                               ],
                             ),
                             SizedBox(height: 16),
                             OutlinedButton(
                               onPressed: () => _triggerGoogleSignIn(context),
                               style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: Colors.grey[300]!),
+                                side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                               ),
@@ -1112,7 +1112,7 @@ class DashboardTab extends StatelessWidget {
                                     style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontWeight: FontWeight.w500),
                                   ),
                                   SizedBox(width: 4),
-                                  Icon(Icons.chevron_right, size: 14, color: Colors.grey[600]),
+                                  Icon(Icons.chevron_right, size: 14, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[600])),
                                 ],
                               ),
                               SizedBox(height: 4),
@@ -1740,13 +1740,13 @@ class ProfilTab extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
+                                  color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: Colors.grey[300]!),
+                                  border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
                                 ),
                                 child: Text(
                                   tingkatan,
-                                  style: TextStyle(fontSize: 10, color: Colors.grey[700], fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 10, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[700]), fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],
@@ -1897,7 +1897,7 @@ class ProfilTab extends StatelessWidget {
                     SizedBox(height: 12),
                     LinearProgressIndicator(
                       value: 18 / 24,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
                       color: BrandColors.hijau,
                       minHeight: 6,
                       borderRadius: BorderRadius.circular(3),
@@ -2605,7 +2605,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: _activeTab == 'latihan' ? BrandColors.hijau : Colors.grey[200],
+                          color: _activeTab == 'latihan' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Center(
@@ -2632,7 +2632,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: _activeTab == 'riwayat' ? BrandColors.hijau : Colors.grey[200],
+                          color: _activeTab == 'riwayat' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Center(
@@ -3026,7 +3026,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             width: 26,
             height: 28,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(6), bottomLeft: Radius.circular(6)),
             ),
             child: Center(child: Text('-', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
@@ -3035,7 +3035,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
         Container(
           width: 32,
           height: 28,
-          color: Colors.grey[100],
+          color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[100]),
           child: Center(
             child: Text(
               value.toString().padLeft(2, '0'),
@@ -3049,7 +3049,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
             width: 26,
             height: 28,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
               borderRadius: const BorderRadius.only(topRight: Radius.circular(6), bottomRight: Radius.circular(6)),
             ),
             child: Center(child: Text('+', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
@@ -3148,7 +3148,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                 child: LinearProgressIndicator(
                   value: totalProgress,
                   minHeight: 8,
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
                   valueColor: AlwaysStoppedAnimation<Color>(phaseColor),
                 ),
               ),
@@ -3285,7 +3285,7 @@ class NafasVisualizerPainter extends CustomPainter {
     final double h = size.height;
 
     final Paint outlinePaint = Paint()
-      ..color = Colors.grey[300]!
+      ..color = (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
 
@@ -3342,7 +3342,7 @@ class NafasVisualizerPainter extends CustomPainter {
     for (int i = 0; i < points.length; i++) {
       final isStart = i == 0;
       final Paint nodePaint = Paint()
-        ..color = isStart ? Colors.redAccent : Colors.grey[400]!
+        ..color = isStart ? Colors.redAccent : (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[400])!
         ..style = PaintingStyle.fill;
       canvas.drawCircle(points[i], isStart ? 6 : 4, nodePaint);
     }
@@ -3701,22 +3701,22 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           SizedBox(height: 20),
           Row(
             children: [
-              Expanded(child: Divider(color: Colors.grey[300])),
+              Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]))),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'atau',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[500])),
                 ),
               ),
-              Expanded(child: Divider(color: Colors.grey[300])),
+              Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]))),
             ],
           ),
           SizedBox(height: 16),
           OutlinedButton(
             onPressed: () => _triggerGoogleSignIn(context),
             style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.grey[300]!),
+              side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
@@ -4102,7 +4102,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
       children: [
         CircleAvatar(
           radius: 16,
-          backgroundColor: isActive ? BrandColors.hijau : Colors.grey[300],
+          backgroundColor: isActive ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]),
           child: _currentStep > stepNum - 1
               ? Icon(Icons.check, size: 14, color: Colors.white)
               : Text(
@@ -4127,7 +4127,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
     return Expanded(
       child: Container(
         height: 2,
-        color: isActive ? BrandColors.hijau : Colors.grey[300],
+        color: isActive ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]),
       ),
     );
   }
@@ -4577,7 +4577,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               height: 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: isSelected ? color : Colors.grey, width: 2),
+                border: Border.all(color: isSelected ? color : (themeNotifier.isDarkMode ? BrandColors.text2Dark : Colors.grey), width: 2),
                 color: isSelected ? color : Colors.transparent,
               ),
               child: isSelected
@@ -4604,7 +4604,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       children: [
                         _buildBadge(badges[0], Colors.amber),
                         SizedBox(width: 6),
-                        Icon(Icons.arrow_forward, size: 10, color: Colors.grey),
+                        Icon(Icons.arrow_forward, size: 10, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : Colors.grey)),
                         SizedBox(width: 6),
                         _buildBadge(badges[1], Colors.green),
                       ],
@@ -4614,7 +4614,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isSelected ? color : Colors.grey[200],
+                      color: isSelected ? color : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -4853,11 +4853,11 @@ class _EventParticipantListScreenState extends State<EventParticipantListScreen>
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey[200]!),
+                  borderSide: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200])!),
                 ),
               ),
             ),
@@ -5205,7 +5205,7 @@ class SesiDetailScreen extends StatelessWidget {
                   SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: 28 / 31,
-                    backgroundColor: Colors.grey[300],
+                    backgroundColor: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]),
                     color: Colors.purple,
                     minHeight: 6,
                     borderRadius: BorderRadius.circular(3),
@@ -5254,7 +5254,7 @@ class SesiDetailScreen extends StatelessWidget {
                     SizedBox(height: 10),
                     LinearProgressIndicator(
                       value: 28 / 31,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
                       color: BrandColors.hijau,
                       minHeight: 6,
                       borderRadius: BorderRadius.circular(3),
@@ -5427,7 +5427,7 @@ class NewsDetailScreen extends StatelessWidget {
       height: 90,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
+        border: Border.all(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200])!, width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(9),
@@ -5435,8 +5435,8 @@ class NewsDetailScreen extends StatelessWidget {
           url,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => Container(
-            color: Colors.grey[100],
-            child: Icon(Icons.image_outlined, color: Colors.grey),
+            color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[100]),
+            child: Icon(Icons.image_outlined, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : Colors.grey)),
           ),
         ),
       ),
@@ -5571,7 +5571,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _gender == 'Laki-laki' ? BrandColors.hijauSoft : Colors.white,
                       foregroundColor: _gender == 'Laki-laki' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
-                      side: BorderSide(color: _gender == 'Laki-laki' ? BrandColors.hijau : Colors.grey[300]!),
+                      side: BorderSide(color: _gender == 'Laki-laki' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () => setState(() => _gender = 'Laki-laki'),
@@ -5585,7 +5585,7 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _gender == 'Perempuan' ? BrandColors.hijauSoft : Colors.white,
                       foregroundColor: _gender == 'Perempuan' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
-                      side: BorderSide(color: _gender == 'Perempuan' ? Colors.grey[300]! : BrandColors.hijau),
+                      side: BorderSide(color: _gender == 'Perempuan' ? (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])! : BrandColors.hijau),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () => setState(() => _gender = 'Perempuan'),
