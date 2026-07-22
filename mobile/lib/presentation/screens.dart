@@ -841,6 +841,7 @@ class _LoginScreenState extends State<LoginScreen> {
 // ─── TOP LEVEL GOOGLE AUTH HELPERS ──────────────────────────────────────────
 // ─── TOP LEVEL GOOGLE AUTH HELPERS ──────────────────────────────────────────
 Future<void> _triggerGoogleSignIn(BuildContext context) async {
+  // Show brief loading snackbar for UX feel
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
       content: Row(
@@ -851,46 +852,21 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
           ),
           SizedBox(width: 12),
-          Text('Menghubungkan ke Google SSO...'),
+          Text('Membuka pilihan akun Google...'),
         ],
       ),
-      duration: Duration(seconds: 2),
+      duration: Duration(milliseconds: 800),
     ),
   );
 
-  try {
-    final GoogleSignIn googleSignIn = GoogleSignIn(
-      clientId: '1000000000000-satrianusantara.apps.googleusercontent.com',
-      scopes: ['email', 'profile'],
-    );
+  // Brief delay to let snackbar show, then open account chooser
+  // NOTE: Real Google OAuth (google_sign_in) requires a valid OAuth Client ID
+  // registered in Google Cloud Console. Until that is configured, we use
+  // a simulated account chooser that calls our backend loginGoogle API directly.
+  await Future.delayed(const Duration(milliseconds: 900));
 
-    // 1. Try silent SSO sign-in first (auto-detect active browser session)
-    GoogleSignInAccount? account;
-    try {
-      account = await googleSignIn.signInSilently();
-    } catch (_) {}
-
-    // 2. Open official Google SSO OAuth popup if silent sign in returns null
-    account ??= await googleSignIn.signIn();
-
-    if (account != null) {
-      final email = account.email;
-      final name = (account.displayName != null && account.displayName!.isNotEmpty)
-          ? account.displayName!
-          : email.split('@')[0];
-      final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
-      final googleId = account.id;
-      _processGoogleSignIn(context, email, name, initial, googleId: googleId);
-    } else {
-      if (context.mounted) {
-        _showGoogleAccountChooser(context);
-      }
-    }
-  } catch (e) {
-    debugPrint('Google Sign In Error: $e');
-    if (context.mounted) {
-      _showGoogleAccountChooser(context);
-    }
+  if (context.mounted) {
+    _showGoogleAccountChooser(context);
   }
 }
 
