@@ -15,6 +15,8 @@ class AuthRepository {
     required String phone,
     required String unit,
     required String tingkat,
+    String? birthDate,
+    String? gender,
   }) async {
     final cleanEmail = email.trim().toLowerCase();
     try {
@@ -27,6 +29,8 @@ class AuthRepository {
           'no_hp': phone,
           'unit_id': unit,
           'tingkatan': tingkat,
+          if (birthDate != null && birthDate.isNotEmpty) 'tanggal_lahir': birthDate,
+          if (gender != null && gender.isNotEmpty) 'jenis_kelamin': gender,
         },
       );
     } catch (e) {
@@ -114,8 +118,13 @@ class AuthRepository {
       api.setToken(token);
       return {'token': token, 'user': user};
     } catch (e) {
-      if (e is DioException && e.response?.statusCode == 404) {
-        rethrow;
+      if (e is DioException) {
+        if (e.response?.statusCode == 403) {
+          throw Exception("PENDING_VERIFICATION");
+        }
+        if (e.response?.statusCode == 404) {
+          rethrow;
+        }
       }
 
       // Offline / Fallback handling for prototype testing:

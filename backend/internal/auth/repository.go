@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+	"time"
 )
 
 // Repository defines the data access contract for the auth domain.
@@ -112,15 +113,25 @@ func (r *pgRepository) CreatePendingAnggota(ctx context.Context, req SignupAnggo
 	}
 	defer tx.Rollback()
 
-	// 1. Resolve Unit Latihan ID (fallback to first unit if not valid UUID)
+	// 1. Resolve Unit Latihan ID (by name ILIKE first, then uuid)
 	var resolvedUnitID string
-	err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan WHERE id::text = $1", req.UnitID).Scan(&resolvedUnitID)
+	unitSearch := req.UnitID
+	if strings.Contains(unitSearch, " · ") {
+		unitSearch = strings.Split(unitSearch, " · ")[0]
+	}
+	unitSearch = strings.TrimSpace(unitSearch)
+
+	// Try searching by name containing unitSearch
+	err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan WHERE nama ILIKE $1", "%"+unitSearch+"%").Scan(&resolvedUnitID)
 	if err != nil {
-		// Fallback: cari unit latihan pertama
-		err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan LIMIT 1").Scan(&resolvedUnitID)
+		// Fallback to exact UUID
+		err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan WHERE id::text = $1", req.UnitID).Scan(&resolvedUnitID)
 		if err != nil {
-			// Fallback keras jika database unit kosong sama sekali
-			resolvedUnitID = "00000000-0000-0000-0000-000000000000"
+			// Fallback: cari unit latihan pertama
+			err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan LIMIT 1").Scan(&resolvedUnitID)
+			if err != nil {
+				resolvedUnitID = "00000000-0000-0000-0000-000000000000"
+			}
 		}
 	}
 
@@ -135,8 +146,6 @@ func (r *pgRepository) CreatePendingAnggota(ctx context.Context, req SignupAnggo
 		tingkatan = "GPK"
 	} else if strings.Contains(cleanTingkat, "pk") {
 		tingkatan = "PK"
-	} else if strings.Contains(cleanTingkat, "gpk") {
-		tingkatan = "GPK"
 	} else if strings.Contains(cleanTingkat, "ph") {
 		tingkatan = "PH"
 	} else if strings.Contains(cleanTingkat, "gabungan") {
@@ -160,11 +169,20 @@ func (r *pgRepository) CreatePendingAnggota(ctx context.Context, req SignupAnggo
 		return "", err
 	}
 
-	// 4. Insert ke tabel anggota dengan status 'pending'
+	// 4. Parse Tanggal Lahir
+	var tglLahir *time.Time
+	if req.TanggalLahir != "" {
+		t, err := time.Parse("2006-01-02", req.TanggalLahir)
+		if err == nil {
+			tglLahir = &t
+		}
+	}
+
+	// 5. Insert ke tabel anggota dengan status 'pending'
 	_, err = tx.ExecContext(ctx, `
-		INSERT INTO anggota (user_id, nama_lengkap, no_hp, unit_id, tingkatan, status)
-		VALUES ($1, $2, $3, $4, $5::tingkatan_enum, 'pending')
-	`, userID, req.NamaLengkap, req.NoHp, resolvedUnitID, tingkatan)
+		INSERT INTO anggota (user_id, nama_lengkap, no_hp, unit_id, tingkatan, tanggal_lahir, jenis_kelamin, status)
+		VALUES ($1, $2, $3, $4, $5::tingkatan_enum, $6, $7, 'pending')
+	`, userID, req.NamaLengkap, req.NoHp, resolvedUnitID, tingkatan, tglLahir, req.JenisKelamin)
 	if err != nil {
 		return "", err
 	}

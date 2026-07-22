@@ -1092,24 +1092,63 @@ void _processGoogleSignIn(BuildContext context, String email, String name, Strin
   try {
     final res = await AuthRepository().loginGoogle(email, name, googleId: googleId ?? 'goog_$email');
     if (context.mounted) {
-      context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
-      );
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+      if (res['user'] != null && res['user'].status == 'pending') {
+        context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
+        Navigator.pushReplacementNamed(
+          context,
+          '/wait_verification',
+          arguments: {
+            'name': res['user'].namaLengkap,
+            'email': res['user'].email,
+            'user': res['user'],
+            'token': res['token'],
+          },
+        );
+      } else {
+        context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
+        );
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+      }
     }
   } catch (e) {
     if (context.mounted) {
-      Navigator.pushNamed(
-        context,
-        '/register',
-        arguments: {
-          'name': name,
-          'email': email,
-          'initial': initial,
-          'phone': '',
-        },
-      );
+      final errorMsg = e.toString();
+      if (errorMsg.contains("PENDING_VERIFICATION")) {
+        final mockPendingUser = User(
+          id: 'pending',
+          email: email,
+          namaLengkap: name,
+          noHp: '-',
+          roleId: 4,
+          roleName: 'Anggota',
+          scope: 'anggota',
+          status: 'pending',
+        );
+        context.read<AuthBloc>().add(LoggedIn(token: 'pending_token', user: mockPendingUser));
+        Navigator.pushReplacementNamed(
+          context,
+          '/wait_verification',
+          arguments: {
+            'name': name,
+            'email': email,
+            'user': mockPendingUser,
+            'token': 'pending_token',
+          },
+        );
+      } else {
+        Navigator.pushNamed(
+          context,
+          '/register',
+          arguments: {
+            'name': name,
+            'email': email,
+            'initial': initial,
+            'phone': '',
+          },
+        );
+      }
     }
   }
 }
@@ -3778,7 +3817,29 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
   String _selectedProvince = 'Jawa Barat';
   String _selectedCity = 'Bandung';
   String _selectedTingkat = 'Dasar';
-  String _selectedJurus = 'Jurus 5';
+  String _selectedJurus = 'Jurus 1';
+  bool _isExistingMember = false;
+
+  // Province & City dynamic mapping
+  final List<String> _provinces = ['Jawa Barat', 'DKI Jakarta', 'Jawa Tengah', 'DI Yogyakarta', 'Jawa Timur', 'Bali'];
+  
+  final Map<String, List<String>> _provinceCities = {
+    'Jawa Barat': ['Bandung'],
+    'DKI Jakarta': ['Jakarta'],
+    'Jawa Tengah': ['Semarang'],
+    'DI Yogyakarta': ['Yogyakarta'],
+    'Jawa Timur': ['Surabaya'],
+    'Bali': ['Denpasar'],
+  };
+
+  final Map<String, List<String>> _cityUnits = {
+    'Bandung': ['Unit Balkot · Sab & Sel 07.00', 'Unit Arcamanik · Min & Rab 06.30', 'Unit SAJ · Sab 07.00', 'Unit Sangkuriang · Min 07.00'],
+    'Jakarta': ['Unit Menteng · Sen & Kam 19.00'],
+    'Semarang': ['Unit Simpang Lima · Rab & Sab 06.00'],
+    'Yogyakarta': ['Unit Malioboro · Sel & Jum 07.00', 'Unit Kotagede · Kam & Sab 16.00'],
+    'Surabaya': ['Unit Rungkut · Sel & Sab 07.00'],
+    'Denpasar': ['Unit Renon · Sel & Sab 07.00'],
+  };
 
   // Step 3 Controllers
   final TextEditingController _searchUnitController = TextEditingController(text: 'Bandung');
@@ -4036,9 +4097,23 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               Expanded(
                 child: TextField(
                   controller: _birthDateController,
+                  readOnly: true,
+                  onTap: () async {
+                    DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime(2000),
+                      firstDate: DateTime(1940),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _birthDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                      });
+                    }
+                  },
                   decoration: InputDecoration(
                     labelText: 'Tanggal lahir',
-                    helperText: 'DD/MM/YYYY',
+                    helperText: 'Pilih tanggal',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
@@ -4066,10 +4141,22 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               labelText: 'Provinsi',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            items: ['Jawa Barat', 'DKI Jakarta', 'Jawa Tengah']
+            items: _provinces
                 .map((label) => DropdownMenuItem(value: label, child: Text(label)))
                 .toList(),
-            onChanged: (value) => setState(() => _selectedProvince = value!),
+            onChanged: (value) {
+              setState(() {
+                _selectedProvince = value!;
+                final cities = _provinceCities[_selectedProvince] ?? [];
+                if (cities.isNotEmpty) {
+                  _selectedCity = cities.first;
+                  final units = _cityUnits[_selectedCity] ?? [];
+                  if (units.isNotEmpty) {
+                    _selectedUnit = units.first;
+                  }
+                }
+              });
+            },
           ),
           SizedBox(height: 16),
           DropdownButtonFormField<String>(
@@ -4078,55 +4165,79 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               labelText: 'Kota / Kabupaten',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            items: ['Bandung', 'Jakarta', 'Semarang']
+            items: (_provinceCities[_selectedProvince] ?? [])
                 .map((label) => DropdownMenuItem(value: label, child: Text(label)))
                 .toList(),
-            onChanged: (value) => setState(() => _selectedCity = value!),
+            onChanged: (value) {
+              setState(() {
+                _selectedCity = value!;
+                final units = _cityUnits[_selectedCity] ?? [];
+                if (units.isNotEmpty) {
+                  _selectedUnit = units.first;
+                }
+              });
+            },
           ),
           SizedBox(height: 20),
           Divider(),
           SizedBox(height: 10),
-          Text(
-            'Tingkatan (khusus anggota lama)',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: BrandColors.hijau),
-          ),
-          SizedBox(height: 12),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedTingkat,
-                  decoration: InputDecoration(
-                    labelText: 'Tingkat',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  items: ['Dasar', 'Peng. Halus', 'Gabungan', 'Peng. Keras', 'Gab. PK', 'Penjuru']
-                      .map((label) => DropdownMenuItem(value: label, child: Text(label)))
-                      .toList(),
-                  onChanged: (value) => setState(() => _selectedTingkat = value!),
-                ),
+              Text(
+                'Saya adalah Anggota Lama',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: BrandColors.hijau),
               ),
-              SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedJurus,
-                  decoration: InputDecoration(
-                    labelText: 'Jurus',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  items: List.generate(10, (index) => 'Jurus ${index + 1}')
-                      .map((label) => DropdownMenuItem(value: label, child: Text(label)))
-                      .toList(),
-                  onChanged: (value) => setState(() => _selectedJurus = value!),
-                ),
+              Switch(
+                value: _isExistingMember,
+                activeColor: BrandColors.hijau,
+                onChanged: (value) {
+                  setState(() {
+                    _isExistingMember = value;
+                  });
+                },
               ),
             ],
           ),
-          SizedBox(height: 6),
-          Text(
-            'Anggota baru? Kosongkan bagian ini.',
-            style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
-          ),
+          if (_isExistingMember) ...[
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedTingkat,
+                    decoration: InputDecoration(
+                      labelText: 'Tingkat',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    items: ['Dasar', 'Peng. Halus', 'Gabungan', 'Peng. Keras', 'Gab. PK', 'Penjuru']
+                        .map((label) => DropdownMenuItem(value: label, child: Text(label)))
+                        .toList(),
+                    onChanged: (value) => setState(() => _selectedTingkat = value!),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedJurus,
+                    decoration: InputDecoration(
+                      labelText: 'Jurus',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    items: List.generate(10, (index) => 'Jurus ${index + 1}')
+                        .map((label) => DropdownMenuItem(value: label, child: Text(label)))
+                        .toList(),
+                    onChanged: (value) => setState(() => _selectedJurus = value!),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Silakan pilih tingkatan terakhir yang Anda miliki.',
+              style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
+            ),
+          ],
           SizedBox(height: 28),
           ElevatedButton(
             onPressed: () {
@@ -4190,12 +4301,9 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               labelText: 'Unit latihan',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            items: [
-              'Unit Balkot · Sab & Sel 07.00',
-              'Unit Arcamanik · Min & Rab 06.30',
-              'Unit SAJ · Sab 07.00',
-              'Unit Sangkuriang · Min 07.00',
-            ].map((label) => DropdownMenuItem(value: label, child: Text(label))).toList(),
+            items: (_cityUnits[_selectedCity] ?? ['Unit Balkot · Sab & Sel 07.00'])
+                .map((label) => DropdownMenuItem(value: label, child: Text(label)))
+                .toList(),
             onChanged: (value) => setState(() => _selectedUnit = value!),
           ),
           SizedBox(height: 20),
@@ -4215,23 +4323,27 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                     Icon(Icons.location_on_outlined, color: BrandColors.hijau, size: 16),
                     SizedBox(width: 8),
                     Text(
-                      'Unit Balkot',
+                      _selectedUnit.split(" · ")[0],
                       style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau, fontSize: 13.5),
                     ),
                   ],
                 ),
                 SizedBox(height: 12),
-                _buildUnitDetailRow('Jadwal', 'Sabtu & Selasa'),
+                _buildUnitDetailRow('Jadwal', _selectedUnit.contains(" · ") ? _selectedUnit.split(" · ")[1] : 'Sesuai Jadwal Tetap'),
                 SizedBox(height: 6),
                 _buildUnitDetailRow('Jam', '07.00 - 09.00 WIB'),
                 SizedBox(height: 6),
-                _buildUnitDetailRow('Lokasi', 'Taman Balai Kota, Jl. Wastukencana'),
+                _buildUnitDetailRow('Lokasi', 'Lokasi Unit Latihan Resmi'),
               ],
             ),
           ),
           SizedBox(height: 32),
           ElevatedButton(
             onPressed: () async {
+              final selectedLevel = _isExistingMember ? '$_selectedTingkat — $_selectedJurus' : 'Pra Dasar';
+              final genderCode = _gender == 'Pria' ? 'L' : 'P';
+              final dob = _birthDateController.text;
+
               if (_isGoogleMode) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Mendaftarkan akun via Google...')),
@@ -4244,7 +4356,9 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                     name: _nameController.text,
                     phone: _phoneController.text,
                     unit: _selectedUnit,
-                    tingkat: '$_selectedTingkat — $_selectedJurus',
+                    tingkat: selectedLevel,
+                    birthDate: dob,
+                    gender: genderCode,
                   );
                   if (context.mounted) {
                     _pageController.nextPage(
@@ -4268,7 +4382,9 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                     name: _nameController.text,
                     phone: _phoneController.text,
                     unit: _selectedUnit,
-                    tingkat: '$_selectedTingkat — $_selectedJurus',
+                    tingkat: selectedLevel,
+                    birthDate: dob,
+                    gender: genderCode,
                   );
                   if (context.mounted) {
                     _pageController.nextPage(
@@ -7163,7 +7279,6 @@ class _EventPaymentScreenState extends State<EventPaymentScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
-                                inline: true,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.lock_outline, color: Color(0xFF8A6D00), size: 12),

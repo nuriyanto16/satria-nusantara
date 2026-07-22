@@ -38,12 +38,14 @@ type GoogleLoginRequest struct {
 }
 
 type SignupAnggotaRequest struct {
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	NamaLengkap string `json:"nama_lengkap"`
-	NoHp        string `json:"no_hp"`
-	UnitID      string `json:"unit_id"`
-	Tingkatan   string `json:"tingkatan"`
+	Email        string `json:"email"`
+	Password     string `json:"password"`
+	NamaLengkap  string `json:"nama_lengkap"`
+	NoHp         string `json:"no_hp"`
+	UnitID       string `json:"unit_id"`
+	Tingkatan    string `json:"tingkatan"`
+	TanggalLahir string `json:"tanggal_lahir,omitempty"`
+	JenisKelamin string `json:"jenis_kelamin,omitempty"`
 }
 
 type RegisterRequest struct {

@@ -32,7 +32,7 @@ INSERT INTO cabang (id, kode, nama, provinsi_id, kota_kab, alamat, status, dibua
 INSERT INTO unit_latihan (id, cabang_id, nama, lokasi_nama, lokasi_alamat, status) VALUES
 ('de000000-0000-0000-0000-000000000001', 'ca000000-0000-0000-0000-000000000001', 'Unit Malioboro', 'Lapangan Malioboro', 'Jl. Malioboro, Yogyakarta', 'aktif'),
 ('de000000-0000-0000-0000-000000000002', 'ca000000-0000-0000-0000-000000000001', 'Unit Kotagede', 'Lapangan Kotagede', 'Jl. Kotagede, Yogyakarta', 'aktif'),
-('de000000-0000-0000-0000-000000000003', 'ca000000-0000-0000-0000-000000000002', 'Unit Dago', 'Lapangan Dago', 'Jl. Dago, Bandung', 'aktif'),
+('de000000-0000-0000-0000-000000000003', 'ca000000-0000-0000-0000-000000000002', 'Unit Balkot', 'Lapangan Dago', 'Jl. Dago, Bandung', 'aktif'),
 ('de000000-0000-0000-0000-000000000004', 'ca000000-0000-0000-0000-000000000003', 'Unit Menteng', 'Taman Menteng', 'Jl. Menteng, Jakarta', 'aktif'),
 ('de000000-0000-0000-0000-000000000005', 'ca000000-0000-0000-0000-000000000004', 'Unit Rungkut', 'Lapangan Rungkut', 'Jl. Rungkut, Surabaya', 'aktif'),
 ('de000000-0000-0000-0000-000000000006', 'ca000000-0000-0000-0000-000000000005', 'Unit Simpang Lima', 'Lapangan Simpang Lima', 'Jl. Pandanaran, Semarang', 'aktif'),
