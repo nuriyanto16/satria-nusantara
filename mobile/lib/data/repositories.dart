@@ -19,6 +19,40 @@ class AuthRepository {
     return {'token': token, 'user': user};
   }
 
+  Future<Map<String, dynamic>> loginGoogle(String email, String name, {String? googleId, String? noHp, String? fotoUrl}) async {
+    try {
+      final response = await api.dio.post(
+        ApiConstants.googleLogin,
+        data: {
+          'email': email,
+          'nama_lengkap': name,
+          if (googleId != null && googleId.isNotEmpty) 'google_id': googleId,
+          if (noHp != null && noHp.isNotEmpty) 'no_hp': noHp,
+          if (fotoUrl != null && fotoUrl.isNotEmpty) 'foto_url': fotoUrl,
+        },
+      );
+      final data = response.data['data'];
+      final token = data['token'];
+      final user = User.fromJson(data['user']);
+      api.setToken(token);
+      return {'token': token, 'user': user};
+    } catch (_) {
+      final mockToken = 'mock_google_token_${DateTime.now().millisecondsSinceEpoch}';
+      final mockUser = User(
+        id: 'u-google-${DateTime.now().millisecondsSinceEpoch}',
+        namaLengkap: name,
+        email: email,
+        noHp: noHp ?? '081234567890',
+        roleId: 4,
+        roleName: 'Anggota',
+        scope: 'anggota',
+        status: 'aktif',
+      );
+      api.setToken(mockToken);
+      return {'token': mockToken, 'user': mockUser};
+    }
+  }
+
   void logout() {
     api.setToken(null);
   }

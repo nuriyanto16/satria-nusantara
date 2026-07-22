@@ -12,7 +12,9 @@ type Repository interface {
 	FindByEmail(ctx context.Context, email string) (*userRecord, error)
 	FindByID(ctx context.Context, id string) (*userRecord, error)
 	Create(ctx context.Context, req RegisterRequest, passwordHash string) (string, error)
+	CreateGoogleUser(ctx context.Context, req GoogleLoginRequest) (*userRecord, error)
 	UpdatePassword(ctx context.Context, userID, newHash string) error
+	UpdateGoogleID(ctx context.Context, userID, googleID string) error
 }
 
 // userRecord is the internal DB-level struct (not exposed via API).
@@ -101,6 +103,36 @@ func (r *pgRepository) Create(ctx context.Context, req RegisterRequest, password
 	return id, nil
 }
 
+func (r *pgRepository) CreateGoogleUser(ctx context.Context, req GoogleLoginRequest) (*userRecord, error) {
+	var id string
+	googleID := req.GoogleID
+	if googleID == "" {
+		googleID = "goog_" + req.Email
+	}
+	nama := req.NamaLengkap
+	if nama == "" {
+		nama = req.Email
+	}
+	foto := req.FotoURL
+	if foto == "" {
+		foto = "https://ui-avatars.com/api/?name=" + nama
+	}
+	noHp := req.NoHp
+	if noHp == "" {
+		noHp = "081234567890"
+	}
+
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO users (email, google_id, nama_lengkap, no_hp, foto_url, role_id, status)
+		VALUES ($1, $2, $3, $4, $5, 4, 'aktif')
+		RETURNING id
+	`, req.Email, googleID, nama, noHp, foto).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	return r.FindByID(ctx, id)
+}
+
 func (r *pgRepository) UpdatePassword(ctx context.Context, userID, newHash string) error {
 	_, err := r.db.ExecContext(ctx,
 		`UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
@@ -108,3 +140,12 @@ func (r *pgRepository) UpdatePassword(ctx context.Context, userID, newHash strin
 	)
 	return err
 }
+
+func (r *pgRepository) UpdateGoogleID(ctx context.Context, userID, googleID string) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE users SET google_id = $1, updated_at = NOW() WHERE id = $2`,
+		googleID, userID,
+	)
+	return err
+}
+

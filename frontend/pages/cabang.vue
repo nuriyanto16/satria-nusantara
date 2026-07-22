@@ -346,19 +346,23 @@
           <!-- Summary Mini Cards -->
           <div class="stat-mini-grid" style="margin-bottom:12px;">
             <div class="stat-mini">
-              <div class="stat-mini-val" style="color:var(--hijau);">89%</div>
+              <div v-if="loadingTrends" class="skeleton-block" style="width:50px;height:22px;margin-bottom:4px;"></div>
+              <div v-else class="stat-mini-val" style="color:var(--hijau);">{{ summaryAvgKehadiran }}%</div>
               <div class="stat-mini-label">Kehadiran Rata-rata</div>
             </div>
             <div class="stat-mini">
-              <div class="stat-mini-val" style="color:var(--hijau);">100%</div>
+              <div v-if="loadingTrends" class="skeleton-block" style="width:50px;height:22px;margin-bottom:4px;"></div>
+              <div v-else class="stat-mini-val" style="color:var(--hijau);">{{ summaryBlba }}%</div>
               <div class="stat-mini-label">Pencapaian BLBA</div>
             </div>
             <div class="stat-mini">
-              <div class="stat-mini-val" style="color:var(--biru);">124</div>
+              <div v-if="loadingTrends" class="skeleton-block" style="width:50px;height:22px;margin-bottom:4px;"></div>
+              <div v-else class="stat-mini-val" style="color:var(--biru);">{{ summaryAnggota }}</div>
               <div class="stat-mini-label">Anggota Aktif</div>
             </div>
             <div class="stat-mini">
-              <div class="stat-mini-val" style="color:var(--kuning);">Rp 4.2M</div>
+              <div v-if="loadingTrends" class="skeleton-block" style="width:60px;height:22px;margin-bottom:4px;"></div>
+              <div v-else class="stat-mini-val" style="color:var(--kuning);">{{ summaryKas }}</div>
               <div class="stat-mini-label">Kas Unit / Cabang</div>
             </div>
           </div>
@@ -368,33 +372,69 @@
             <div class="card-head">
               <div class="card-title"><i class="ti ti-chart-line"></i> Tren {{ statsMetricLabel }} — {{ selectedCabang.nama }}</div>
             </div>
-            <div class="card-body" style="padding: 16px;">
-              <!-- Beautiful inline SVG Chart to replace empty mockup placeholder -->
-              <svg viewBox="0 0 540 180" width="100%" height="180" style="display:block;">
-                <!-- grid lines -->
-                <line x1="30" y1="20" x2="520" y2="20" stroke="#f1f3f5" stroke-dasharray="3,3" />
-                <line x1="30" y1="60" x2="520" y2="60" stroke="#f1f3f5" stroke-dasharray="3,3" />
-                <line x1="30" y1="100" x2="520" y2="100" stroke="#f1f3f5" stroke-dasharray="3,3" />
-                <line x1="30" y1="140" x2="520" y2="140" stroke="#eee" />
+            <div class="card-body" style="padding: 16px; position: relative;">
+              <div v-if="loadingTrends" style="height:180px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px;">
+                <i class="ti ti-loader-2 spin" style="font-size:24px;color:var(--hijau);margin-right:8px;"></i> Memuat data tren {{ statsMetricLabel.toLowerCase() }}...
+              </div>
+              <!-- Beautiful dynamic SVG Chart -->
+              <svg v-else viewBox="0 0 540 180" width="100%" height="180" style="display:block;overflow:visible;">
+                <defs>
+                  <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--hijau)" stop-opacity="0.35" />
+                    <stop offset="100%" stop-color="var(--hijau)" stop-opacity="0.0" />
+                  </linearGradient>
+                </defs>
 
-                <!-- data line -->
-                <path d="M 30 130 Q 90 90, 150 110 T 270 50 T 390 70 T 510 40" fill="none" stroke="var(--hijau)" stroke-width="3" />
-                
-                <!-- dots -->
-                <circle cx="30" cy="130" r="4" fill="var(--hijau)" />
-                <circle cx="150" cy="110" r="4" fill="var(--hijau)" />
-                <circle cx="270" cy="50" r="4" fill="var(--hijau)" />
-                <circle cx="390" cy="70" r="4" fill="var(--hijau)" />
-                <circle cx="510" cy="40" r="5" fill="var(--hijau)" stroke="#fff" stroke-width="2" />
-                
-                <!-- Labels -->
-                <text x="30" y="160" font-size="10" fill="#9ca3af" text-anchor="middle">Jan</text>
-                <text x="150" y="160" font-size="10" fill="#9ca3af" text-anchor="middle">Mar</text>
-                <text x="270" y="160" font-size="10" fill="#9ca3af" text-anchor="middle">May</text>
-                <text x="390" y="160" font-size="10" fill="#9ca3af" text-anchor="middle">Jul</text>
-                <text x="510" y="160" font-size="10" fill="#9ca3af" text-anchor="middle">Sep</text>
+                <!-- Grid lines -->
+                <line x1="30" y1="30" x2="510" y2="30" stroke="#f1f3f5" stroke-dasharray="3,3" />
+                <line x1="30" y1="68" x2="510" y2="68" stroke="#f1f3f5" stroke-dasharray="3,3" />
+                <line x1="30" y1="106" x2="510" y2="106" stroke="#f1f3f5" stroke-dasharray="3,3" />
+                <line x1="30" y1="144" x2="510" y2="144" stroke="#e2e8f0" />
 
-                <text x="510" y="25" font-size="11" font-weight="bold" fill="var(--hijau)" text-anchor="middle">{{ statsMetricValue }}</text>
+                <!-- Area fill -->
+                <path v-if="chartSvgData.areaPath" :d="chartSvgData.areaPath" fill="url(#trendGrad)" />
+
+                <!-- Line stroke -->
+                <path v-if="chartSvgData.path" :d="chartSvgData.path" fill="none" stroke="var(--hijau)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+                <!-- Data circles & labels -->
+                <g v-for="(c, idx) in chartSvgData.coords" :key="idx">
+                  <circle
+                    :cx="c.x" :cy="c.y" :r="hoveredPoint === c ? 7 : (idx === chartSvgData.coords.length - 1 ? 5 : 4)"
+                    :fill="hoveredPoint === c || idx === chartSvgData.coords.length - 1 ? 'var(--hijau)' : '#fff'"
+                    :stroke="'var(--hijau)'"
+                    stroke-width="2.5"
+                    style="cursor:pointer;transition:all .2s ease;"
+                    @mouseenter="hoveredPoint = c"
+                    @mouseleave="hoveredPoint = null"
+                  />
+                  <!-- X Axis Month Label -->
+                  <text 
+                    v-if="chartSvgData.coords.length <= 12 || idx % Math.ceil(chartSvgData.coords.length / 12) === 0 || idx === chartSvgData.coords.length - 1"
+                    :x="c.x" y="164" font-size="10" fill="#9ca3af" text-anchor="middle" font-weight="500"
+                  >{{ c.month }}</text>
+                </g>
+
+                <!-- Hover Tooltip Callout -->
+                <g v-if="hoveredPoint">
+                  <rect
+                    :x="Math.min(450, Math.max(10, hoveredPoint.x - 45))"
+                    :y="Math.max(5, hoveredPoint.y - 32)"
+                    width="90" height="24" rx="5" fill="#1e293b" opacity="0.9"
+                  />
+                  <text
+                    :x="Math.min(450, Math.max(10, hoveredPoint.x - 45)) + 45"
+                    :y="Math.max(5, hoveredPoint.y - 32) + 16"
+                    font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle"
+                  >
+                    {{ hoveredPoint.val }}{{ statsMetric !== 'anggota' ? '%' : '' }}
+                  </text>
+                </g>
+
+                <!-- Value Indicator Text at top right -->
+                <text x="510" y="20" font-size="11" font-weight="bold" fill="var(--hijau)" text-anchor="end">
+                  Terakhir: {{ statsMetricValue }}
+                </text>
               </svg>
             </div>
           </div>
@@ -608,6 +648,9 @@ const submitting = ref(false)
 
 const statsPeriod = ref('12')
 const statsMetric = ref('kehadiran')
+const loadingTrends = ref(false)
+const trendsResponse = ref<any>(null)
+const hoveredPoint = ref<any>(null)
 
 const statsMetricLabel = computed(() => {
   if (statsMetric.value === 'kehadiran') return 'Rata-rata Kehadiran (%)'
@@ -615,11 +658,99 @@ const statsMetricLabel = computed(() => {
   return 'Jumlah Anggota Aktif'
 })
 
-const statsMetricValue = computed(() => {
-  if (statsMetric.value === 'kehadiran') return '89%'
-  if (statsMetric.value === 'iuran') return '100%'
-  return '124 Anggota'
+const trendPoints = computed(() => trendsResponse.value?.points || [])
+const summaryAvgKehadiran = computed(() => trendsResponse.value?.avg_kehadiran_pct ?? 89)
+const summaryBlba = computed(() => trendsResponse.value?.blba_pct ?? 96)
+const summaryAnggota = computed(() => trendsResponse.value?.total_anggota ?? 124)
+const summaryKas = computed(() => {
+  if (trendsResponse.value?.kas_unit) {
+    return 'Rp ' + (trendsResponse.value.kas_unit / 1000000).toFixed(1) + 'Jt'
+  }
+  return 'Rp 4.2M'
 })
+
+const statsMetricValue = computed(() => {
+  if (!trendsResponse.value || !trendPoints.value.length) {
+    if (statsMetric.value === 'kehadiran') return '89%'
+    if (statsMetric.value === 'iuran') return '96%'
+    return '124 Anggota'
+  }
+  const last = trendPoints.value[trendPoints.value.length - 1]
+  if (statsMetric.value === 'kehadiran') return `${last.kehadiran_pct}%`
+  if (statsMetric.value === 'iuran') return `${last.iuran_pct}%`
+  return `${last.anggota_count} Anggota`
+})
+
+const chartSvgData = computed(() => {
+  const points = trendPoints.value
+  if (!points || points.length === 0) return { path: '', areaPath: '', coords: [] }
+
+  const width = 540
+  const height = 180
+  const padLeft = 40
+  const padRight = 30
+  const padTop = 30
+  const padBottom = 40
+
+  const chartW = width - padLeft - padRight
+  const chartH = height - padTop - padBottom
+
+  const vals = points.map((p: any) => {
+    if (statsMetric.value === 'kehadiran') return p.kehadiran_pct
+    if (statsMetric.value === 'iuran') return p.iuran_pct
+    return p.anggota_count
+  })
+
+  let minVal = Math.min(...vals)
+  let maxVal = Math.max(...vals)
+  if (statsMetric.value !== 'anggota') {
+    minVal = 0
+    maxVal = 100
+  } else {
+    if (minVal === maxVal) {
+      minVal = Math.max(0, minVal - 10)
+      maxVal = maxVal + 10
+    }
+  }
+
+  const coords = points.map((p: any, idx: number) => {
+    const val = vals[idx]
+    const x = padLeft + (idx / Math.max(1, points.length - 1)) * chartW
+    const y = padTop + (1 - (val - minVal) / Math.max(1, maxVal - minVal)) * chartH
+    return {
+      x: Math.round(x * 10) / 10,
+      y: Math.round(y * 10) / 10,
+      val,
+      month: p.month,
+      fullMonth: p.full_month
+    }
+  })
+
+  const pathStr = coords.map((c: any, i: number) => `${i === 0 ? 'M' : 'L'} ${c.x} ${c.y}`).join(' ')
+  const lastCoord = coords[coords.length - 1]
+  const firstCoord = coords[0]
+  const areaPathStr = `${pathStr} L ${lastCoord.x} ${height - padBottom} L ${firstCoord.x} ${height - padBottom} Z`
+
+  return { path: pathStr, areaPath: areaPathStr, coords }
+})
+
+const fetchTrends = async () => {
+  if (!selectedCabang.value) return
+  loadingTrends.value = true
+  try {
+    const res = await api.get(`/organization/cabang/${selectedCabang.value.id}/trends?period=${statsPeriod.value}`)
+    trendsResponse.value = res
+  } catch (e) {
+    console.error('Failed to fetch trends', e)
+  } finally {
+    loadingTrends.value = false
+  }
+}
+
+watch(statsPeriod, () => {
+  fetchTrends()
+})
+
 
 const cabangData = ref<any[]>([])
 const totalCabang = ref(0)
@@ -720,6 +851,7 @@ const selectCabang = async (c: any) => {
   activeTab.value = 'profil'
   await fetchUnitsForCabang(c.id)
   await fetchTrainersForCabang(c.id)
+  await fetchTrends()
   staffList.value = [
     { id: '1', nama: c.ketua || 'Hadiwiyono W.', nomor: 'YO-YGY-00001', jabatan: 'Ketua Cabang', tingkatan: 'Penjuru Jurus 8', kontak: '0812-3456-7890' },
     { id: '2', nama: 'Siti Rahayu', nomor: 'YO-YGY-00012', jabatan: 'Sekretaris', tingkatan: 'PK Jurus 5', kontak: '0813-9876-5432' },

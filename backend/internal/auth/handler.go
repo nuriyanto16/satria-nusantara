@@ -26,6 +26,7 @@ func (h *Handler) Routes(jwtSecret string) func(r chi.Router) {
 	return func(r chi.Router) {
 		// ── Public ─────────────────────────────────────────
 		r.Post("/login", h.login)
+		r.Post("/google-login", h.googleLogin)
 		r.Get("/health", h.health)
 
 		// ── Protected ──────────────────────────────────────
@@ -61,6 +62,29 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 
 	response.Success(w, http.StatusOK, "Login berhasil", result)
 }
+
+// POST /api/v1/auth/google-login
+func (h *Handler) googleLogin(w http.ResponseWriter, r *http.Request) {
+	var req GoogleLoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Request body tidak valid")
+		return
+	}
+
+	result, err := h.svc.GoogleLogin(r.Context(), req)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserInactive):
+			response.Error(w, http.StatusForbidden, err.Error())
+		default:
+			response.Error(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	response.Success(w, http.StatusOK, "Login Google berhasil", result)
+}
+
 
 // GET /api/v1/auth/me
 func (h *Handler) me(w http.ResponseWriter, r *http.Request) {

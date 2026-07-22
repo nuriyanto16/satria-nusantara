@@ -27,6 +27,26 @@ type CreateCabangRequest struct {
 	Alamat     string `json:"alamat"`
 }
 
+type CabangTrendPoint struct {
+	Month        string `json:"month"`
+	FullMonth    string `json:"full_month"`
+	KehadiranPct int    `json:"kehadiran_pct"`
+	IuranPct     int    `json:"iuran_pct"`
+	AnggotaCount int    `json:"anggota_count"`
+}
+
+type CabangTrendsResponse struct {
+	CabangID        string             `json:"cabang_id"`
+	CabangNama      string             `json:"cabang_nama"`
+	PeriodMonths    int                `json:"period_months"`
+	AvgKehadiranPct int                `json:"avg_kehadiran_pct"`
+	BlbaPct         int                `json:"blba_pct"`
+	TotalAnggota    int                `json:"total_anggota"`
+	KasUnit         int64              `json:"kas_unit"`
+	Points          []CabangTrendPoint `json:"points"`
+}
+
+
 // ─── Unit Latihan ──────────────────────────────────────────────────────────────
 
 type Unit struct {
@@ -76,6 +96,7 @@ type Anggota struct {
 	FotoURL         string        `json:"foto_url,omitempty"`
 	UnitID          string        `json:"unit_id"`
 	UnitNama        string        `json:"unit_nama,omitempty"`   // joined
+	CabangID        string        `json:"cabang_id,omitempty"`   // joined
 	CabangNama      string        `json:"cabang_nama,omitempty"` // joined
 	Tingkatan       TingkatanEnum `json:"tingkatan"`
 	JurusSaatIni   int           `json:"jurus_saat_ini"`
@@ -91,6 +112,16 @@ type CreateAnggotaRequest struct {
 	JenisKelamin string `json:"jenis_kelamin"`
 	NoHp         string `json:"no_hp"`
 	UnitID       string `json:"unit_id"`
+}
+
+type UpdateAnggotaRequest struct {
+	NamaLengkap  string `json:"nama_lengkap"`
+	TanggalLahir string `json:"tanggal_lahir"`
+	JenisKelamin string `json:"jenis_kelamin"`
+	NoHp         string `json:"no_hp"`
+	UnitID       string `json:"unit_id"`
+	Tingkatan    string `json:"tingkatan"`
+	Status       string `json:"status"`
 }
 
 type VerifikasiAnggotaRequest struct {

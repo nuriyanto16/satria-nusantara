@@ -126,7 +126,7 @@ const tabs = [
 ]
 
 const aksesMap: Record<string, any[][]> = {
-  penuh: [['Dashboard','ti-layout-dashboard','Akses penuh','akses-on'],['Kelola Cabang','ti-map-pin','Akses penuh','akses-on'],['Kelola Anggota','ti-users','Akses penuh','akses-on'],['BLBA','ti-wallet','Akses penuh','akses-on'],['Tes Kebugaran','ti-heartbeat','Akses penuh','akses-on']],
+  penuh: [['Dashboard','ti-layout-dashboard','Akses penuh','akses-on'],['Kelola Cabang','ti-map-pin','Akses penuh','akses-on'],['Kelola Anggota','ti-users','Akses penuh','akses-on'],['BLBA','ti-wallet','Akses penuh','akses-on'],['Tes Kebugaran','ti-heartbeat','Akses penuh','akses-on'],['Monitoring Olah Nafas','ti-wind','Akses penuh','akses-on']],
   cabang: [['Dashboard','ti-layout-dashboard','Cabangnya saja','akses-on'],['Kelola Anggota','ti-users','Cabangnya saja','akses-on'],['BLBA','ti-wallet','Cabangnya saja','akses-on'],['Pengaturan','ti-settings','Tidak ada akses','akses-off'],['Tes Kebugaran','ti-heartbeat','Cabangnya saja','akses-on']],
   unit: [['Anggota Unit','ti-users','Unitnya saja','akses-on'],['BLBA Unit','ti-wallet','Unitnya saja','akses-on'],['Laporan Unit','ti-chart-bar','Unitnya saja','akses-on'],['Kelola Cabang','ti-map-pin','Tidak ada akses','akses-off'],['Pengaturan','ti-settings','Tidak ada akses','akses-off']],
   pelatih: [['Jadwal','ti-calendar','Generate QR','akses-on'],['Absensi','ti-qrcode','Input via mobile','akses-on'],['Tes Kebugaran','ti-heartbeat','Input via mobile','akses-on'],['BLBA','ti-wallet','Tidak ada akses','akses-off'],['Pengaturan','ti-settings','Tidak ada akses','akses-off']],

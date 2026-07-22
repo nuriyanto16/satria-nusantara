@@ -19,6 +19,7 @@ var (
 // Service defines the business logic contract for authentication.
 type Service interface {
 	Login(ctx context.Context, req LoginRequest) (*AuthResponse, error)
+	GoogleLogin(ctx context.Context, req GoogleLoginRequest) (*AuthResponse, error)
 	GetMe(ctx context.Context, userID string) (*User, error)
 	Register(ctx context.Context, req RegisterRequest) (string, error)
 	ChangePassword(ctx context.Context, userID string, req ChangePasswordRequest) error
@@ -71,6 +72,51 @@ func (s *service) Login(ctx context.Context, req LoginRequest) (*AuthResponse, e
 	user := recordToUser(rec)
 	return &AuthResponse{Token: token, User: user}, nil
 }
+
+func (s *service) GoogleLogin(ctx context.Context, req GoogleLoginRequest) (*AuthResponse, error) {
+	if req.Email == "" {
+		return nil, errors.New("email wajib diisi")
+	}
+
+	rec, err := s.repo.FindByEmail(ctx, req.Email)
+	if errors.Is(err, ErrNotFound) {
+		newRec, createErr := s.repo.CreateGoogleUser(ctx, req)
+		if createErr != nil {
+			return nil, createErr
+		}
+		rec = newRec
+	} else if err != nil {
+		return nil, err
+	}
+
+	if rec.Status != "aktif" {
+		return nil, ErrUserInactive
+	}
+
+	if req.GoogleID != "" && (rec.GoogleID == nil || *rec.GoogleID == "") {
+		_ = s.repo.UpdateGoogleID(ctx, rec.ID, req.GoogleID)
+	}
+
+	cabangID := ""
+	if rec.CabangID != nil {
+		cabangID = *rec.CabangID
+	}
+	unitID := ""
+	if rec.UnitID != nil {
+		unitID = *rec.UnitID
+	}
+
+	token, err := middleware.GenerateToken(
+		rec.ID, rec.Email, rec.Scope, cabangID, unitID, s.jwtSecret, rec.RoleID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	user := recordToUser(rec)
+	return &AuthResponse{Token: token, User: user}, nil
+}
+
 
 func (s *service) GetMe(ctx context.Context, userID string) (*User, error) {
 	rec, err := s.repo.FindByID(ctx, userID)

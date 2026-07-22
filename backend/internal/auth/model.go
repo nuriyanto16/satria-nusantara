@@ -27,7 +27,14 @@ type LoginRequest struct {
 }
 
 type GoogleLoginRequest struct {
-	IDToken string `json:"id_token"`
+	IDToken     string `json:"id_token,omitempty"`
+	Email       string `json:"email"`
+	GoogleID    string `json:"google_id,omitempty"`
+	NamaLengkap string `json:"nama_lengkap,omitempty"`
+	FotoURL     string `json:"foto_url,omitempty"`
+	NoHp        string `json:"no_hp,omitempty"`
+	CabangID    string `json:"cabang_id,omitempty"`
+	UnitID      string `json:"unit_id,omitempty"`
 }
 
 type RegisterRequest struct {

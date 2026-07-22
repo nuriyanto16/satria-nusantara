@@ -31,6 +31,7 @@ func (h *Handler) Routes(jwtSecret string) func(r chi.Router) {
 		// ── Cabang ─────────────────────────────────────
 		r.Get("/cabang", h.listCabang)
 		r.Get("/cabang/{id}", h.getCabang)
+		r.Get("/cabang/{id}/trends", h.getCabangTrends)
 		r.With(pusat).Post("/cabang", h.createCabang)
 		r.With(pusat).Put("/cabang/{id}", h.updateCabang)
 		r.Get("/cabang/{id}/unit", h.listUnit)
@@ -43,6 +44,7 @@ func (h *Handler) Routes(jwtSecret string) func(r chi.Router) {
 		r.Get("/anggota", h.listAnggota)
 		r.Post("/anggota", h.createAnggota)
 		r.Get("/anggota/{id}", h.getAnggota)
+		r.Put("/anggota/{id}", h.updateAnggota)
 		r.With(manager).Post("/anggota/{id}/verifikasi", h.verifikasiAnggota)
 		r.Post("/anggota/{id}/upload", h.uploadFoto)
 		r.Get("/anggota/{id}/stats", h.getAnggotaStats)
@@ -76,6 +78,21 @@ func (h *Handler) getCabang(w http.ResponseWriter, r *http.Request) {
 	if handleNotFound(w, err) { return }
 	response.JSON(w, http.StatusOK, c)
 }
+
+func (h *Handler) getCabangTrends(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	periodStr := r.URL.Query().Get("period")
+	period := 12
+	if periodStr != "" {
+		if p, err := strconv.Atoi(periodStr); err == nil && p > 0 {
+			period = p
+		}
+	}
+	res, err := h.svc.GetCabangTrends(id, period)
+	if handleNotFound(w, err) { return }
+	response.JSON(w, http.StatusOK, res)
+}
+
 
 func (h *Handler) createCabang(w http.ResponseWriter, r *http.Request) {
 	claims := middleware.GetClaims(r)
@@ -167,6 +184,28 @@ func (h *Handler) createAnggota(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.Success(w, http.StatusCreated, "Anggota berhasil didaftarkan, menunggu verifikasi", map[string]string{"id": id})
+}
+
+func (h *Handler) updateAnggota(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req UpdateAnggotaRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Body tidak valid")
+		return
+	}
+	if req.NamaLengkap == "" {
+		response.Error(w, http.StatusBadRequest, "Nama lengkap harus diisi")
+		return
+	}
+	if err := h.svc.UpdateAnggota(id, req); err != nil {
+		if errors.Is(err, ErrNotFound) {
+			response.Error(w, http.StatusNotFound, "Anggota tidak ditemukan")
+			return
+		}
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Data anggota berhasil diperbarui", nil)
 }
 
 func (h *Handler) verifikasiAnggota(w http.ResponseWriter, r *http.Request) {

@@ -14,6 +14,7 @@ import (
 	"satria-nusantara/backend/internal/event"
 	"satria-nusantara/backend/internal/finance"
 	"satria-nusantara/backend/internal/kebugaran"
+	"satria-nusantara/backend/internal/nafas"
 	"satria-nusantara/backend/internal/organization"
 	"satria-nusantara/backend/internal/training"
 
@@ -50,6 +51,7 @@ func main() {
 	financeHandler := finance.NewHandler()
 	contentHandler := content.NewHandler()
 	kebugaranHandler := kebugaran.NewHandler()
+	nafasHandler := nafas.NewHandler()
 
 	// 6. Setup Router (Chi)
 	r := chi.NewRouter()
@@ -90,6 +92,7 @@ func main() {
 		r.Route("/finance", financeHandler.Routes())
 		r.Route("/content", contentHandler.Routes())
 		r.Route("/kebugaran", kebugaranHandler.Routes())
+		r.Route("/nafas", nafasHandler.Routes())
 	})
 
 	// 8. Start Server

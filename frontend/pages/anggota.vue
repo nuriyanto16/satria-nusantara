@@ -425,6 +425,12 @@
               <option v-for="u in unitList" :key="u.id" :value="u.id">{{ u.nama }}</option>
             </select>
           </div>
+          <div v-if="editingId" class="form-group">
+            <label class="form-label">Tingkatan</label>
+            <select v-model="form.tingkatan" class="form-select">
+              <option v-for="t in tingkatanList" :key="t" :value="t">{{ t }}</option>
+            </select>
+          </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" style="width: auto" @click="showAddModal = false">Batal</button>
             <button type="submit" class="btn btn-primary" style="width: auto" :disabled="submitting">
@@ -461,7 +467,7 @@ const anggotaData = ref<any[]>([])
 const cabangList = ref<any[]>([])
 const unitList = ref<any[]>([])
 const selectedAnggota = ref<any>(null)
-const editingId = ref<number | null>(null)
+const editingId = ref<string | null>(null)
 
 const selectedMemberStats = ref<any>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -523,7 +529,9 @@ const form = ref({
   jenis_kelamin: 'L',
   tanggal_lahir: '',
   cabang_id: '',
-  unit_id: ''
+  unit_id: '',
+  tingkatan: 'Pra Dasar',
+  status: 'aktif'
 })
 
 const fetchStats = async () => {
@@ -624,23 +632,41 @@ const openAddModal = () => {
     jenis_kelamin: 'L',
     tanggal_lahir: '',
     cabang_id: '',
-    unit_id: ''
+    unit_id: '',
+    tingkatan: 'Pra Dasar',
+    status: 'aktif'
   }
   unitList.value = []
   showAddModal.value = true
 }
 
-const openEditModal = (a: any) => {
+const openEditModal = async (a: any) => {
   editingId.value = a.id
   form.value = {
-    nama_lengkap: a.nama_lengkap,
+    nama_lengkap: a.nama_lengkap || '',
     no_hp: a.no_hp || '',
     jenis_kelamin: a.jenis_kelamin || 'L',
     tanggal_lahir: a.tanggal_lahir ? a.tanggal_lahir.substring(0, 10) : '',
     cabang_id: a.cabang_id || '',
-    unit_id: a.unit_id || ''
+    unit_id: a.unit_id || '',
+    tingkatan: a.tingkatan || 'Pra Dasar',
+    status: a.status || 'aktif'
   }
-  onCabangChange(true)
+  if (!form.value.cabang_id || !form.value.tanggal_lahir) {
+    try {
+      const detail = await api.get(`/organization/anggota/${a.id}`)
+      if (detail) {
+        form.value.cabang_id = detail.cabang_id || form.value.cabang_id
+        form.value.unit_id = detail.unit_id || form.value.unit_id
+        form.value.tanggal_lahir = detail.tanggal_lahir ? detail.tanggal_lahir.substring(0, 10) : form.value.tanggal_lahir
+        form.value.tingkatan = detail.tingkatan || form.value.tingkatan
+        form.value.status = detail.status || form.value.status
+      }
+    } catch (e) {
+      console.error('Gagal memuat detail anggota:', e)
+    }
+  }
+  await onCabangChange(true)
   showAddModal.value = true
 }
 
@@ -648,20 +674,15 @@ const saveAnggota = async () => {
   submitting.value = true
   try {
     if (editingId.value) {
-      // Simulate client update since backend PUT is optional
-      const idx = anggotaData.value.findIndex((x: any) => x.id === editingId.value)
-      if (idx !== -1) {
-        anggotaData.value[idx] = {
-          ...anggotaData.value[idx],
-          nama_lengkap: form.value.nama_lengkap,
-          no_hp: form.value.no_hp,
-          jenis_kelamin: form.value.jenis_kelamin,
-          tanggal_lahir: form.value.tanggal_lahir,
-          cabang_nama: cabangList.value.find((c: any) => c.id === form.value.cabang_id)?.nama || '',
-          unit_nama: unitList.value.find((u: any) => u.id === form.value.unit_id)?.nama || ''
-        }
-        selectedAnggota.value = anggotaData.value[idx]
-      }
+      await api.put(`/organization/anggota/${editingId.value}`, {
+        nama_lengkap: form.value.nama_lengkap,
+        no_hp: form.value.no_hp,
+        jenis_kelamin: form.value.jenis_kelamin,
+        tanggal_lahir: form.value.tanggal_lahir,
+        unit_id: form.value.unit_id,
+        tingkatan: form.value.tingkatan,
+        status: form.value.status
+      })
       alert('Data anggota berhasil diperbarui!')
     } else {
       await api.post('/organization/anggota', {
@@ -675,8 +696,14 @@ const saveAnggota = async () => {
     }
     showAddModal.value = false
     editingId.value = null
-    fetchStats()
-    fetchAnggota()
+    await fetchStats()
+    await fetchAnggota()
+    if (selectedAnggota.value) {
+      try {
+        const updated = await api.get(`/organization/anggota/${selectedAnggota.value.id}`)
+        if (updated) selectedAnggota.value = updated
+      } catch (_) {}
+    }
   } catch (e: any) {
     alert(e.message || 'Gagal menyimpan data')
   } finally {

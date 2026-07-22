@@ -16,6 +16,7 @@ type Service interface {
 	// Cabang
 	ListCabang(params ListParams, userScope, userCabangID string) (*PaginatedResult[Cabang], error)
 	GetCabang(id string) (*Cabang, error)
+	GetCabangTrends(id string, period int) (*CabangTrendsResponse, error)
 	CreateCabang(req CreateCabangRequest, createdBy string) (string, error)
 	UpdateCabang(id string, req CreateCabangRequest) error
 
@@ -28,6 +29,7 @@ type Service interface {
 	ListAnggota(params ListParams) (*PaginatedResult[Anggota], error)
 	GetAnggota(id string) (*Anggota, error)
 	CreateAnggota(req CreateAnggotaRequest) (string, error)
+	UpdateAnggota(id string, req UpdateAnggotaRequest) error
 	VerifikasiAnggota(id string, req VerifikasiAnggotaRequest) error
 	UpdateFotoAnggota(id, fotoURL string) error
 	GetAnggotaStats(id string) (*AnggotaStats, error)
@@ -63,6 +65,11 @@ func (s *service) GetCabang(id string) (*Cabang, error) {
 	return s.repo.GetCabangByID(context.Background(), id)
 }
 
+func (s *service) GetCabangTrends(id string, period int) (*CabangTrendsResponse, error) {
+	return s.repo.GetCabangTrends(context.Background(), id, period)
+}
+
+
 func (s *service) CreateCabang(req CreateCabangRequest, createdBy string) (string, error) {
 	return s.repo.CreateCabang(context.Background(), req, createdBy)
 }
@@ -97,6 +104,10 @@ func (s *service) GetAnggota(id string) (*Anggota, error) {
 
 func (s *service) CreateAnggota(req CreateAnggotaRequest) (string, error) {
 	return s.repo.CreateAnggota(context.Background(), req)
+}
+
+func (s *service) UpdateAnggota(id string, req UpdateAnggotaRequest) error {
+	return s.repo.UpdateAnggota(context.Background(), id, req)
 }
 
 func (s *service) VerifikasiAnggota(id string, req VerifikasiAnggotaRequest) error {

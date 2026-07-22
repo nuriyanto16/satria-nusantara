@@ -305,6 +305,144 @@ class DetailSkeletonWidget extends StatelessWidget {
   }
 }
 
+// ─── SPLASH SCREEN ─────────────────────────────────────────────────────────────
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _scaleAnim;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _scaleAnim = Tween<double>(begin: 0.8, end: 1.05).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
+    );
+
+    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeIn),
+    );
+
+    _animController.forward();
+
+    Future.delayed(const Duration(milliseconds: 2400), () {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/onboarding');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0058A3),
+              Color(0xFF0078C8),
+              Color(0xFF0092EC),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: FadeTransition(
+              opacity: _fadeAnim,
+              child: ScaleTransition(
+                scale: _scaleAnim,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 130,
+                      height: 130,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.15),
+                        border: Border.all(color: Colors.white.withOpacity(0.4), width: 2.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.25),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: Image.memory(
+                          base64Decode(kAppLogoBase64),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    const Text(
+                      'SATRIA NUSANTARA',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white30, width: 1),
+                      ),
+                      child: const Text(
+                        'Olah Nafas & Keanggotaan LSP Nasional',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                    SizedBox(
+                      width: 140,
+                      child: LinearProgressIndicator(
+                        backgroundColor: Colors.white24,
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 // ─── ONBOARDING SCREEN ────────────────────────────────────────────────────────
 class OnboardingScreen extends StatefulWidget {
@@ -812,10 +950,11 @@ class _LoginScreenState extends State<LoginScreen> {
         try {
           final res = await AuthRepository().loginGoogle(email, name);
           if (context.mounted) {
+            context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
             );
-            Navigator.pushReplacementNamed(context, '/main');
+            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
           }
         } catch (e) {
           if (context.mounted) {
@@ -1013,7 +1152,7 @@ class DashboardTab extends StatelessWidget {
                           const SizedBox(width: 20),
                           _buildGopayAction(context, Icons.badge_outlined, 'e-KTA', '/kta'),
                           const SizedBox(width: 20),
-                          _buildGopayAction(context, Icons.payment_outlined, 'Bayar', '/home', targetTab: 2),
+                          _buildGopayAction(context, Icons.payment_outlined, 'Bayar', '/home', targetTab: 3),
                         ],
                       ),
                     ],
@@ -1819,6 +1958,59 @@ class ProfilTab extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+
+            // PENGATURAN TAMPILAN
+            _buildSectionHeader('PENGATURAN TAMPILAN'),
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: BrandColors.border),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          themeNotifier.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                          color: BrandColors.biruPrimary,
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Mode Gelap (Dark Mode)',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            Text(
+                              themeNotifier.isDarkMode ? 'Tema malam aktif' : 'Tema terang aktif',
+                              style: const TextStyle(fontSize: 11, color: BrandColors.text3),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    ValueListenableBuilder<ThemeMode>(
+                      valueListenable: themeNotifier,
+                      builder: (context, mode, _) {
+                        return Switch(
+                          value: mode == ThemeMode.dark,
+                          activeColor: BrandColors.biruPrimary,
+                          onChanged: (val) {
+                            themeNotifier.toggleTheme();
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 32),
 
             // Logout Button
@@ -2098,6 +2290,7 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat();
+    _fetchRemoteHistory();
   }
 
   @override
@@ -2260,6 +2453,44 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
     });
   }
 
+  Future<void> _fetchRemoteHistory() async {
+    final endpoints = [
+      'http://localhost:8080/api/v1/nafas/history',
+      'http://10.0.2.2:8080/api/v1/nafas/history',
+    ];
+
+    for (final url in endpoints) {
+      try {
+        final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 2));
+        if (res.statusCode == 200) {
+          final body = jsonDecode(res.body);
+          final data = body['data'] as List?;
+          if (data != null && data.isNotEmpty) {
+            final List<Map<String, dynamic>> remoteList = [];
+            for (final item in data) {
+              remoteList.add({
+                'id': item['id'] ?? 'hist-${DateTime.now().millisecondsSinceEpoch}',
+                'teknik': item['teknik'] ?? 'Sama Kaki',
+                'durasi_fmt': item['durasi_fmt'] ?? '10:00',
+                'durasi_detik': item['durasi_detik'] ?? 600,
+                'siklus': item['siklus'] ?? 12,
+                'timestamp': item['timestamp'] != null ? (DateTime.tryParse(item['timestamp'].toString()) ?? DateTime.now()) : DateTime.now(),
+                'status': 'Selesai',
+              });
+            }
+            if (mounted) {
+              setState(() {
+                _historyList.clear();
+                _historyList.addAll(remoteList);
+              });
+            }
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+  }
+
   void _finishSession() {
     _timer?.cancel();
     final techniqueLabel = _type == 'square' ? 'Segi Empat' : (_type == 'equi' ? 'Sama Sisi' : 'Sama Kaki');
@@ -2280,23 +2511,34 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
       _historyList.insert(0, record);
     });
 
-    // Try posting to backend API
-    try {
-      http.post(
-        Uri.parse('http://localhost:8080/api/v1/nafas/history'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'anggota_id': 'a0000001-0000-0000-0000-000000000001',
-          'anggota_nama': 'Ahmad Santoso',
-          'cabang_nama': 'Kota Yogyakarta',
-          'unit_nama': 'Malioboro',
-          'teknik': techniqueLabel,
-          'durasi_detik': _totalDur,
-          'durasi_fmt': _fmt(_totalDur),
-          'siklus': _totalCycles,
-        }),
-      );
-    } catch (_) {}
+    final payload = jsonEncode({
+      'anggota_id': 'a0000001-0000-0000-0000-000000000001',
+      'anggota_nama': 'Ahmad Santoso',
+      'cabang_nama': 'Kota Yogyakarta',
+      'unit_nama': 'Malioboro',
+      'teknik': techniqueLabel,
+      'durasi_detik': _totalDur,
+      'durasi_fmt': _fmt(_totalDur),
+      'siklus': _totalCycles,
+    });
+
+    // Post to backend API asynchronously (supports both localhost and Android Emulator 10.0.2.2)
+    Future.microtask(() async {
+      final endpoints = [
+        'http://localhost:8080/api/v1/nafas/history',
+        'http://10.0.2.2:8080/api/v1/nafas/history',
+      ];
+      for (final url in endpoints) {
+        try {
+          final res = await http.post(
+            Uri.parse(url),
+            headers: {'Content-Type': 'application/json'},
+            body: payload,
+          ).timeout(const Duration(seconds: 3));
+          if (res.statusCode == 200 || res.statusCode == 201) break;
+        } catch (_) {}
+      }
+    });
   }
 
   String _fmt(int sec) {
@@ -2396,7 +2638,10 @@ class _NafasTabState extends State<NafasTab> with SingleTickerProviderStateMixin
                   const SizedBox(width: 10),
                   Expanded(
                     child: InkWell(
-                      onTap: () => setState(() => _activeTab = 'riwayat'),
+                      onTap: () {
+                        setState(() => _activeTab = 'riwayat');
+                        _fetchRemoteHistory();
+                      },
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -4049,10 +4294,11 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
         try {
           final res = await AuthRepository().loginGoogle(email, name);
           if (context.mounted) {
+            context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Selamat datang, ${res['user'].namaLengkap}!')),
             );
-            Navigator.pushReplacementNamed(context, '/main');
+            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
           }
         } catch (e) {
           if (context.mounted) {
@@ -5510,12 +5756,29 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/wait_verification',
-                    arguments: {'name': name},
+                onPressed: () async {
+                  final phone = _phoneController.text.trim();
+                  if (phone.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Silakan masukkan nomor HP terlebih dahulu')),
+                    );
+                    return;
+                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Mendaftarkan akun Google...')),
                   );
+                  final res = await AuthRepository().loginGoogle(
+                    email,
+                    name,
+                    noHp: phone,
+                  );
+                  if (context.mounted) {
+                    context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Pendaftaran Google Berhasil! Selamat datang, ${res['user'].namaLengkap}')),
+                    );
+                    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                  }
                 },
                 child: const Text('Daftar Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
