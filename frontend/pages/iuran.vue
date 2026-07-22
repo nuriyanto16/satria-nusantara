@@ -561,15 +561,45 @@ const viewBukti = (trx: any) => {
   showBuktiModal.value = true
 }
 
-const transaksiList = ref<any[]>([
-  { id: 't1', nama: 'Budi Santoso', nomor: 'YO-YGY-00142', bulan: 'Juli 2026', metode: 'DANA', nominal: 40000, waktu: '22 Jul 2026, 08:14', relativeTime: 'Hari ini', status: 'lunas', buktiUrl: null },
-  { id: 't2', nama: 'Sari Rahmawati', nomor: 'YO-YGY-00098', bulan: 'Juli 2026', metode: 'Transfer Bank - BCA', nominal: 40000, waktu: '22 Jul 2026, 07:52', relativeTime: 'Hari ini', status: 'pending', buktiUrl: 'bukti_transfer_1753145520123.jpg' },
-  { id: 't3', nama: 'Hendra Kusuma', nomor: 'YO-YGY-00067', bulan: 'Juli 2026', metode: 'GoPay', nominal: 40000, waktu: '21 Jul 2026, 19:30', relativeTime: 'Kemarin', status: 'lunas', buktiUrl: null },
-  { id: 't4', nama: 'Agus Prasetyo', nomor: 'YO-YGY-00201', bulan: 'Juli 2026', metode: 'Transfer Bank - BRI', nominal: 40000, waktu: '21 Jul 2026, 15:10', relativeTime: 'Kemarin', status: 'pending', buktiUrl: 'bukti_transfer_1753098610234.jpg' },
-  { id: 't5', nama: 'Dwi Wahyuni', nomor: 'YO-YGY-00167', bulan: 'Juli 2026', metode: 'OVO', nominal: 40000, waktu: '20 Jul 2026, 10:05', relativeTime: '2 hari lalu', status: 'lunas', buktiUrl: null },
-  { id: 't6', nama: 'Farid Nugroho', nomor: 'YO-YGY-00312', bulan: 'Juni 2026', metode: 'ShopeePay', nominal: 40000, waktu: '19 Jul 2026, 09:00', relativeTime: '3 hari lalu', status: 'lunas', buktiUrl: null },
-  { id: 't7', nama: 'Nurul Rahayu', nomor: 'YO-YGY-00089', bulan: 'Juli 2026', metode: 'Transfer Bank - Mandiri', nominal: 40000, waktu: '18 Jul 2026, 14:22', relativeTime: '4 hari lalu', status: 'ditolak', buktiUrl: 'bukti_transfer_1752925320456.jpg' },
-])
+const transaksiList = ref<any[]>([])
+
+const fetchTransactions = async () => {
+  try {
+    const res = await api.get('/admin/iuran-transactions')
+    if (res && Array.isArray(res)) {
+      transaksiList.value = res.map((t: any) => {
+        const d = new Date(t.createdAt)
+        const formattedTime = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        
+        const diffMs = Date.now() - d.getTime()
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+        let relTime = 'Baru saja'
+        if (diffDays === 0) {
+          relTime = 'Hari ini'
+        } else if (diffDays === 1) {
+          relTime = 'Kemarin'
+        } else {
+          relTime = `${diffDays} hari lalu`
+        }
+
+        return {
+          id: t.id,
+          nama: t.nama || 'Anggota SN',
+          nomor: t.nomor || 'SN-ANGGOTA',
+          bulan: t.bulan || 'Juli 2026',
+          metode: t.paymentMethod,
+          nominal: t.amount,
+          waktu: formattedTime,
+          relativeTime: relTime,
+          status: t.status,
+          buktiUrl: t.buktiUrl
+        }
+      })
+    }
+  } catch (e) {
+    console.error('Gagal memuat transaksi:', e)
+  }
+}
 
 const filteredTrxList = computed(() => {
   if (!filterTrxStatus.value) return transaksiList.value
@@ -581,20 +611,39 @@ const trxBerhasil = computed(() => transaksiList.value.filter(t => t.status === 
 const trxDitolak = computed(() => transaksiList.value.filter(t => t.status === 'ditolak').length)
 const totalTrxBerhasil = computed(() => transaksiList.value.filter(t => t.status === 'lunas').reduce((s, t) => s + t.nominal, 0))
 
-const konfirmasiTrx = (trx: any) => {
-  trx.status = 'lunas'
-  trx.relativeTime = 'Baru dikonfirmasi'
-  // Also update anggotaBLBAList if match found
-  const member = anggotaBLBAList.value.find(a => a.nomor === trx.nomor)
-  if (member) { member.status = 'lunas'; member.tanggalBayar = trx.waktu.split(',')[0]; member.metode = trx.metode }
-  alert(`✅ Pembayaran ${trx.nama} untuk BLBA ${trx.bulan} berhasil dikonfirmasi!`)
+const konfirmasiTrx = async (trx: any) => {
+  try {
+    await api.post(`/admin/iuran-transactions/${trx.id}/verify`, { status: 'lunas' })
+    trx.status = 'lunas'
+    trx.relativeTime = 'Baru dikonfirmasi'
+    const member = anggotaBLBAList.value.find(a => a.nomor === trx.nomor)
+    if (member) {
+      member.status = 'lunas'
+      member.tanggalBayar = trx.waktu.split(',')[0]
+      member.metode = trx.metode
+    }
+    alert(`✅ Pembayaran ${trx.nama} untuk BLBA ${trx.bulan} berhasil dikonfirmasi!`)
+    await generateIuranData()
+    await fetchTransactions()
+  } catch (e) {
+    console.error(e)
+    alert('Gagal mengonfirmasi pembayaran')
+  }
 }
 
-const tolakTrx = (trx: any) => {
+const tolakTrx = async (trx: any) => {
   if (!confirm(`Tolak pembayaran transfer dari ${trx.nama}?`)) return
-  trx.status = 'ditolak'
-  trx.relativeTime = 'Baru ditolak'
-  alert(`❌ Pembayaran ${trx.nama} ditolak. Anggota akan diberitahu.`)
+  try {
+    await api.post(`/admin/iuran-transactions/${trx.id}/verify`, { status: 'ditolak' })
+    trx.status = 'ditolak'
+    trx.relativeTime = 'Baru ditolak'
+    alert(`❌ Pembayaran ${trx.nama} ditolak.`)
+    await generateIuranData()
+    await fetchTransactions()
+  } catch (e) {
+    console.error(e)
+    alert('Gagal menolak pembayaran')
+  }
 }
 
 const fetchCabang = async () => {
@@ -822,6 +871,7 @@ const exportHistory = () => {
 
 onMounted(() => {
   fetchCabang()
+  fetchTransactions()
 })
 </script>
 

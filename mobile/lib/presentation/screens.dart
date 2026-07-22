@@ -620,7 +620,20 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
-            Navigator.pushReplacementNamed(context, '/home');
+            if (state.user.status == 'pending') {
+              Navigator.pushReplacementNamed(
+                context,
+                '/wait_verification',
+                arguments: {
+                  'name': state.user.namaLengkap,
+                  'email': state.user.email,
+                  'user': state.user,
+                  'token': state.token,
+                },
+              );
+            } else {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
           } else if (state is Unauthenticated && state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -1554,7 +1567,8 @@ class IuranTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<IuranBloc>().add(LoadIuranHistory());
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+    context.read<IuranBloc>().add(LoadIuranHistory(user.id));
 
     return Scaffold(
       appBar: AppBar(
@@ -1640,13 +1654,13 @@ class IuranTab extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
+                               Text(
                                 'Riwayat BLBA',
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                  context.read<IuranBloc>().add(AddMockIuran());
+                                  context.read<IuranBloc>().add(AddMockIuran(user.id));
                                 },
                                 icon: Icon(Icons.add, size: 16),
                                 label: Text('Simulasi Tagihan', style: TextStyle(fontSize: 12)),
@@ -1691,7 +1705,7 @@ class IuranTab extends StatelessWidget {
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                  context.read<IuranBloc>().add(AddMockIuran());
+                                  context.read<IuranBloc>().add(AddMockIuran(user.id));
                                 },
                                 icon: Icon(Icons.add, size: 16),
                                 label: Text('Simulasi Tagihan', style: TextStyle(fontSize: 12)),
@@ -4172,10 +4186,23 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                   );
                 }
               } else {
-                _pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mendaftarkan akun...')),
                 );
+                await AuthRepository().registerUser(
+                  email: _emailController.text,
+                  password: _passwordController.text,
+                  name: _nameController.text,
+                  phone: _phoneController.text,
+                  unit: _selectedUnit,
+                  tingkat: '$_selectedTingkat — $_selectedJurus',
+                );
+                if (context.mounted) {
+                  _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
               }
             },
             style: ElevatedButton.styleFrom(
@@ -5177,6 +5204,8 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
   Widget build(BuildContext context) {
     final activeBill = ModalRoute.of(context)?.settings.arguments as Iuran?;
 
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+
     final wallets = [
       {'name': 'GoPay', 'icon': Icons.account_balance_wallet, 'color': Colors.blue},
       {'name': 'OVO', 'icon': Icons.toll, 'color': Colors.purple},
@@ -5187,7 +5216,7 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
     return BlocListener<IuranBloc, IuranState>(
       listener: (context, state) {
         if (state is PaymentSuccess) {
-          context.read<IuranBloc>().add(LoadIuranHistory());
+          context.read<IuranBloc>().add(LoadIuranHistory(user.id));
           Navigator.pushNamed(
             context,
             '/payment_success',
@@ -5250,7 +5279,7 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
                         setState(() {
                           _selectedWallet = wallet['name'] as String;
                         });
-                        context.read<IuranBloc>().add(PayIuranRequested(activeBill.id, wallet['name'] as String));
+                        context.read<IuranBloc>().add(PayIuranRequested(activeBill.id, wallet['name'] as String, user.id));
                       }
                     },
                   ),
@@ -5419,12 +5448,14 @@ class _TransferBuktiScreenState extends State<TransferBuktiScreen> {
       return;
     }
 
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+
     setState(() => _isSubmitting = true);
     await Future.delayed(const Duration(seconds: 2));
 
     if (activeBill != null) {
       // Mark as pending in bloc
-      context.read<IuranBloc>().add(PayIuranRequested(activeBill.id, 'Transfer Bank - $_selectedBank'));
+      context.read<IuranBloc>().add(PayIuranRequested(activeBill.id, 'Transfer Bank - $_selectedBank', user.id));
     }
 
     setState(() {
@@ -5438,6 +5469,8 @@ class _TransferBuktiScreenState extends State<TransferBuktiScreen> {
     final activeBill = ModalRoute.of(context)?.settings.arguments as Iuran?;
     final selectedBankData = _banks.firstWhere((b) => b['name'] == _selectedBank);
 
+    final user = (context.read<AuthBloc>().state as Authenticated).user;
+
     if (_isSubmitted) {
       return _buildSuccessState();
     }
@@ -5445,7 +5478,7 @@ class _TransferBuktiScreenState extends State<TransferBuktiScreen> {
     return BlocListener<IuranBloc, IuranState>(
       listener: (context, state) {
         if (state is PaymentSuccess) {
-          context.read<IuranBloc>().add(LoadIuranHistory());
+          context.read<IuranBloc>().add(LoadIuranHistory(user.id));
         }
       },
       child: Scaffold(
@@ -6462,6 +6495,9 @@ class WaitVerificationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map?;
     final name = args?['name'] ?? 'Budi Santoso';
+    final email = args?['email'] ?? '';
+    final user = args?['user'] as User?;
+    final token = args?['token'] as String?;
 
     return Scaffold(
       body: SafeArea(
@@ -6526,7 +6562,47 @@ class WaitVerificationScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 40),
+              SizedBox(height: 30),
+              if (user != null && token != null && email.isNotEmpty) ...[
+                SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BrandColors.hijau,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      // Update status in AuthRepository map to 'aktif'
+                      AuthRepository().approveUser(email);
+                      
+                      // Create updated user with active status
+                      final approvedUser = User(
+                        id: user.id,
+                        email: user.email,
+                        namaLengkap: user.namaLengkap,
+                        noHp: user.noHp,
+                        roleId: user.roleId,
+                        roleName: user.roleName,
+                        scope: user.scope,
+                        status: 'aktif',
+                      );
+                      
+                      // Emit LoggedIn event to log them in
+                      context.read<AuthBloc>().add(LoggedIn(token: token, user: approvedUser));
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Pendaftaran disetujui! Selamat datang, ${user.namaLengkap}!')),
+                      );
+                      
+                      Navigator.pushReplacementNamed(context, '/home');
+                    },
+                    child: Text('Simulasi Setujui Pendaftaran (Luluskan)', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                SizedBox(height: 12),
+              ],
               SizedBox(
                 height: 48,
                 child: OutlinedButton(

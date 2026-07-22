@@ -14,6 +14,7 @@ var (
 	ErrInvalidPassword  = errors.New("email atau password salah")
 	ErrEmailExists      = errors.New("email sudah terdaftar")
 	ErrUserInactive     = errors.New("akun tidak aktif, hubungi administrator")
+	ErrUserNotFound     = errors.New("akun tidak terdaftar")
 )
 
 // Service defines the business logic contract for authentication.
@@ -80,6 +81,9 @@ func (s *service) GoogleLogin(ctx context.Context, req GoogleLoginRequest) (*Aut
 
 	rec, err := s.repo.FindByEmail(ctx, req.Email)
 	if errors.Is(err, ErrNotFound) {
+		if req.NoHp == "" {
+			return nil, ErrUserNotFound
+		}
 		newRec, createErr := s.repo.CreateGoogleUser(ctx, req)
 		if createErr != nil {
 			return nil, createErr

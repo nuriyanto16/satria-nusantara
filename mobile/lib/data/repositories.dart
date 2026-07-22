@@ -4,7 +4,66 @@ import '../core/constants.dart';
 import 'models.dart';
 
 class AuthRepository {
+  // Static map to hold newly registered mock users for prototype demo
+  static final Map<String, User> _registeredUsers = {};
+  static final Map<String, String> _registeredPasswords = {};
+
+  Future<void> registerUser({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+    required String unit,
+    required String tingkat,
+  }) async {
+    final cleanEmail = email.trim().toLowerCase();
+    final newUser = User(
+      id: 'u-registered-${DateTime.now().millisecondsSinceEpoch}',
+      email: cleanEmail,
+      namaLengkap: name,
+      noHp: phone,
+      roleId: 4,
+      roleName: 'Anggota',
+      scope: 'anggota',
+      status: 'pending', // Starts as pending verification!
+    );
+    _registeredUsers[cleanEmail] = newUser;
+    _registeredPasswords[cleanEmail] = password;
+  }
+
+  void approveUser(String email) {
+    final cleanEmail = email.trim().toLowerCase();
+    if (_registeredUsers.containsKey(cleanEmail)) {
+      final user = _registeredUsers[cleanEmail]!;
+      _registeredUsers[cleanEmail] = User(
+        id: user.id,
+        email: user.email,
+        namaLengkap: user.namaLengkap,
+        noHp: user.noHp,
+        roleId: user.roleId,
+        roleName: user.roleName,
+        scope: user.scope,
+        status: 'aktif',
+      );
+    }
+  }
+
   Future<Map<String, dynamic>> login(String email, String password) async {
+    final cleanEmail = email.trim().toLowerCase();
+
+    // Check if it exists in mock registered users first
+    if (_registeredUsers.containsKey(cleanEmail)) {
+      if (_registeredPasswords[cleanEmail] == password) {
+        final user = _registeredUsers[cleanEmail]!;
+        final mockToken = 'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}';
+        api.setToken(mockToken);
+        return {'token': mockToken, 'user': user};
+      } else {
+        throw Exception("Email atau password salah");
+      }
+    }
+
+    // Otherwise, fall back to real backend API call
     final response = await api.dio.post(
       ApiConstants.login,
       data: {'email': email, 'password': password},
@@ -36,7 +95,19 @@ class AuthRepository {
       final user = User.fromJson(data['user']);
       api.setToken(token);
       return {'token': token, 'user': user};
-    } catch (_) {
+    } catch (e) {
+      if (e is DioException && e.response?.statusCode == 404) {
+        rethrow;
+      }
+
+      // Offline / Fallback handling for prototype testing:
+      if (email != 'demo.anggota@gmail.com') {
+        // If testing a custom email and noHp is not provided yet, force profile completion step
+        if (noHp == null || noHp.isEmpty) {
+          throw Exception("User not found");
+        }
+      }
+
       final mockToken = 'mock_google_token_${DateTime.now().millisecondsSinceEpoch}';
       final mockUser = User(
         id: 'u-google-${DateTime.now().millisecondsSinceEpoch}',
@@ -125,32 +196,48 @@ class SesiRepository {
 }
 
 class FinanceRepository {
-  static List<Iuran> _mockList = [
-    Iuran(id: '1', anggotaId: 'da001', bulan: 7, tahun: 2026, nominal: 50000, status: 'belum_bayar'),
-    Iuran(id: '2', anggotaId: 'da001', bulan: 6, tahun: 2026, nominal: 50000, status: 'lunas', tanggalBayar: '2026-06-10'),
-    Iuran(id: '3', anggotaId: 'da001', bulan: 5, tahun: 2026, nominal: 50000, status: 'lunas', tanggalBayar: '2026-05-12'),
-  ];
+  static final Map<String, List<Iuran>> _userMockLists = {};
 
-  Future<List<Iuran>> getIuranHistory() async {
+  Future<List<Iuran>> getIuranHistory(String userId) async {
+    if (!_userMockLists.containsKey(userId)) {
+      if (userId.contains('admin') || userId.contains('da001') || userId.contains('Sri') || userId.contains('Ahmad') || userId.contains('google')) {
+        // Pre-existing members get full default history
+        _userMockLists[userId] = [
+          Iuran(id: '1', anggotaId: userId, bulan: 7, tahun: 2026, nominal: 40000, status: 'belum_bayar'),
+          Iuran(id: '2', anggotaId: userId, bulan: 6, tahun: 2026, nominal: 40000, status: 'lunas', tanggalBayar: '2026-06-10'),
+          Iuran(id: '3', anggotaId: userId, bulan: 5, tahun: 2026, nominal: 40000, status: 'lunas', tanggalBayar: '2026-05-12'),
+        ];
+      } else {
+        // Custom registered user gets exactly 1 unpaid current month bill and no old history
+        _userMockLists[userId] = [
+          Iuran(id: '1', anggotaId: userId, bulan: 7, tahun: 2026, nominal: 40000, status: 'belum_bayar'),
+        ];
+      }
+    }
+
     try {
       final response = await api.dio.get('/finance/iuran');
       final List<dynamic> list = response.data['data'] ?? [];
-      _mockList = list.map((item) => Iuran.fromJson(item)).toList();
-      return _mockList;
+      final apiList = list.map((item) => Iuran.fromJson(item)).toList();
+      if (apiList.isNotEmpty) {
+        _userMockLists[userId] = apiList;
+      }
+      return _userMockLists[userId]!;
     } catch (_) {
-      return _mockList;
+      return _userMockLists[userId]!;
     }
   }
 
-  Future<void> payIuran(String id, String method) async {
+  Future<void> payIuran(String id, String method, String userId) async {
     try {
       await api.dio.post('/finance/iuran/pay', data: {'id': id, 'method': method});
     } catch (_) {}
     
-    final index = _mockList.indexWhere((item) => item.id == id);
+    final list = _userMockLists[userId] ?? [];
+    final index = list.indexWhere((item) => item.id == id);
     if (index != -1) {
-      final old = _mockList[index];
-      _mockList[index] = Iuran(
+      final old = list[index];
+      list[index] = Iuran(
         id: old.id,
         anggotaId: old.anggotaId,
         bulan: old.bulan,
@@ -163,11 +250,12 @@ class FinanceRepository {
     await Future.delayed(const Duration(milliseconds: 800));
   }
 
-  void addMockIuran() {
+  void addMockIuran(String userId) {
     int nextMonth = 8;
     int nextYear = 2026;
-    if (_mockList.isNotEmpty) {
-      final last = _mockList.first;
+    final list = _userMockLists[userId] ?? [];
+    if (list.isNotEmpty) {
+      final last = list.first;
       nextMonth = last.bulan + 1;
       nextYear = last.tahun;
       if (nextMonth > 12) {
@@ -175,14 +263,15 @@ class FinanceRepository {
         nextYear++;
       }
     }
-    _mockList.insert(0, Iuran(
+    list.insert(0, Iuran(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      anggotaId: 'da001',
+      anggotaId: userId,
       bulan: nextMonth,
       tahun: nextYear,
-      nominal: 50000,
+      nominal: 40000,
       status: 'belum_bayar',
     ));
+    _userMockLists[userId] = list;
   }
 }
 

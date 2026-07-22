@@ -3,12 +3,19 @@ import '../data/models.dart';
 import '../data/repositories.dart';
 
 abstract class IuranEvent {}
-class LoadIuranHistory extends IuranEvent {}
-class AddMockIuran extends IuranEvent {}
+class LoadIuranHistory extends IuranEvent {
+  final String userId;
+  LoadIuranHistory(this.userId);
+}
+class AddMockIuran extends IuranEvent {
+  final String userId;
+  AddMockIuran(this.userId);
+}
 class PayIuranRequested extends IuranEvent {
   final String id;
   final String method;
-  PayIuranRequested(this.id, this.method);
+  final String userId;
+  PayIuranRequested(this.id, this.method, this.userId);
 }
 
 abstract class IuranState {}
@@ -36,7 +43,7 @@ class IuranBloc extends Bloc<IuranEvent, IuranState> {
     on<LoadIuranHistory>((event, emit) async {
       emit(IuranLoading());
       try {
-        final list = await _repository.getIuranHistory();
+        final list = await _repository.getIuranHistory(event.userId);
         emit(IuranLoaded(list));
       } catch (e) {
         emit(IuranError('Gagal memuat histori iuran.'));
@@ -46,8 +53,8 @@ class IuranBloc extends Bloc<IuranEvent, IuranState> {
     on<AddMockIuran>((event, emit) async {
       emit(IuranLoading());
       try {
-        _repository.addMockIuran();
-        final list = await _repository.getIuranHistory();
+        _repository.addMockIuran(event.userId);
+        final list = await _repository.getIuranHistory(event.userId);
         emit(IuranLoaded(list));
       } catch (e) {
         emit(IuranError('Gagal menambah tagihan.'));
@@ -57,7 +64,7 @@ class IuranBloc extends Bloc<IuranEvent, IuranState> {
     on<PayIuranRequested>((event, emit) async {
       emit(IuranLoading());
       try {
-        await _repository.payIuran(event.id, event.method);
+        await _repository.payIuran(event.id, event.method, event.userId);
         emit(PaymentSuccess());
       } catch (e) {
         emit(PaymentError('Pembayaran gagal. Silakan coba lagi.'));

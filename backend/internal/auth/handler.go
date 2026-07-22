@@ -76,6 +76,8 @@ func (h *Handler) googleLogin(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, ErrUserInactive):
 			response.Error(w, http.StatusForbidden, err.Error())
+		case errors.Is(err, ErrUserNotFound):
+			response.Error(w, http.StatusNotFound, err.Error())
 		default:
 			response.Error(w, http.StatusInternalServerError, err.Error())
 		}
