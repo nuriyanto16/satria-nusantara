@@ -4327,6 +4327,164 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
     );
   }
 
+  void _showSearchableUnitBottomSheet(BuildContext context) {
+    _searchUnitController.clear();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: (themeNotifier.isDarkMode ? BrandColors.bgDark : Colors.white),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.5,
+              maxChildSize: 0.95,
+              expand: false,
+              builder: (BuildContext context, ScrollController scrollController) {
+                final query = _searchUnitController.text.trim().toLowerCase();
+                
+                final allUnits = <String>[];
+                _cityUnits.forEach((city, units) {
+                  allUnits.addAll(units);
+                });
+
+                List<String> matchingUnits;
+                if (query.isEmpty) {
+                  matchingUnits = _cityUnits[_selectedCity] ?? [];
+                } else {
+                  matchingUnits = allUnits.where((unit) {
+                    String cityOfUnit = '';
+                    _cityUnits.forEach((city, units) {
+                      if (units.contains(unit)) {
+                        cityOfUnit = city;
+                      }
+                    });
+                    return unit.toLowerCase().contains(query) || cityOfUnit.toLowerCase().contains(query);
+                  }).toList();
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 12),
+                      Container(
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2.5),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Pilih Unit Latihan',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _searchUnitController,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          hintText: 'Cari nama unit atau kota...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        onChanged: (_) {
+                          setSheetState(() {});
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: matchingUnits.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'Unit tidak ditemukan',
+                                  style: TextStyle(
+                                    color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey),
+                                  ),
+                                ),
+                              )
+                            : ListView.builder(
+                                controller: scrollController,
+                                itemCount: matchingUnits.length,
+                                itemBuilder: (context, index) {
+                                  final unit = matchingUnits[index];
+                                  final isSelected = _selectedUnit == unit;
+                                  
+                                  String cityOfUnit = '';
+                                  _cityUnits.forEach((city, units) {
+                                    if (units.contains(unit)) {
+                                      cityOfUnit = city;
+                                    }
+                                  });
+
+                                  return Card(
+                                    elevation: 0,
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      side: BorderSide(
+                                        color: isSelected
+                                            ? BrandColors.hijau
+                                            : (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
+                                        width: isSelected ? 2 : 1,
+                                      ),
+                                    ),
+                                    color: isSelected
+                                        ? BrandColors.hijauSoft
+                                        : (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+                                    child: ListTile(
+                                      title: Text(
+                                        unit.split(" · ")[0],
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: isSelected
+                                              ? BrandColors.hijau
+                                              : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        '$cityOfUnit • ${unit.contains(" · ") ? unit.split(" · ")[1] : "Sesuai jadwal"}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                                        ),
+                                      ),
+                                      trailing: isSelected
+                                          ? const Icon(Icons.check_circle, color: BrandColors.hijau)
+                                          : null,
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedUnit = unit;
+                                        });
+                                        Navigator.pop(sheetContext);
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   // Unit Step
   Widget _buildStep3() {
     return SingleChildScrollView(
@@ -4346,30 +4504,40 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
             style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
           ),
           SizedBox(height: 24),
-          TextField(
-            controller: _searchUnitController,
-            onChanged: (_) => _updateFilteredUnits(),
-            decoration: InputDecoration(
-              labelText: 'Unit',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          InkWell(
+            onTap: () => _showSearchableUnitBottomSheet(context),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.location_city_rounded, color: BrandColors.hijau, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _selectedUnit == 'Tidak ada unit ditemukan' ? 'Pilih Unit Latihan' : _selectedUnit,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: _selectedUnit == 'Tidak ada unit ditemukan'
+                            ? (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey)
+                            : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            value: _selectedUnit,
-            decoration: InputDecoration(
-              labelText: 'Unit latihan',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            items: _filteredUnits
-                .map((label) => DropdownMenuItem(value: label, child: Text(label)))
-                .toList(),
-            onChanged: (value) {
-              if (value != 'Tidak ada unit ditemukan') {
-                setState(() => _selectedUnit = value!);
-              }
-            },
           ),
           SizedBox(height: 20),
           // Selected Unit Card
