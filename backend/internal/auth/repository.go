@@ -51,7 +51,7 @@ func (r *pgRepository) FindByEmail(ctx context.Context, email string) (*userReco
 	var u userRecord
 	err := r.db.QueryRowContext(ctx, `
 		SELECT
-			u.id, u.email, u.password_hash, u.google_id,
+			u.id, u.email, COALESCE(u.password_hash, ''), u.google_id,
 			u.nama_lengkap, u.no_hp, COALESCE(u.foto_url,''),
 			u.role_id, ro.name, ro.scope,
 			u.status
@@ -74,7 +74,7 @@ func (r *pgRepository) FindByID(ctx context.Context, id string) (*userRecord, er
 	var u userRecord
 	err := r.db.QueryRowContext(ctx, `
 		SELECT
-			u.id, u.email, u.password_hash, u.google_id,
+			u.id, u.email, COALESCE(u.password_hash, ''), u.google_id,
 			u.nama_lengkap, u.no_hp, COALESCE(u.foto_url,''),
 			u.role_id, ro.name, ro.scope,
 			u.status
