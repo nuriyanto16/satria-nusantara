@@ -3856,6 +3856,50 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
   // Step 3 Controllers
   final TextEditingController _searchUnitController = TextEditingController(text: 'Bandung');
   String _selectedUnit = 'Unit Balkot · Sab & Sel 07.00';
+  List<String> _filteredUnits = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _updateFilteredUnits();
+  }
+
+  void _updateFilteredUnits() {
+    final query = _searchUnitController.text.trim().toLowerCase();
+    
+    // Get all units
+    final allUnits = <String>[];
+    _cityUnits.forEach((city, units) {
+      allUnits.addAll(units);
+    });
+
+    List<String> filtered;
+    if (query.isEmpty) {
+      filtered = _cityUnits[_selectedCity] ?? [];
+    } else {
+      filtered = allUnits.where((unit) {
+        String cityOfUnit = '';
+        _cityUnits.forEach((city, units) {
+          if (units.contains(unit)) {
+            cityOfUnit = city;
+          }
+        });
+        return unit.toLowerCase().contains(query) || cityOfUnit.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    setState(() {
+      _filteredUnits = filtered;
+      
+      if (_filteredUnits.isEmpty) {
+        _filteredUnits = ['Tidak ada unit ditemukan'];
+      }
+      
+      if (!_filteredUnits.contains(_selectedUnit)) {
+        _selectedUnit = _filteredUnits.first;
+      }
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -4162,10 +4206,12 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                 final cities = _provinceCities[_selectedProvince] ?? [];
                 if (cities.isNotEmpty) {
                   _selectedCity = cities.first;
+                  _searchUnitController.text = _selectedCity;
                   final units = _cityUnits[_selectedCity] ?? [];
                   if (units.isNotEmpty) {
                     _selectedUnit = units.first;
                   }
+                  _updateFilteredUnits();
                 }
               });
             },
@@ -4183,10 +4229,12 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
             onChanged: (value) {
               setState(() {
                 _selectedCity = value!;
+                _searchUnitController.text = _selectedCity;
                 final units = _cityUnits[_selectedCity] ?? [];
                 if (units.isNotEmpty) {
                   _selectedUnit = units.first;
                 }
+                _updateFilteredUnits();
               });
             },
           ),
@@ -4300,6 +4348,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           SizedBox(height: 24),
           TextField(
             controller: _searchUnitController,
+            onChanged: (_) => _updateFilteredUnits(),
             decoration: InputDecoration(
               labelText: 'Unit',
               prefixIcon: Icon(Icons.search),
@@ -4313,10 +4362,14 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               labelText: 'Unit latihan',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            items: (_cityUnits[_selectedCity] ?? ['Unit Balkot · Sab & Sel 07.00'])
+            items: _filteredUnits
                 .map((label) => DropdownMenuItem(value: label, child: Text(label)))
                 .toList(),
-            onChanged: (value) => setState(() => _selectedUnit = value!),
+            onChanged: (value) {
+              if (value != 'Tidak ada unit ditemukan') {
+                setState(() => _selectedUnit = value!);
+              }
+            },
           ),
           SizedBox(height: 20),
           // Selected Unit Card
@@ -4352,6 +4405,12 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           SizedBox(height: 32),
           ElevatedButton(
             onPressed: () async {
+              if (_selectedUnit == 'Tidak ada unit ditemukan') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Silakan pilih unit latihan yang valid')),
+                );
+                return;
+              }
               final selectedLevel = _isExistingMember ? '$_selectedTingkat — $_selectedJurus' : 'Pra Dasar';
               final genderCode = _gender == 'Pria' ? 'L' : 'P';
               final dob = _birthDateController.text;
