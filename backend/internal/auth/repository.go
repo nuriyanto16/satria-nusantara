@@ -127,11 +127,7 @@ func (r *pgRepository) CreatePendingAnggota(ctx context.Context, req SignupAnggo
 		// Fallback to exact UUID
 		err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan WHERE id::text = $1", req.UnitID).Scan(&resolvedUnitID)
 		if err != nil {
-			// Fallback: cari unit latihan pertama
-			err = tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan LIMIT 1").Scan(&resolvedUnitID)
-			if err != nil {
-				resolvedUnitID = "00000000-0000-0000-0000-000000000000"
-			}
+			return "", errors.New("unit latihan '" + req.UnitID + "' tidak ditemukan di database")
 		}
 	}
 

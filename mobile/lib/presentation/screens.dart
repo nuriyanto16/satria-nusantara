@@ -3833,7 +3833,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
   bool _isExistingMember = false;
 
   // Province & City dynamic mapping
-  final List<String> _provinces = ['Jawa Barat', 'DKI Jakarta', 'Jawa Tengah', 'DI Yogyakarta', 'Jawa Timur', 'Bali'];
+  final List<String> _provinces = ['Jawa Barat', 'DKI Jakarta', 'Jawa Tengah', 'DI Yogyakarta', 'Jawa Timur'];
   
   final Map<String, List<String>> _provinceCities = {
     'Jawa Barat': ['Bandung'],
@@ -3841,16 +3841,14 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
     'Jawa Tengah': ['Semarang'],
     'DI Yogyakarta': ['Yogyakarta'],
     'Jawa Timur': ['Surabaya'],
-    'Bali': ['Denpasar'],
   };
 
   final Map<String, List<String>> _cityUnits = {
-    'Bandung': ['Unit Balkot · Sab & Sel 07.00', 'Unit Arcamanik · Min & Rab 06.30', 'Unit SAJ · Sab 07.00', 'Unit Sangkuriang · Min 07.00'],
+    'Bandung': ['Unit Balkot · Sab & Sel 07.00', 'Unit Buah Batu · Rab & Sab 07.00'],
     'Jakarta': ['Unit Menteng · Sen & Kam 19.00'],
     'Semarang': ['Unit Simpang Lima · Rab & Sab 06.00'],
     'Yogyakarta': ['Unit Malioboro · Sel & Jum 07.00', 'Unit Kotagede · Kam & Sab 16.00'],
     'Surabaya': ['Unit Rungkut · Sel & Sab 07.00'],
-    'Denpasar': ['Unit Renon · Sel & Sab 07.00'],
   };
 
   // Step 3 Controllers
