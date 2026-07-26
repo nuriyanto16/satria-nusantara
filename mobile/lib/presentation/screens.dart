@@ -1854,15 +1854,27 @@ class IuranTab extends StatelessWidget {
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: isLunas ? BrandColors.hijauSoft : const Color(0xFFFDECEA),
+                                color: iuran.status == 'lunas'
+                                    ? BrandColors.hijauSoft
+                                    : iuran.status == 'pending'
+                                        ? const Color(0xFFFFF8E0)
+                                        : const Color(0xFFFDECEA),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                isLunas ? 'Lunas' : 'Belum',
+                                iuran.status == 'lunas'
+                                    ? 'Lunas'
+                                    : iuran.status == 'pending'
+                                        ? 'Menunggu'
+                                        : 'Belum',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: isLunas ? BrandColors.hijau : BrandColors.merah,
+                                  color: iuran.status == 'lunas'
+                                      ? BrandColors.hijau
+                                      : iuran.status == 'pending'
+                                          ? const Color(0xFF9A7000)
+                                          : BrandColors.merah,
                                 ),
                               ),
                             ),
@@ -5447,135 +5459,160 @@ class _EWalletSelectionScreenState extends State<EWalletSelectionScreen> {
             return ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                // ── E-Wallet section ──────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    'E-Wallet',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
-                      letterSpacing: 0.5,
-                    ),
+                // ── Merchant Payment Section ──────────────────────────
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.blue.withOpacity(0.15)),
                   ),
-                ),
-                ...wallets.map((wallet) => Card(
-                  elevation: 0,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
-                  ),
-                  child: ListTile(
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: (wallet['color'] as Color).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color, size: 22),
-                    ),
-                    title: Text(wallet['name'] as String, style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Bayar instan via aplikasi', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
-                    trailing: Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
-                    onTap: () {
-                      if (activeBill != null) {
-                        setState(() {
-                          _selectedWallet = wallet['name'] as String;
-                        });
-                        context.read<IuranBloc>().add(PayIuranRequested(activeBill.id, wallet['name'] as String, user.id));
-                      }
-                    },
-                  ),
-                )),
-
-                // ── Divider section ───────────────────────────────────
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border))),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        'Atau',
-                        style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
-                      ),
-                    ),
-                    Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border))),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // ── Transfer Bank Manual section ──────────────────────
-                Padding(
-                  padding: const EdgeInsets.only(top: 4, bottom: 12),
-                  child: Text(
-                    'Transfer Bank Manual',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-                Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: BrandColors.hijau.withOpacity(0.5), width: 1.5),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/transfer_bukti',
-                        arguments: activeBill,
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: BrandColors.hijauSoft,
-                              borderRadius: BorderRadius.circular(12),
+                          const Icon(Icons.bolt, color: Colors.blue, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'PEMBAYARAN INSTAN VIA MERCHANT (OTOMATIS)',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue[700],
+                              letterSpacing: 0.5,
                             ),
-                            child: Icon(Icons.account_balance_rounded, color: BrandColors.hijau, size: 24),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Pembayaran terverifikasi otomatis dalam beberapa detik. Tanpa perlu upload bukti transfer.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ...wallets.map((wallet) => Card(
+                        elevation: 0,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
+                        ),
+                        child: ListTile(
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: (wallet['color'] as Color).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color, size: 22),
+                          ),
+                          title: Text(wallet['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text('Lunas Instan via gateway', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
+                          trailing: const Icon(Icons.flash_on, color: Colors.amber, size: 18),
+                          onTap: () {
+                            if (activeBill != null) {
+                              setState(() {
+                                _selectedWallet = wallet['name'] as String;
+                              });
+                              context.read<IuranBloc>().add(PayIuranRequested(activeBill.id, wallet['name'] as String, user.id));
+                            }
+                          },
+                        ),
+                      )),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // ── Manual Payment Section ────────────────────────────
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: BrandColors.hijauSoft.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: BrandColors.hijau.withOpacity(0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.account_balance_wallet_outlined, color: BrandColors.hijau, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'TRANSFER BANK MANUAL (UPLOAD BUKTI)',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: BrandColors.hijau,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Transfer ke rekening cabang/pusat dan upload bukti bayar. Membutuhkan verifikasi manual 1-24 jam oleh pengurus.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
+                        elevation: 0,
+                        color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: BrandColors.hijau.withOpacity(0.5), width: 1.5),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/transfer_bukti',
+                              arguments: activeBill,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
                               children: [
-                                Text('Transfer Bank Manual', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
-                                const SizedBox(height: 2),
-                                Text('BCA / BRI / Mandiri · Upload bukti transfer', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
-                                const SizedBox(height: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  width: 44,
+                                  height: 44,
                                   decoration: BoxDecoration(
-                                    color: BrandColors.kuning.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: BrandColors.hijauSoft,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: Text(
-                                    'Perlu konfirmasi pengurus',
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: const Color(0xFF9A7000)),
+                                  child: Icon(Icons.account_balance_rounded, color: BrandColors.hijau, size: 24),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Transfer Bank Manual', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
+                                      const SizedBox(height: 2),
+                                      Text('BCA / BRI / Mandiri • Upload bukti bayar', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+                                    ],
                                   ),
                                 ),
+                                Icon(Icons.chevron_right, color: BrandColors.hijau),
                               ],
                             ),
                           ),
-                          Icon(Icons.chevron_right, color: BrandColors.hijau),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -7148,155 +7185,173 @@ class _EventPaymentScreenState extends State<EventPaymentScreen> {
               ),
             ),
 
-            // ── E-Wallet section ──────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                'E-Wallet',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
-                  letterSpacing: 0.5,
-                ),
+            // ── Merchant Payment Section ──────────────────────────
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.blue.withOpacity(0.15)),
               ),
-            ),
-            ...wallets.map((wallet) => Card(
-              elevation: 0,
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
-              ),
-              child: ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: (wallet['color'] as Color).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color, size: 22),
-                ),
-                title: Text(wallet['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Bayar instan via aplikasi', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
-                trailing: Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
-                onTap: () {
-                  setState(() {
-                    _selectedWallet = wallet['name'] as String;
-                  });
-                  context.read<IuranBloc>().add(PayIuranRequested(
-                    args.id,
-                    wallet['name'] as String,
-                    user.id,
-                    bulan: args.title,
-                    amount: args.feeVal,
-                  ));
-                },
-              ),
-            )),
-
-            // ── Divider section ───────────────────────────────────
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border))),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    'Atau',
-                    style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
-                  ),
-                ),
-                Expanded(child: Divider(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border))),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // ── Transfer Bank Manual section ──────────────────────
-            Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 12),
-              child: Text(
-                'Transfer Bank Manual',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: BrandColors.hijau.withOpacity(0.5), width: 1.5),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {
-                  final ektIuran = Iuran(
-                    id: args.id,
-                    anggotaId: user.id,
-                    bulan: 0, // Dideteksi untuk event
-                    tahun: 2026,
-                    nominal: args.feeVal,
-                    status: 'belum_bayar',
-                    tanggalBayar: args.title, // Nama event dilewatkan ke tanggalBayar
-                  );
-                  Navigator.pushNamed(
-                    context,
-                    '/transfer_bukti',
-                    arguments: ektIuran,
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: BrandColors.hijauSoft,
-                          borderRadius: BorderRadius.circular(12),
+                      const Icon(Icons.bolt, color: Colors.blue, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'PEMBAYARAN INSTAN VIA MERCHANT (OTOMATIS)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[700],
+                          letterSpacing: 0.5,
                         ),
-                        child: Icon(Icons.account_balance_rounded, color: BrandColors.hijau, size: 24),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Pembayaran terverifikasi otomatis dalam beberapa detik. Tanpa perlu upload bukti transfer.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ...wallets.map((wallet) => Card(
+                    elevation: 0,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
+                    ),
+                    child: ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: (wallet['color'] as Color).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(wallet['icon'] as IconData, color: wallet['color'] as Color, size: 22),
+                      ),
+                      title: Text(wallet['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text('Lunas Instan via gateway', style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3))),
+                      trailing: const Icon(Icons.flash_on, color: Colors.amber, size: 18),
+                      onTap: () {
+                        setState(() {
+                          _selectedWallet = wallet['name'] as String;
+                        });
+                        context.read<IuranBloc>().add(PayIuranRequested(
+                          args.id,
+                          wallet['name'] as String,
+                          user.id,
+                          bulan: args.title,
+                          amount: args.feeVal,
+                        ));
+                      },
+                    ),
+                  )),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ── Manual Payment Section ────────────────────────────
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: BrandColors.hijauSoft.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: BrandColors.hijau.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.account_balance_wallet_outlined, color: BrandColors.hijau, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'TRANSFER BANK MANUAL (UPLOAD BUKTI)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: BrandColors.hijau,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Transfer ke rekening cabang/pusat dan upload bukti bayar. Membutuhkan verifikasi manual 1-24 jam oleh pengurus.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    elevation: 0,
+                    color: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: BrandColors.hijau.withOpacity(0.5), width: 1.5),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        final ektIuran = Iuran(
+                          id: args.id,
+                          anggotaId: user.id,
+                          bulan: 0, // Dideteksi untuk event
+                          tahun: 2026,
+                          nominal: args.feeVal,
+                          status: 'belum_bayar',
+                          tanggalBayar: args.title, // Nama event dilewatkan ke tanggalBayar
+                        );
+                        Navigator.pushNamed(
+                          context,
+                          '/transfer_bukti',
+                          arguments: ektIuran,
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
                           children: [
-                            Text('Transfer Bank Manual', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
-                            const SizedBox(height: 2),
-                            Text('BCA / BRI / Mandiri · Upload bukti transfer', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
-                            const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              width: 44,
+                              height: 44,
                               decoration: BoxDecoration(
-                                color: BrandColors.kuning.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(8),
+                                color: BrandColors.hijauSoft,
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                              child: Icon(Icons.account_balance_rounded, color: BrandColors.hijau, size: 24),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.lock_outline, color: Color(0xFF8A6D00), size: 12),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Verifikasi Manual 1-24 Jam',
-                                    style: TextStyle(color: Color(0xFF8A6D00), fontSize: 9.5, fontWeight: FontWeight.bold),
-                                  ),
+                                  Text('Transfer Bank Manual', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
+                                  const SizedBox(height: 2),
+                                  Text('BCA / BRI / Mandiri • Upload bukti bayar', style: TextStyle(fontSize: 11.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
                                 ],
                               ),
                             ),
+                            Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
                           ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],

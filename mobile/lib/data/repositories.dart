@@ -19,6 +19,20 @@ class AuthRepository {
     String? gender,
   }) async {
     final cleanEmail = email.trim().toLowerCase();
+    
+    // Pre-populate mock users list for offline/prototype fallback
+    _registeredUsers[cleanEmail] = User(
+      id: 'u-registered-${DateTime.now().millisecondsSinceEpoch}',
+      email: cleanEmail,
+      namaLengkap: name,
+      noHp: phone,
+      roleId: 4,
+      roleName: 'Anggota',
+      scope: 'anggota',
+      status: 'pending',
+    );
+    _registeredPasswords[cleanEmail] = password;
+
     try {
       await api.dio.post(
         '/auth/signup-anggota',
@@ -35,10 +49,13 @@ class AuthRepository {
       );
     } catch (e) {
       if (e is DioException) {
-        final errMsg = e.response?.data['message'] ?? e.message;
-        throw Exception(errMsg);
+        final status = e.response?.statusCode;
+        if (status == 400 || status == 409) {
+          final errMsg = e.response?.data['message'] ?? e.message;
+          throw Exception(errMsg);
+        }
       }
-      rethrow;
+      // For connection errors or offline prototype, allow fallback to proceed in-memory
     }
   }
 
@@ -101,11 +118,12 @@ class AuthRepository {
   }
 
   Future<Map<String, dynamic>> loginGoogle(String email, String name, {String? googleId, String? noHp, String? fotoUrl}) async {
+    final cleanEmail = email.trim().toLowerCase();
     try {
       final response = await api.dio.post(
         ApiConstants.googleLogin,
         data: {
-          'email': email,
+          'email': cleanEmail,
           'nama_lengkap': name,
           if (googleId != null && googleId.isNotEmpty) 'google_id': googleId,
           if (noHp != null && noHp.isNotEmpty) 'no_hp': noHp,
@@ -128,26 +146,16 @@ class AuthRepository {
       }
 
       // Offline / Fallback handling for prototype testing:
-      if (email != 'demo.anggota@gmail.com') {
-        // If testing a custom email and noHp is not provided yet, force profile completion step
-        if (noHp == null || noHp.isEmpty) {
-          throw Exception("User not found");
-        }
+      // If the email is in mock memory store, return that user directly
+      if (_registeredUsers.containsKey(cleanEmail)) {
+        final user = _registeredUsers[cleanEmail]!;
+        final mockToken = 'mock_google_token_${DateTime.now().millisecondsSinceEpoch}';
+        api.setToken(mockToken);
+        return {'token': mockToken, 'user': user};
       }
 
-      final mockToken = 'mock_google_token_${DateTime.now().millisecondsSinceEpoch}';
-      final mockUser = User(
-        id: 'u-google-${DateTime.now().millisecondsSinceEpoch}',
-        namaLengkap: name,
-        email: email,
-        noHp: noHp ?? '081234567890',
-        roleId: 4,
-        roleName: 'Anggota',
-        scope: 'anggota',
-        status: 'aktif',
-      );
-      api.setToken(mockToken);
-      return {'token': mockToken, 'user': mockUser};
+      // Otherwise, since this is a new Google login/registration, force profile completion
+      throw Exception("User not found");
     }
   }
 
