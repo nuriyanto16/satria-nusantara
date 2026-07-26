@@ -4600,9 +4600,27 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                     gender: genderCode,
                   );
                   if (context.mounted) {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
+                    final pendingUser = User(
+                      id: 'pending_${DateTime.now().millisecondsSinceEpoch}',
+                      email: _emailController.text.trim().toLowerCase(),
+                      namaLengkap: _nameController.text,
+                      noHp: _phoneController.text,
+                      roleId: 4,
+                      roleName: 'Anggota',
+                      scope: 'anggota',
+                      status: 'pending',
+                    );
+                    context.read<AuthBloc>().add(LoggedIn(token: 'pending_token', user: pendingUser));
+                    Navigator.pushReplacementNamed(
+                      context,
+                      '/wait_verification',
+                      arguments: {
+                        'name': pendingUser.namaLengkap,
+                        'email': pendingUser.email,
+                        'user': pendingUser,
+                        'token': 'pending_token',
+                        'password': null,
+                      },
                     );
                   }
                 } catch (e) {
@@ -4626,9 +4644,27 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                     gender: genderCode,
                   );
                   if (context.mounted) {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
+                    final pendingUser = User(
+                      id: 'pending_${DateTime.now().millisecondsSinceEpoch}',
+                      email: _emailController.text.trim().toLowerCase(),
+                      namaLengkap: _nameController.text,
+                      noHp: _phoneController.text,
+                      roleId: 4,
+                      roleName: 'Anggota',
+                      scope: 'anggota',
+                      status: 'pending',
+                    );
+                    context.read<AuthBloc>().add(LoggedIn(token: 'pending_token', user: pendingUser));
+                    Navigator.pushReplacementNamed(
+                      context,
+                      '/wait_verification',
+                      arguments: {
+                        'name': pendingUser.namaLengkap,
+                        'email': pendingUser.email,
+                        'user': pendingUser,
+                        'token': 'pending_token',
+                        'password': _passwordController.text,
+                      },
                     );
                   }
                 } catch (e) {

@@ -49,13 +49,10 @@ class AuthRepository {
       );
     } catch (e) {
       if (e is DioException) {
-        final status = e.response?.statusCode;
-        if (status == 400 || status == 409) {
-          final errMsg = e.response?.data['message'] ?? e.message;
-          throw Exception(errMsg);
-        }
+        final errMsg = e.response?.data['message'] ?? e.message ?? e.toString();
+        throw Exception(errMsg);
       }
-      // For connection errors or offline prototype, allow fallback to proceed in-memory
+      rethrow;
     }
   }
 
