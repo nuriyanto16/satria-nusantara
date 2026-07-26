@@ -6958,16 +6958,76 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
 }
 
 // ─── WAIT VERIFICATION SCREEN ────────────────────────────────────────────────
-class WaitVerificationScreen extends StatelessWidget {
+class WaitVerificationScreen extends StatefulWidget {
   const WaitVerificationScreen({super.key});
+
+  @override
+  State<WaitVerificationScreen> createState() => _WaitVerificationScreenState();
+}
+
+class _WaitVerificationScreenState extends State<WaitVerificationScreen> {
+  Timer? _pollingTimer;
+  bool _isApproved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startPolling();
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startPolling() {
+    final args = ModalRoute.of(context)!.settings.arguments as Map?;
+    final email = args?['email'] as String? ?? '';
+    final name = args?['name'] as String? ?? '';
+    final password = args?['password'] as String?;
+
+    if (email.isEmpty) return;
+
+    _pollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) async {
+      if (_isApproved) return;
+      try {
+        Map<String, dynamic> result;
+        if (password != null && password.isNotEmpty) {
+          result = await AuthRepository().login(email, password);
+        } else {
+          result = await AuthRepository().loginGoogle(email, name);
+        }
+
+        _isApproved = true;
+        _pollingTimer?.cancel();
+
+        if (mounted) {
+          final approvedUser = result['user'] as User;
+          final token = result['token'] as String;
+
+          context.read<AuthBloc>().add(LoggedIn(token: token, user: approvedUser));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Pendaftaran Anda telah disetujui! Selamat datang, ${approvedUser.namaLengkap}!'),
+              backgroundColor: BrandColors.hijau,
+            ),
+          );
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } catch (e) {
+        // Pending
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map?;
     final name = args?['name'] ?? 'Budi Santoso';
     final email = args?['email'] ?? '';
-    final user = args?['user'] as User?;
-    final token = args?['token'] as String?;
 
     return Scaffold(
       body: SafeArea(
@@ -6986,23 +7046,23 @@ class WaitVerificationScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.access_time_filled, color: Colors.orange, size: 48),
-                    SizedBox(height: 12),
-                    Text(
+                    const Icon(Icons.access_time_filled, color: Colors.orange, size: 48),
+                    const SizedBox(height: 12),
+                    const Text(
                       'Pendaftaran terkirim!',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.orange),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Sedang menunggu verifikasi dari pengurus unit. Kamu akan mendapat notifikasi setelah diproses.',
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Sedang menunggu verifikasi dari pengurus unit. Halaman ini akan mendeteksi persetujuan secara otomatis.',
                       style: TextStyle(fontSize: 12, color: Colors.orange, height: 1.5),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Card(
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -7014,65 +7074,31 @@ class WaitVerificationScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       _buildRow('Nama', name),
-                      Divider(height: 20),
-                      _buildRow('Cabang', 'Bandung'),
-                      Divider(height: 20),
-                      _buildRow('Unit', 'Unit Balkot'),
-                      Divider(height: 20),
-                      _buildRow('Tingkatan', 'Dasar — Jurus 5'),
-                      Divider(height: 20),
-                      _buildRow('Status', 'Menunggu', textColor: Colors.orange),
+                      const Divider(height: 20),
+                      _buildRow('Email / ID', email),
+                      const Divider(height: 20),
+                      _buildRow('Status', 'Menunggu Verifikasi', textColor: Colors.orange),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              Text(
-                'Pastikan nomor HP aktif agar bisa dihubungi pengurus jika diperlukan.',
-                style: TextStyle(fontSize: 11, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 30),
-              if (user != null && token != null && email.isNotEmpty) ...[
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: BrandColors.hijau,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      // Update status in AuthRepository map to 'aktif'
-                      AuthRepository().approveUser(email);
-                      
-                      // Create updated user with active status
-                      final approvedUser = User(
-                        id: user.id,
-                        email: user.email,
-                        namaLengkap: user.namaLengkap,
-                        noHp: user.noHp,
-                        roleId: user.roleId,
-                        roleName: user.roleName,
-                        scope: user.scope,
-                        status: 'aktif',
-                      );
-                      
-                      // Emit LoggedIn event to log them in
-                      context.read<AuthBloc>().add(LoggedIn(token: token, user: approvedUser));
-                      
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Pendaftaran disetujui! Selamat datang, ${user.namaLengkap}!')),
-                      );
-                      
-                      Navigator.pushReplacementNamed(context, '/home');
-                    },
-                    child: Text('Simulasi Setujui Pendaftaran (Luluskan)', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange),
                   ),
-                ),
-                SizedBox(height: 12),
-              ],
+                  SizedBox(width: 8),
+                  Text(
+                    'Mengecek status persetujuan...',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
               SizedBox(
                 height: 48,
                 child: OutlinedButton(
@@ -7081,9 +7107,11 @@ class WaitVerificationScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: () {
+                    _pollingTimer?.cancel();
+                    context.read<AuthBloc>().add(LogoutRequested());
                     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                   },
-                  child: Text('Kembali ke Login', style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau)),
+                  child: const Text('Kembali ke Login', style: TextStyle(fontWeight: FontWeight.bold, color: BrandColors.hijau)),
                 ),
               ),
             ],
@@ -7106,7 +7134,6 @@ class WaitVerificationScreen extends StatelessWidget {
     );
   }
 }
-
 
 // ─── KEHADIRAN & IURAN DETAIL SCREEN ───────────────────────────────────────
 class KehadiranDetailScreen extends StatelessWidget {
