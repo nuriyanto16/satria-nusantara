@@ -17,6 +17,7 @@ class AuthRepository {
     required String tingkat,
     String? birthDate,
     String? gender,
+    String? googleId,
   }) async {
     final cleanEmail = email.trim().toLowerCase();
     
@@ -45,6 +46,7 @@ class AuthRepository {
           'tingkatan': tingkat,
           if (birthDate != null && birthDate.isNotEmpty) 'tanggal_lahir': birthDate,
           if (gender != null && gender.isNotEmpty) 'jenis_kelamin': gender,
+          if (googleId != null && googleId.isNotEmpty) 'google_id': googleId,
         },
       );
     } catch (e) {

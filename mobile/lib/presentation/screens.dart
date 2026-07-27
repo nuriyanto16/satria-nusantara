@@ -932,18 +932,34 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
           ),
           SizedBox(width: 12),
-          Text('Membuka pilihan akun Google...'),
+          Text('Menghubungkan ke Google SSO...'),
         ],
       ),
-      duration: Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 1000),
     ),
   );
 
-  // Brief delay to let snackbar show, then open account chooser
-  // NOTE: Real Google OAuth (google_sign_in) requires a valid OAuth Client ID
-  // registered in Google Cloud Console. Until that is configured, we use
-  // a simulated account chooser that calls our backend loginGoogle API directly.
-  await Future.delayed(const Duration(milliseconds: 900));
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: ['email', 'profile'],
+    );
+    final GoogleSignInAccount? account = await googleSignIn.signIn();
+    if (account != null) {
+      final String email = account.email;
+      final String name = (account.displayName != null && account.displayName!.isNotEmpty)
+          ? account.displayName!
+          : email.split('@')[0];
+      final String initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
+      final String googleId = account.id;
+
+      if (context.mounted) {
+        _processGoogleSignIn(context, email, name, initial, googleId: googleId);
+      }
+      return;
+    }
+  } catch (e) {
+    // If native Google SSO is unconfigured in dev environment, fallback to account input chooser
+  }
 
   if (context.mounted) {
     _showGoogleAccountChooser(context);
@@ -982,7 +998,7 @@ void _showGoogleAccountChooser(BuildContext context) {
             ),
             const SizedBox(height: 4),
             Text(
-              'Pilih akun untuk melanjutkan ke Satria Nusantara',
+              'Masukkan email Gmail Anda untuk melanjutkan ke Satria Nusantara',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
@@ -997,80 +1013,65 @@ void _showGoogleAccountChooser(BuildContext context) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Divider(height: 1),
-                _buildGoogleAccountItem(
-                  dialogContext,
-                  'Nuriyanto Dev',
-                  'nuriyanto.dev@gmail.com',
-                  'N',
-                  Colors.purple,
-                ),
-                const Divider(height: 1),
-                _buildGoogleAccountItem(
-                  dialogContext,
-                  'Demo Anggota',
-                  'demo.anggota@gmail.com',
-                  'D',
-                  Colors.green,
-                ),
-                const Divider(height: 1),
-                const SizedBox(height: 12),
-                // Custom email text field to simulate typing other google email
+                const SizedBox(height: 8),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Atau gunakan akun Google lain:',
+                        'Email Gmail Asli Anda:',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
+                          color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       TextField(
                         controller: customEmailController,
+                        keyboardType: TextInputType.emailAddress,
+                        autofocus: true,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
                         ),
                         decoration: InputDecoration(
-                          hintText: 'nama.anda@gmail.com',
+                          hintText: 'contoh.email@gmail.com',
+                          prefixIcon: const Icon(Icons.email_outlined, size: 18, color: Colors.blue),
                           hintStyle: TextStyle(
                             fontSize: 13,
                             color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           isDense: true,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
+                        height: 44,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                           onPressed: () {
-                            final email = customEmailController.text.trim();
+                            final email = customEmailController.text.trim().toLowerCase();
                             if (email.isNotEmpty && email.contains('@')) {
                               final name = email.split('@')[0];
                               final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
                               Navigator.pop(dialogContext);
-                              _processGoogleSignIn(context, email, name, initial);
+                              _processGoogleSignIn(context, email, name, initial, googleId: 'goog_$email');
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Masukkan email gmail yang valid!')),
+                                const SnackBar(content: Text('Masukkan alamat email Gmail yang valid!')),
                               );
                             }
                           },
-                          child: const Text('Masuk dengan Akun ini', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          child: const Text('Lanjutkan dengan Google', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                         ),
                       )
                     ],
@@ -4587,8 +4588,9 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                 );
                 try {
                   final mockPassword = 'GoogleAuthSecured_${DateTime.now().millisecondsSinceEpoch}';
+                  final emailClean = _emailController.text.trim().toLowerCase();
                   await AuthRepository().registerUser(
-                    email: _emailController.text,
+                    email: emailClean,
                     password: mockPassword,
                     name: _nameController.text,
                     phone: _phoneController.text,
@@ -4596,6 +4598,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
                     tingkat: selectedLevel,
                     birthDate: dob,
                     gender: genderCode,
+                    googleId: 'goog_$emailClean',
                   );
                   if (context.mounted) {
                     final pendingUser = User(
@@ -6779,9 +6782,9 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map?;
-    final name = args?['name'] ?? 'Ahmad Santoso';
-    final email = args?['email'] ?? 'ahmad.santoso@gmail.com';
-    final initial = args?['initial'] ?? 'A';
+    final email = args?['email'] ?? '';
+    final name = args?['name'] ?? (email.isNotEmpty ? email.split('@')[0] : 'User Google');
+    final initial = args?['initial'] ?? (name.isNotEmpty ? name[0].toUpperCase() : 'G');
 
     return Scaffold(
       appBar: AppBar(

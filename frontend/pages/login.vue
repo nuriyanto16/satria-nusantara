@@ -116,32 +116,16 @@
           <div class="g-avatar bg-green">G</div>
           <div>
             <h3>Masuk dengan Google</h3>
-            <p>Pilih akun untuk melanjutkan ke Satria Nusantara</p>
+            <p>Masukkan email Gmail Anda untuk melanjutkan ke Satria Nusantara</p>
           </div>
           <button type="button" class="g-modal-close" @click="showGoogleModal = false">&times;</button>
         </div>
         <div class="g-modal-body">
-          <div class="g-account-item" @click="selectGoogleAccount('nuriyanto.dev@gmail.com', 'Nuriyanto Dev')">
-            <div class="g-avatar">N</div>
-            <div class="g-info">
-              <div class="g-name">Nuriyanto Dev</div>
-              <div class="g-email">nuriyanto.dev@gmail.com</div>
-            </div>
-          </div>
-          
-          <div class="g-account-item" @click="selectGoogleAccount('demo.anggota@gmail.com', 'Demo Anggota')">
-            <div class="g-avatar bg-green">D</div>
-            <div class="g-info">
-              <div class="g-name">Demo Anggota</div>
-              <div class="g-email">demo.anggota@gmail.com</div>
-            </div>
-          </div>
-
-          <div class="g-custom-input">
-            <label>Gunakan akun Google lain:</label>
-            <div class="g-input-row">
-              <input v-model="customGoogleEmail" type="email" placeholder="contoh@gmail.com" class="form-input" style="padding-left:14px" />
-              <button type="button" class="btn-g-submit" @click="selectGoogleAccount(customGoogleEmail, customGoogleEmail.split('@')[0])">OK</button>
+          <div class="g-custom-input" style="margin-top: 8px;">
+            <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">Email Gmail Asli Anda:</label>
+            <div class="g-input-row" style="display: flex; gap: 8px;">
+              <input v-model="customGoogleEmail" type="email" placeholder="contoh.email@gmail.com" class="form-input" style="padding-left:14px; flex: 1;" @keyup.enter="selectGoogleAccount(customGoogleEmail, customGoogleEmail.split('@')[0])" />
+              <button type="button" class="btn-g-submit" style="padding: 10px 16px; font-weight: bold;" @click="selectGoogleAccount(customGoogleEmail, customGoogleEmail.split('@')[0])">Lanjutkan</button>
             </div>
           </div>
         </div>
@@ -347,6 +331,9 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
       google_id: gId || ('goog_' + gEmail)
     })
     authStore.setAuth(data.token, data.user)
+    if (data.user?.status === 'pending') {
+      alert('Pendaftaran via Gmail berhasil! Akun Anda sedang menunggu verifikasi dari Admin.')
+    }
     await navigateTo('/')
   } catch (e: any) {
     // Fallback if backend API is offline during local UI test

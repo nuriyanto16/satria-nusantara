@@ -46,6 +46,7 @@ type SignupAnggotaRequest struct {
 	Tingkatan    string `json:"tingkatan"`
 	TanggalLahir string `json:"tanggal_lahir,omitempty"`
 	JenisKelamin string `json:"jenis_kelamin,omitempty"`
+	GoogleID     string `json:"google_id,omitempty"`
 }
 
 type RegisterRequest struct {

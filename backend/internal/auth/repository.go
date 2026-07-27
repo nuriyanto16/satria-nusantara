@@ -155,12 +155,16 @@ func (r *pgRepository) CreatePendingAnggota(ctx context.Context, req SignupAnggo
 	}
 
 	// 3. Insert ke tabel users dengan status 'pending'
+	var googleID *string
+	if req.GoogleID != "" {
+		googleID = &req.GoogleID
+	}
 	var userID string
 	err = tx.QueryRowContext(ctx, `
-		INSERT INTO users (email, password_hash, nama_lengkap, no_hp, role_id, status)
-		VALUES ($1, $2, $3, $4, 4, 'pending')
+		INSERT INTO users (email, password_hash, google_id, nama_lengkap, no_hp, role_id, status)
+		VALUES ($1, $2, $3, $4, $5, 4, 'pending')
 		RETURNING id
-	`, req.Email, passwordHash, req.NamaLengkap, req.NoHp).Scan(&userID)
+	`, req.Email, passwordHash, googleID, req.NamaLengkap, req.NoHp).Scan(&userID)
 	if err != nil {
 		return "", err
 	}
@@ -192,7 +196,12 @@ func (r *pgRepository) CreatePendingAnggota(ctx context.Context, req SignupAnggo
 }
 
 func (r *pgRepository) CreateGoogleUser(ctx context.Context, req GoogleLoginRequest) (*userRecord, error) {
-	var id string
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
 	googleID := req.GoogleID
 	if googleID == "" {
 		googleID = "goog_" + req.Email
@@ -210,14 +219,48 @@ func (r *pgRepository) CreateGoogleUser(ctx context.Context, req GoogleLoginRequ
 		noHp = "081234567890"
 	}
 
-	err := r.db.QueryRowContext(ctx, `
+	var unitID *string
+	if req.UnitID != "" {
+		var resolved string
+		unitSearch := strings.TrimSpace(req.UnitID)
+		if strings.Contains(unitSearch, " · ") {
+			unitSearch = strings.Split(unitSearch, " · ")[0]
+		}
+		err := tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan WHERE nama ILIKE $1 OR id::text = $2 LIMIT 1", "%"+unitSearch+"%", req.UnitID).Scan(&resolved)
+		if err == nil {
+			unitID = &resolved
+		}
+	}
+	if unitID == nil {
+		var resolved string
+		err := tx.QueryRowContext(ctx, "SELECT id FROM unit_latihan WHERE status = 'aktif' ORDER BY created_at ASC LIMIT 1").Scan(&resolved)
+		if err == nil {
+			unitID = &resolved
+		}
+	}
+
+	var id string
+	err = tx.QueryRowContext(ctx, `
 		INSERT INTO users (email, google_id, nama_lengkap, no_hp, foto_url, role_id, status)
-		VALUES ($1, $2, $3, $4, $5, 4, 'aktif')
+		VALUES ($1, $2, $3, $4, $5, 4, 'pending')
 		RETURNING id
 	`, req.Email, googleID, nama, noHp, foto).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
+
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO anggota (user_id, nama_lengkap, no_hp, foto_url, unit_id, tingkatan, status)
+		VALUES ($1, $2, $3, $4, $5, 'Pra Dasar', 'pending')
+	`, id, nama, noHp, foto, unitID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
 	return r.FindByID(ctx, id)
 }
 
