@@ -146,12 +146,13 @@ type Pelatih struct {
 // ─── Pagination ───────────────────────────────────────────────────────────────
 
 type ListParams struct {
-	Page     int    `json:"page"`
-	Limit    int    `json:"limit"`
-	Search   string `json:"search"`
-	CabangID string `json:"cabang_id"`
-	UnitID   string `json:"unit_id"`
-	Status   string `json:"status"`
+	Page      int    `json:"page"`
+	Limit     int    `json:"limit"`
+	Search    string `json:"search"`
+	CabangID  string `json:"cabang_id"`
+	UnitID    string `json:"unit_id"`
+	Status    string `json:"status"`
+	Tingkatan string `json:"tingkatan"`
 }
 
 type PaginatedResult[T any] struct {

@@ -297,6 +297,9 @@ func (r *pgRepository) ListAnggota(ctx context.Context, params ListParams) (*Pag
 	if params.CabangID != "" {
 		where += fmt.Sprintf(" AND u.cabang_id = $%d", i); whereArgs = append(whereArgs, params.CabangID); i++
 	}
+	if params.Tingkatan != "" {
+		where += fmt.Sprintf(" AND a.tingkatan::text ILIKE $%d", i); whereArgs = append(whereArgs, "%"+params.Tingkatan+"%"); i++
+	}
 	if params.Search != "" {
 		where += fmt.Sprintf(" AND (a.nama_lengkap ILIKE $%d OR a.nomor_anggota ILIKE $%d)", i, i+1)
 		whereArgs = append(whereArgs, "%"+params.Search+"%", "%"+params.Search+"%"); i += 2

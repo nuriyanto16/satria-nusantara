@@ -264,7 +264,8 @@ func parseListParams(r *http.Request) ListParams {
 	return ListParams{
 		Page: page, Limit: limit,
 		Search: q.Get("search"), Status: q.Get("status"),
-		CabangID: q.Get("cabang_id"),
+		CabangID: q.Get("cabang_id"), UnitID: q.Get("unit_id"),
+		Tingkatan: q.Get("tingkatan"),
 	}
 }
 

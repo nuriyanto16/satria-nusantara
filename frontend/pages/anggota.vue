@@ -448,7 +448,7 @@ const route = useRoute()
 
 const api = useApi()
 
-const activeTab = ref('aktif')
+const activeTab = ref('')
 const search = ref('')
 const filterCabang = ref('')
 const filterTingkatan = ref('')
@@ -514,8 +514,9 @@ watch(selectedAnggota, async (newVal) => {
 }, { immediate: true })
 
 const tabs = ref([
-  { label: 'Semua Anggota', value: 'aktif', count: 0 },
+  { label: 'Semua Anggota', value: '', count: 0 },
   { label: 'Menunggu Verifikasi', value: 'pending', count: 0 },
+  { label: 'Anggota Aktif', value: 'aktif', count: 0 },
   { label: 'Nonaktif', value: 'nonaktif', count: 0 },
 ])
 
@@ -535,13 +536,15 @@ const form = ref({
 
 const fetchStats = async () => {
   try {
-    const resAktif = await api.get('/organization/anggota?status=aktif&limit=1')
+    const resSemua = await api.get('/organization/anggota?limit=1')
     const resPending = await api.get('/organization/anggota?status=pending&limit=1')
+    const resAktif = await api.get('/organization/anggota?status=aktif&limit=1')
     const resNon = await api.get('/organization/anggota?status=nonaktif&limit=1')
     
-    tabs.value[0].count = (resAktif.total || 0) + (resNon.total || 0)
+    tabs.value[0].count = resSemua.total || 0
     tabs.value[1].count = resPending.total || 0
-    tabs.value[2].count = resNon.total || 0
+    tabs.value[2].count = resAktif.total || 0
+    tabs.value[3].count = resNon.total || 0
   } catch (e) {
     console.error(e)
   }
@@ -551,7 +554,7 @@ const fetchAnggota = async () => {
   loading.value = true
   try {
     const data = await api.get(
-      `/organization/anggota?page=${page.value}&limit=${limit.value}&status=${activeTab.value}&cabang_id=${filterCabang.value}&search=${search.value}`
+      `/organization/anggota?page=${page.value}&limit=${limit.value}&status=${activeTab.value}&cabang_id=${filterCabang.value}&tingkatan=${filterTingkatan.value}&search=${search.value}`
     )
     anggotaData.value = data.data || []
     totalAnggota.value = data.total || 0
