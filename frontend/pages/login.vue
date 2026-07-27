@@ -264,9 +264,25 @@ const handleLogin = async () => {
   }
 }
 
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('sn_last_google_email')
+    if (saved) {
+      customGoogleEmail.value = saved
+    }
+  }
+})
+
 const triggerGoogleSSO = () => {
   errorMsg.value = ''
   loading.value = true
+
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('sn_last_google_email')
+    if (saved && !customGoogleEmail.value) {
+      customGoogleEmail.value = saved
+    }
+  }
 
   if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
     try {
@@ -284,6 +300,9 @@ const triggerGoogleSSO = () => {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
               }).join(''))
               const payload = JSON.parse(jsonPayload)
+              if (payload.email) {
+                localStorage.setItem('sn_last_google_email', payload.email)
+              }
               await handleGoogleLogin(payload.email, payload.name || payload.email, payload.sub)
             } catch (err) {
               showGoogleModal.value = true
@@ -303,7 +322,6 @@ const triggerGoogleSSO = () => {
         }
       })
 
-      // Fallback timeout in case Google's script fails silently due to invalid client ID
       setTimeout(() => {
         if (!isHandled) {
           showGoogleModal.value = true
@@ -324,6 +342,9 @@ const triggerGoogleSSO = () => {
 const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) => {
   loading.value = true
   errorMsg.value = ''
+  if (typeof window !== 'undefined' && gEmail) {
+    localStorage.setItem('sn_last_google_email', gEmail)
+  }
   try {
     const data = await api.post('/auth/google-login', {
       email: gEmail,

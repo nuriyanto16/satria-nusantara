@@ -998,7 +998,7 @@ void _showGoogleAccountChooser(BuildContext context) {
             ),
             const SizedBox(height: 4),
             Text(
-              'Masukkan email Gmail Anda untuk melanjutkan ke Satria Nusantara',
+              'Masukkan email Gmail aktif di browser/HP Anda untuk melanjutkan ke Satria Nusantara',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
