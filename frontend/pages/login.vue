@@ -283,7 +283,15 @@ const triggerGoogleSSO = () => {
       customGoogleEmail.value = saved
     }
 
-    const cid = '1000000000000-satrianusantara.apps.googleusercontent.com'
+    const cid = (window as any).GOOGLE_CLIENT_ID || '1000000000000-satrianusantara.apps.googleusercontent.com'
+    
+    // If Client ID is placeholder, fallback to account chooser modal
+    if (!cid || cid.indexOf('1000000000000') === 0 || cid.indexOf('YOUR_') === 0) {
+      showGoogleModal.value = true
+      loading.value = false
+      return
+    }
+
     const redirectUri = window.location.origin + window.location.pathname
     const scope = encodeURIComponent('openid email profile')
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(cid)}&response_type=token%20id_token&scope=${scope}&redirect_uri=${encodeURIComponent(redirectUri)}&nonce=${Math.random().toString(36).substring(2)}&prompt=select_account`
