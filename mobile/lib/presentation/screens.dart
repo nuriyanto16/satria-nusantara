@@ -1,6 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'dart:js' as js;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -919,9 +921,7 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 // ─── TOP LEVEL GOOGLE AUTH HELPERS ──────────────────────────────────────────
-// ─── TOP LEVEL GOOGLE AUTH HELPERS ──────────────────────────────────────────
 Future<void> _triggerGoogleSignIn(BuildContext context) async {
-  // Show brief loading snackbar for UX feel
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
       content: Row(
@@ -935,9 +935,33 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
           Text('Menghubungkan ke Google SSO...'),
         ],
       ),
-      duration: Duration(milliseconds: 1000),
+      duration: Duration(milliseconds: 1500),
     ),
   );
+
+  if (kIsWeb) {
+    try {
+      js.context['flutterGoogleHandler'] = js.allowInterop((dynamic email, dynamic name, dynamic googleId) {
+        final sEmail = email?.toString() ?? '';
+        final sName = name?.toString() ?? (sEmail.isNotEmpty ? sEmail.split('@')[0] : 'User');
+        final String initial = sName.isNotEmpty ? sName[0].toUpperCase() : 'G';
+        final sGoogleId = googleId?.toString() ?? 'goog_$sEmail';
+
+        if (context.mounted && sEmail.isNotEmpty) {
+          _processGoogleSignIn(context, sEmail, sName, initial, googleId: sGoogleId);
+        }
+      });
+
+      js.context.callMethod('triggerGoogleOAuthFlow', [
+        '1000000000000-satrianusantara.apps.googleusercontent.com',
+        'onFlutterGoogleSuccess',
+        'onFlutterGoogleError'
+      ]);
+    } catch (e) {
+      debugPrint('Web Google SSO error: $e');
+    }
+    return;
+  }
 
   try {
     final GoogleSignIn googleSignIn = GoogleSignIn(
@@ -958,132 +982,8 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
       return;
     }
   } catch (e) {
-    // If native Google SSO is unconfigured in dev environment, fallback to account input chooser
+    debugPrint('Native Google SSO error: $e');
   }
-
-  if (context.mounted) {
-    _showGoogleAccountChooser(context);
-  }
-}
-
-void _showGoogleAccountChooser(BuildContext context) {
-  final TextEditingController customEmailController = TextEditingController();
-
-  showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        backgroundColor: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.account_circle, color: Colors.blue, size: 40),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Sign in with Google',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Masukkan email Gmail aktif di browser/HP Anda untuk melanjutkan ke Satria Nusantara',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
-              ),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: 320,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Email Gmail Asli Anda:',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: customEmailController,
-                        keyboardType: TextInputType.emailAddress,
-                        autofocus: true,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'contoh.email@gmail.com',
-                          prefixIcon: const Icon(Icons.email_outlined, size: 18, color: Colors.blue),
-                          hintStyle: TextStyle(
-                            fontSize: 13,
-                            color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          isDense: true,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 44,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          onPressed: () {
-                            final email = customEmailController.text.trim().toLowerCase();
-                            if (email.isNotEmpty && email.contains('@')) {
-                              final name = email.split('@')[0];
-                              final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
-                              Navigator.pop(dialogContext);
-                              _processGoogleSignIn(context, email, name, initial, googleId: 'goog_$email');
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Masukkan alamat email Gmail yang valid!')),
-                              );
-                            }
-                          },
-                          child: const Text('Lanjutkan dengan Google', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    },
-  );
 }
 
 void _processGoogleSignIn(BuildContext context, String email, String name, String initial, {String? googleId}) async {
