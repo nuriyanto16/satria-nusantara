@@ -111,22 +111,41 @@
 
     <!-- Google Account Chooser Modal -->
     <div v-if="showGoogleModal" class="google-modal-overlay">
-      <div class="google-modal-card">
-        <div class="g-modal-header">
-          <div class="g-avatar bg-green">G</div>
-          <div>
-            <h3>Masuk dengan Google</h3>
-            <p>Masukkan email Gmail Anda untuk melanjutkan ke Satria Nusantara</p>
-          </div>
-          <button type="button" class="g-modal-close" @click="showGoogleModal = false">&times;</button>
+      <div class="google-modal-card" style="max-width: 400px; padding: 24px;">
+        <div class="g-modal-header" style="justify-content: center; text-align: center; display: block; position: relative;">
+          <button type="button" class="g-modal-close" style="position: absolute; right: 0; top: -4px;" @click="showGoogleModal = false">&times;</button>
+          <svg width="38" height="38" viewBox="0 0 48 48" style="margin-bottom: 8px; display: inline-block;">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #202124;">Pilih Akun Google Anda</h3>
+          <p style="margin: 4px 0 16px; font-size: 12px; color: #5f6368;">Pilih akun Gmail aktif Anda di bawah ini</p>
         </div>
         <div class="g-modal-body">
-          <div class="g-custom-input" style="margin-top: 8px;">
-            <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">Email Gmail Asli Anda:</label>
-            <div class="g-input-row" style="display: flex; gap: 8px;">
-              <input v-model="customGoogleEmail" type="email" placeholder="contoh.email@gmail.com" class="form-input" style="padding-left:14px; flex: 1;" @keyup.enter="selectGoogleAccount(customGoogleEmail, customGoogleEmail.split('@')[0])" />
-              <button type="button" class="btn-g-submit" style="padding: 10px 16px; font-weight: bold;" @click="selectGoogleAccount(customGoogleEmail, customGoogleEmail.split('@')[0])">Lanjutkan</button>
+          <div style="max-height: 220px; overflow-y: auto; margin-bottom: 14px; padding-right: 2px;">
+            <div
+              v-for="acc in savedAccounts"
+              :key="acc.email"
+              style="display: flex; align-items: center; padding: 10px 12px; border: 1px solid #dadce0; border-radius: 12px; cursor: pointer; margin-bottom: 8px; transition: all 0.15s; text-align: left;"
+              @click="selectGoogleAccount(acc.email, acc.name)"
+            >
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: #1a73e8; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; margin-right: 10px; flex-shrink: 0;">
+                {{ acc.name.charAt(0).toUpperCase() }}
+              </div>
+              <div style="flex: 1; overflow: hidden; margin-right: 6px;">
+                <div style="font-size: 13px; font-weight: 600; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ acc.name }}</div>
+                <div style="font-size: 11px; color: #5f6368; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ acc.email }}</div>
+              </div>
+              <button type="button" style="background: transparent; border: none; color: #9ca3af; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Hapus dari daftar" @click.stop="removeAccount(acc.email)">✕</button>
             </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" style="width: 100%; padding: 10px 0; background: #f8f9fa; border: 1px dashed #1a73e8; border-radius: 10px; font-size: 13px; font-weight: 600; color: #1a73e8; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" @click="promptAddAccount">
+              <span>+</span> Gunakan Akun Gmail Lain
+            </button>
+            <button type="button" style="width: 100%; padding: 9px 0; background: #fff; border: 1px solid #dadce0; border-radius: 10px; font-size: 12px; color: #70757a; cursor: pointer;" @click="showGoogleModal = false">Batal</button>
           </div>
         </div>
       </div>
@@ -139,7 +158,7 @@ import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({
   title: 'Login — Satria Nusantara Web Admin',
-  layout: false  // No sidebar for login
+  layout: false
 })
 
 const email = ref('')
@@ -151,14 +170,65 @@ const errorMsg = ref('')
 
 const showGoogleModal = ref(false)
 const customGoogleEmail = ref('')
+const savedAccounts = ref<Array<{ email: string; name: string }>>([])
 
-const selectGoogleAccount = (email: string, name: string) => {
-  if (!email || !email.includes('@')) {
+const loadSavedAccounts = () => {
+  if (typeof window === 'undefined') return
+  const raw = localStorage.getItem('sn_saved_google_accounts')
+  let list: Array<{ email: string; name: string }> = []
+  if (raw) {
+    try { list = JSON.parse(raw) } catch(e) {}
+  }
+  if (!Array.isArray(list) || list.length === 0) {
+    const last = localStorage.getItem('sn_last_google_email') || 'sertifikasisdppi@gmail.com'
+    const name = last.split('@')[0]
+    list = [{ email: last, name: name.charAt(0).toUpperCase() + name.slice(1) }]
+    if (last.toLowerCase() !== 'sertifikasisdppi@gmail.com') {
+      list.unshift({ email: 'sertifikasisdppi@gmail.com', name: 'Sertifikasi SDPPI' })
+    }
+  }
+  savedAccounts.value = list
+}
+
+const saveAccount = (gEmail: string, gName?: string) => {
+  if (!gEmail || !gEmail.includes('@')) return
+  const cleanEmail = gEmail.trim().toLowerCase()
+  const cleanName = gName || cleanEmail.split('@')[0]
+  const list = savedAccounts.value.slice()
+  if (!list.some(a => a.email.toLowerCase() === cleanEmail)) {
+    list.unshift({ email: cleanEmail, name: cleanName.charAt(0).toUpperCase() + cleanName.slice(1) })
+  }
+  savedAccounts.value = list
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('sn_saved_google_accounts', JSON.stringify(list))
+    localStorage.setItem('sn_last_google_email', cleanEmail)
+  }
+}
+
+const removeAccount = (gEmail: string) => {
+  savedAccounts.value = savedAccounts.value.filter(a => a.email.toLowerCase() !== gEmail.toLowerCase())
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('sn_saved_google_accounts', JSON.stringify(savedAccounts.value))
+  }
+}
+
+const selectGoogleAccount = (gEmail: string, gName: string) => {
+  if (!gEmail || !gEmail.includes('@')) {
     alert('Masukkan email gmail yang valid!')
     return
   }
+  saveAccount(gEmail, gName)
   showGoogleModal.value = false
-  handleGoogleLogin(email, name)
+  handleGoogleLogin(gEmail, gName)
+}
+
+const promptAddAccount = () => {
+  const inputEmail = prompt('Masukkan alamat Gmail baru Anda:')
+  if (inputEmail && inputEmail.includes('@')) {
+    const cleanEmail = inputEmail.trim().toLowerCase()
+    const cleanName = cleanEmail.split('@')[0]
+    selectGoogleAccount(cleanEmail, cleanName.charAt(0).toUpperCase() + cleanName.slice(1))
+  }
 }
 
 const captchaInput = ref('')
@@ -234,6 +304,7 @@ const drawCaptchaCanvas = () => {
 
 onMounted(() => {
   generateCaptcha()
+  loadSavedAccounts()
 })
 
 const authStore = useAuthStore()

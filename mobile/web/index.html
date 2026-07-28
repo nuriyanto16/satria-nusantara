@@ -43,83 +43,181 @@
       openOAuthPopup(cid, redirectUri, successCallbackName, errorCallbackName);
     };
 
-    function showMockGoogleChooser(successCallbackName) {
-      var detectedEmail = localStorage.getItem('sn_last_google_email') || 'sertifikasisdppi@gmail.com';
-      var name = detectedEmail.split('@')[0];
-      name = name.charAt(0).toUpperCase() + name.slice(1);
+    function getSavedGoogleAccounts() {
+      var raw = localStorage.getItem('sn_saved_google_accounts');
+      var list = [];
+      if (raw) {
+        try { list = JSON.parse(raw); } catch(e) {}
+      }
+      if (!Array.isArray(list) || list.length === 0) {
+        var lastEmail = localStorage.getItem('sn_last_google_email') || 'sertifikasisdppi@gmail.com';
+        var lastFirstName = lastEmail.split('@')[0];
+        lastFirstName = lastFirstName.charAt(0).toUpperCase() + lastFirstName.slice(1);
+        list = [
+          { email: lastEmail, name: lastFirstName }
+        ];
+        if (lastEmail.toLowerCase() !== 'sertifikasisdppi@gmail.com') {
+          list.unshift({ email: 'sertifikasisdppi@gmail.com', name: 'Sertifikasi SDPPI' });
+        }
+        localStorage.setItem('sn_saved_google_accounts', JSON.stringify(list));
+      }
+      return list;
+    }
 
+    function saveGoogleAccount(email, name) {
+      if (!email || email.indexOf('@') === -1) return;
+      var list = getSavedGoogleAccounts();
+      var cleanEmail = email.trim().toLowerCase();
+      var cleanName = name || cleanEmail.split('@')[0];
+      cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+
+      var exists = false;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].email.toLowerCase() === cleanEmail) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        list.unshift({ email: cleanEmail, name: cleanName });
+      }
+      localStorage.setItem('sn_saved_google_accounts', JSON.stringify(list));
+      localStorage.setItem('sn_last_google_email', cleanEmail);
+    }
+
+    function removeSavedGoogleAccount(email) {
+      var list = getSavedGoogleAccounts();
+      var cleanEmail = email.trim().toLowerCase();
+      var filtered = list.filter(function(item) { return item.email.toLowerCase() !== cleanEmail; });
+      localStorage.setItem('sn_saved_google_accounts', JSON.stringify(filtered));
+    }
+
+    function showMockGoogleChooser(successCallbackName) {
+      var accounts = getSavedGoogleAccounts();
+      
       var modal = document.createElement('div');
       modal.id = 'sn-google-chooser-modal';
-      modal.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
+      modal.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.65);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
       
       var card = document.createElement('div');
-      card.style.cssText = 'background:#fff;border-radius:16px;width:360px;max-width:90%;padding:28px 24px;box-shadow:0 12px 32px rgba(0,0,0,0.25);text-align:center;animation:snPopIn 0.2s ease-out;';
+      card.style.cssText = 'background:#fff;border-radius:20px;width:400px;max-width:92%;padding:26px 22px;box-shadow:0 16px 40px rgba(0,0,0,0.3);text-align:center;animation:snPopIn 0.2s ease-out;box-sizing:border-box;';
       
-      card.innerHTML = `
-        <style>
-          @keyframes snPopIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-          .sn-g-acc:hover { background: #f8f9fa !important; border-color: #1a73e8 !important; }
-        </style>
-        <svg width="40" height="40" viewBox="0 0 48 48" style="margin-bottom:12px;">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        </svg>
-        <h3 style="margin:0 0 4px;font-size:18px;font-weight:600;color:#202124;">Pilih Akun Google Anda</h3>
-        <p style="margin:0 0 20px;font-size:12px;color:#5f6368;">Lanjutkan ke Satria Nusantara dengan akun Gmail aktif</p>
-        
-        <div id="sn-g-select-item" class="sn-g-acc" style="display:flex;align-items:center;padding:12px 14px;border:1px solid #dadce0;border-radius:10px;cursor:pointer;margin-bottom:14px;transition:all 0.15s;text-align:left;">
-          <div style="width:38px;height:38px;border-radius:50%;background:#1a73e8;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:16px;margin-right:12px;flex-shrink:0;">
-            ${name.charAt(0).toUpperCase()}
-          </div>
-          <div style="flex:1;overflow:hidden;">
-            <div style="font-size:13px;font-weight:600;color:#202124;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
-            <div style="font-size:11px;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${detectedEmail}</div>
-          </div>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
-        </div>
+      var colors = ['#1a73e8', '#34a853', '#fbbc05', '#ea4335', '#9c27b0', '#009688'];
 
-        <div style="display:flex;gap:8px;">
-          <button id="sn-g-other-btn" style="flex:1;padding:9px 0;background:#f8f9fa;border:1px solid #dadce0;border-radius:8px;font-size:12px;font-weight:600;color:#3c4043;cursor:pointer;">Ganti Email</button>
-          <button id="sn-g-close-btn" style="flex:1;padding:9px 0;background:#fff;border:1px solid #dadce0;border-radius:8px;font-size:12px;color:#70757a;cursor:pointer;">Batal</button>
-        </div>
-      `;
+      function renderAccountList() {
+        var html = `
+          <style>
+            @keyframes snPopIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+            .sn-g-acc-item:hover { background: #f8f9fa !important; border-color: #1a73e8 !important; }
+            .sn-g-del-btn:hover { background: #fee2e2 !important; color: #dc2626 !important; }
+          </style>
+          <svg width="38" height="38" viewBox="0 0 48 48" style="margin-bottom:8px;">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <h3 style="margin:0 0 4px;font-size:18px;font-weight:700;color:#202124;">Pilih Akun Google Anda</h3>
+          <p style="margin:0 0 16px;font-size:12px;color:#5f6368;">Pilih akun Gmail aktif Anda di bawah ini</p>
+          
+          <div style="max-height:240px;overflow-y:auto;margin-bottom:14px;padding-right:2px;">
+        `;
 
+        accounts.forEach(function(acc, idx) {
+          var bg = colors[idx % colors.length];
+          var initial = acc.name ? acc.name.charAt(0).toUpperCase() : 'G';
+          html += `
+            <div class="sn-g-acc-item" data-email="${acc.email}" data-name="${acc.name}" style="display:flex;align-items:center;padding:10px 12px;border:1px solid #dadce0;border-radius:12px;cursor:pointer;margin-bottom:8px;transition:all 0.15s;text-align:left;">
+              <div style="width:36px;height:36px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:15px;margin-right:10px;flex-shrink:0;">
+                ${initial}
+              </div>
+              <div style="flex:1;overflow:hidden;margin-right:6px;">
+                <div style="font-size:13px;font-weight:600;color:#202124;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${acc.name}</div>
+                <div style="font-size:11px;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${acc.email}</div>
+              </div>
+              <button class="sn-g-del-btn" data-del="${acc.email}" title="Hapus dari daftar" style="background:transparent;border:none;color:#9ca3af;width:26px;height:26px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s;">✕</button>
+            </div>
+          `;
+        });
+
+        html += `
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button id="sn-g-add-btn" style="width:100%;padding:10px 0;background:#f8f9fa;border:1px dashed #1a73e8;border-radius:10px;font-size:13px;font-weight:600;color:#1a73e8;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <span>+</span> Gunakan Akun Gmail Lain
+            </button>
+            <button id="sn-g-close-btn" style="width:100%;padding:9px 0;background:#fff;border:1px solid #dadce0;border-radius:10px;font-size:12px;color:#70757a;cursor:pointer;">Batal</button>
+          </div>
+        `;
+
+        card.innerHTML = html;
+
+        var items = card.querySelectorAll('.sn-g-acc-item');
+        items.forEach(function(item) {
+          item.onclick = function(e) {
+            if (e.target.classList.contains('sn-g-del-btn') || e.target.closest('.sn-g-del-btn')) {
+              return;
+            }
+            var selectedEmail = item.getAttribute('data-email');
+            var selectedName = item.getAttribute('data-name');
+            if (modal.parentNode) document.body.removeChild(modal);
+            saveGoogleAccount(selectedEmail, selectedName);
+            var payload = { email: selectedEmail, name: selectedName, sub: 'goog_' + selectedEmail };
+            var jsonPayload = JSON.stringify(payload);
+            window.dispatchEvent(new CustomEvent('flutter_google_sso_success', { detail: jsonPayload }));
+            if (window.flutterGoogleHandler) {
+              window.flutterGoogleHandler(selectedEmail, selectedName, 'goog_' + selectedEmail);
+            }
+            if (window[successCallbackName]) window[successCallbackName](jsonPayload);
+          };
+        });
+
+        var delBtns = card.querySelectorAll('.sn-g-del-btn');
+        delBtns.forEach(function(btn) {
+          btn.onclick = function(e) {
+            e.stopPropagation();
+            var targetEmail = btn.getAttribute('data-del');
+            removeSavedGoogleAccount(targetEmail);
+            accounts = getSavedGoogleAccounts();
+            if (accounts.length === 0) {
+              accounts = [{ email: 'sertifikasisdppi@gmail.com', name: 'Sertifikasi SDPPI' }];
+            }
+            renderAccountList();
+          };
+        });
+
+        var addBtn = card.querySelector('#sn-g-add-btn');
+        if (addBtn) {
+          addBtn.onclick = function() {
+            var inputEmail = prompt('Masukkan alamat Gmail baru Anda:');
+            if (inputEmail && inputEmail.indexOf('@') !== -1) {
+              var cleanEmail = inputEmail.trim().toLowerCase();
+              var cleanName = cleanEmail.split('@')[0];
+              cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+              saveGoogleAccount(cleanEmail, cleanName);
+              if (modal.parentNode) document.body.removeChild(modal);
+              var payload = { email: cleanEmail, name: cleanName, sub: 'goog_' + cleanEmail };
+              var jsonPayload = JSON.stringify(payload);
+              window.dispatchEvent(new CustomEvent('flutter_google_sso_success', { detail: jsonPayload }));
+              if (window.flutterGoogleHandler) {
+                window.flutterGoogleHandler(cleanEmail, cleanName, 'goog_' + cleanEmail);
+              }
+              if (window[successCallbackName]) window[successCallbackName](jsonPayload);
+            }
+          };
+        }
+
+        var closeBtn = card.querySelector('#sn-g-close-btn');
+        if (closeBtn) {
+          closeBtn.onclick = function() {
+            if (modal.parentNode) document.body.removeChild(modal);
+          };
+        }
+      }
+
+      renderAccountList();
       modal.appendChild(card);
       document.body.appendChild(modal);
-
-      document.getElementById('sn-g-select-item').onclick = function() {
-        if (modal.parentNode) document.body.removeChild(modal);
-        var payload = { email: detectedEmail, name: name, sub: 'goog_' + detectedEmail };
-        var jsonPayload = JSON.stringify(payload);
-        window.dispatchEvent(new CustomEvent('flutter_google_sso_success', { detail: jsonPayload }));
-        if (window.flutterGoogleHandler) {
-          window.flutterGoogleHandler(detectedEmail, name, 'goog_' + detectedEmail);
-        }
-        if (window[successCallbackName]) window[successCallbackName](jsonPayload);
-      };
-
-      document.getElementById('sn-g-other-btn').onclick = function() {
-        var inputEmail = prompt('Masukkan alamat Gmail Anda:', detectedEmail);
-        if (inputEmail && inputEmail.indexOf('@') !== -1) {
-          if (modal.parentNode) document.body.removeChild(modal);
-          var cleanEmail = inputEmail.trim();
-          localStorage.setItem('sn_last_google_email', cleanEmail);
-          var inputName = cleanEmail.split('@')[0];
-          var payload = { email: cleanEmail, name: inputName, sub: 'goog_' + cleanEmail };
-          var jsonPayload = JSON.stringify(payload);
-          window.dispatchEvent(new CustomEvent('flutter_google_sso_success', { detail: jsonPayload }));
-          if (window.flutterGoogleHandler) {
-            window.flutterGoogleHandler(cleanEmail, inputName, 'goog_' + cleanEmail);
-          }
-          if (window[successCallbackName]) window[successCallbackName](jsonPayload);
-        }
-      };
-
-      document.getElementById('sn-g-close-btn').onclick = function() {
-        if (modal.parentNode) document.body.removeChild(modal);
-      };
     }
 
     function openOAuthPopup(cid, redirectUri, successCallbackName, errorCallbackName) {
