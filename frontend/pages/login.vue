@@ -282,57 +282,63 @@ const triggerGoogleSSO = () => {
     if (saved && !customGoogleEmail.value) {
       customGoogleEmail.value = saved
     }
-  }
 
-  if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
-    try {
-      let isHandled = false
-      ;(window as any).google.accounts.id.initialize({
-        client_id: '1000000000000-satrianusantara.apps.googleusercontent.com',
-        auto_select: false,
-        callback: async (response: any) => {
-          isHandled = true
-          if (response && response.credential) {
-            try {
-              const base64Url = response.credential.split('.')[1]
-              const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-              const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-              }).join(''))
-              const payload = JSON.parse(jsonPayload)
-              if (payload.email) {
-                localStorage.setItem('sn_last_google_email', payload.email)
-              }
-              await handleGoogleLogin(payload.email, payload.name || payload.email, payload.sub)
-            } catch (err) {
-              showGoogleModal.value = true
-              loading.value = false
-            }
-          } else {
-            loading.value = false
-          }
-        }
-      })
+    const cid = '1000000000000-satrianusantara.apps.googleusercontent.com'
+    const redirectUri = window.location.origin + window.location.pathname
+    const scope = encodeURIComponent('openid email profile')
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(cid)}&response_type=token%20id_token&scope=${scope}&redirect_uri=${encodeURIComponent(redirectUri)}&nonce=${Math.random().toString(36).substring(2)}&prompt=select_account`
 
-      ;(window as any).google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          isHandled = true
-          showGoogleModal.value = true
-          loading.value = false
-        }
-      })
+    const width = 500
+    const height = 650
+    const left = (window.screen.width / 2) - (width / 2)
+    const top = (window.screen.height / 2) - (height / 2)
+    const popup = window.open(authUrl, 'GoogleSSOPopup', `width=${width},height=${height},top=${top},left=${left}`)
 
-      setTimeout(() => {
+    let isHandled = false
+    const checkInterval = setInterval(() => {
+      if (!popup || popup.closed) {
+        clearInterval(checkInterval)
         if (!isHandled) {
           showGoogleModal.value = true
           loading.value = false
         }
-      }, 1500)
+        return
+      }
+      try {
+        const loc = popup.location.href
+        if (loc && loc.indexOf(redirectUri) === 0 && loc.indexOf('#') !== -1) {
+          const hash = loc.substring(loc.indexOf('#') + 1)
+          popup.close()
+          clearInterval(checkInterval)
+          isHandled = true
+          const params = new URLSearchParams(hash)
+          const idToken = params.get('id_token')
+          if (idToken) {
+            const base64Url = idToken.split('.')[1]
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map((c) => {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            }).join(''))
+            const payload = JSON.parse(jsonPayload)
+            if (payload.email) {
+              localStorage.setItem('sn_last_google_email', payload.email)
+            }
+            handleGoogleLogin(payload.email, payload.name || payload.email, payload.sub)
+          }
+        }
+      } catch (e) {
+        // Cross-origin check before redirect
+      }
+    }, 500)
 
-      return
-    } catch (e) {
-      console.error(e)
-    }
+    // Fallback if popup is blocked
+    setTimeout(() => {
+      if (!popup || popup.closed) {
+        showGoogleModal.value = true
+        loading.value = false
+      }
+    }, 1500)
+    return
   }
 
   showGoogleModal.value = true

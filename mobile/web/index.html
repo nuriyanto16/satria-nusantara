@@ -16,8 +16,106 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <!-- Google Identity Services (GIS) API for Google SSO -->
+  <!-- Google Identity Services (GIS) API & OAuth 2.0 Popup Handler for Google SSO -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    window.onFlutterGoogleSuccess = function(jsonStr) {
+      try {
+        var payload = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+        if (payload.email) {
+          localStorage.setItem('sn_last_google_email', payload.email);
+        }
+      } catch(e) {}
+    };
+
+    window.triggerGoogleOAuthFlow = function(clientId, successCallbackName, errorCallbackName) {
+      var cid = clientId || '1000000000000-satrianusantara.apps.googleusercontent.com';
+      var redirectUri = window.location.origin + window.location.pathname;
+
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: cid,
+            callback: function(response) {
+              if (response && response.credential) {
+                try {
+                  var base64Url = response.credential.split('.')[1];
+                  var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                  var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                  }).join(''));
+                  var payload = JSON.parse(jsonPayload);
+                  if (window[successCallbackName]) {
+                    window[successCallbackName](JSON.stringify(payload));
+                  }
+                } catch(e) {}
+              }
+            }
+          });
+          window.google.accounts.id.prompt(function(notification) {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              openOAuthPopup(cid, redirectUri, successCallbackName, errorCallbackName);
+            }
+          });
+          return;
+        } catch(e) {}
+      }
+
+      openOAuthPopup(cid, redirectUri, successCallbackName, errorCallbackName);
+    };
+
+    function openOAuthPopup(cid, redirectUri, successCallbackName, errorCallbackName) {
+      var scope = encodeURIComponent('openid email profile');
+      var authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' +
+        'client_id=' + encodeURIComponent(cid) +
+        '&response_type=token%20id_token' +
+        '&scope=' + scope +
+        '&redirect_uri=' + encodeURIComponent(redirectUri) +
+        '&nonce=' + Math.random().toString(36).substring(2) +
+        '&prompt=select_account';
+
+      var width = 500, height = 650;
+      var left = (window.screen.width / 2) - (width / 2);
+      var top = (window.screen.height / 2) - (height / 2);
+      var popup = window.open(authUrl, 'GoogleSSOPopup', 'width=' + width + ',height=' + height + ',top=' + top + ',left=' + left);
+
+      var checkInterval = setInterval(function() {
+        if (!popup || popup.closed) {
+          clearInterval(checkInterval);
+          if (window[errorCallbackName]) window[errorCallbackName]('popup_closed');
+          return;
+        }
+        try {
+          var loc = popup.location.href;
+          if (loc && loc.indexOf(redirectUri) === 0 && loc.indexOf('#') !== -1) {
+            var hash = loc.substring(loc.indexOf('#') + 1);
+            popup.close();
+            clearInterval(checkInterval);
+            var params = new URLSearchParams(hash);
+            var idToken = params.get('id_token');
+            var accessToken = params.get('access_token');
+            if (idToken) {
+              var base64Url = idToken.split('.')[1];
+              var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+              var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+              }).join(''));
+              var payload = JSON.parse(jsonPayload);
+              if (window[successCallbackName]) window[successCallbackName](JSON.stringify(payload));
+            } else if (accessToken) {
+              fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + accessToken)
+                .then(function(res) { return res.json(); })
+                .then(function(payload) {
+                  if (window[successCallbackName]) window[successCallbackName](JSON.stringify(payload));
+                });
+            }
+          }
+        } catch(e) {
+          // Ignore cross-origin error before popup redirects back to redirectUri
+        }
+      }, 500);
+    }
+  </script>
 
   <title>Satria Nusantara Mobile</title>
   <link rel="manifest" href="manifest.json">
