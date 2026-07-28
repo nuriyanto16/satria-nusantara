@@ -45,6 +45,7 @@
                     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                   }).join(''));
                   var payload = JSON.parse(jsonPayload);
+                  window.dispatchEvent(new CustomEvent('flutter_google_sso_success', { detail: jsonPayload }));
                   if (window[successCallbackName]) {
                     window[successCallbackName](JSON.stringify(payload));
                   }
@@ -101,12 +102,15 @@
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
               }).join(''));
               var payload = JSON.parse(jsonPayload);
+              window.dispatchEvent(new CustomEvent('flutter_google_sso_success', { detail: jsonPayload }));
               if (window[successCallbackName]) window[successCallbackName](JSON.stringify(payload));
             } else if (accessToken) {
               fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + accessToken)
                 .then(function(res) { return res.json(); })
                 .then(function(payload) {
-                  if (window[successCallbackName]) window[successCallbackName](JSON.stringify(payload));
+                  var payloadStr = JSON.stringify(payload);
+                  window.dispatchEvent(new CustomEvent('flutter_google_sso_success', { detail: payloadStr }));
+                  if (window[successCallbackName]) window[successCallbackName](payloadStr);
                 });
             }
           }

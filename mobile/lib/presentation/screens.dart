@@ -1141,12 +1141,12 @@ void _processGoogleSignIn(BuildContext context, String email, String name, Strin
       } else {
         Navigator.pushNamed(
           context,
-          '/register',
+          '/google_complete',
           arguments: {
             'name': name,
             'email': email,
             'initial': initial,
-            'phone': '',
+            'googleId': googleId ?? 'goog_$email',
           },
         );
       }
@@ -6947,21 +6947,36 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                     const SnackBar(content: Text('Mendaftarkan akun Google...')),
                   );
 
+                  final googleId = args?['googleId'] ?? 'goog_$email';
+
                   try {
                     final res = await AuthRepository().loginGoogle(
                       email,
                       name,
                       noHp: phone,
+                      googleId: googleId,
                     );
                     if (context.mounted) {
                       context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Pendaftaran Google berhasil! Selamat datang, ${res['user'].namaLengkap}')),
-                      );
-                      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                      if (res['user'] != null && res['user'].status == 'pending') {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/wait_verification',
+                          arguments: {
+                            'name': res['user'].namaLengkap,
+                            'email': res['user'].email,
+                            'user': res['user'],
+                            'token': res['token'],
+                          },
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Pendaftaran Google berhasil! Selamat datang, ${res['user'].namaLengkap}')),
+                        );
+                        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                      }
                     }
                   } catch (e) {
-                    // Redirect to RegisterWizard to complete full registration
                     if (context.mounted) {
                       Navigator.pushNamed(
                         context,
