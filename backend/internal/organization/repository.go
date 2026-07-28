@@ -306,16 +306,16 @@ func (r *pgRepository) ListAnggota(ctx context.Context, params ListParams) (*Pag
 	}
 
 	var total int
-	_ = r.db.QueryRowContext(ctx, fmt.Sprintf("SELECT COUNT(*) FROM anggota a JOIN unit_latihan u ON u.id = a.unit_id %s", where), whereArgs...).Scan(&total)
+	_ = r.db.QueryRowContext(ctx, fmt.Sprintf("SELECT COUNT(*) FROM anggota a LEFT JOIN unit_latihan u ON u.id = a.unit_id %s", where), whereArgs...).Scan(&total)
 
 	whereArgs = append(whereArgs, params.Limit, offset)
 	rows, err := r.db.QueryContext(ctx, fmt.Sprintf(`
-		SELECT a.id, a.nama_lengkap, COALESCE(a.nomor_anggota,''), a.jenis_kelamin, COALESCE(a.no_hp,''),
-			COALESCE(a.tanggal_lahir::text, ''), a.unit_id, u.nama, u.cabang_id::text, cb.nama,
-			a.tingkatan, a.jurus_saat_ini, a.counter_kehadiran, a.status, a.tanggal_daftar, COALESCE(a.foto_url,'')
+		SELECT a.id, a.nama_lengkap, COALESCE(a.nomor_anggota,''), COALESCE(a.jenis_kelamin,''), COALESCE(a.no_hp,''),
+			COALESCE(a.tanggal_lahir::text, ''), COALESCE(a.unit_id::text,''), COALESCE(u.nama,''), COALESCE(u.cabang_id::text, ''), COALESCE(cb.nama,''),
+			COALESCE(a.tingkatan::text, 'Pra Dasar'), COALESCE(a.jurus_saat_ini, 1), COALESCE(a.counter_kehadiran, 0), a.status, a.tanggal_daftar, COALESCE(a.foto_url,'')
 		FROM anggota a
-		JOIN unit_latihan u ON u.id = a.unit_id
-		JOIN cabang cb ON cb.id = u.cabang_id
+		LEFT JOIN unit_latihan u ON u.id = a.unit_id
+		LEFT JOIN cabang cb ON cb.id = u.cabang_id
 		%s ORDER BY a.nama_lengkap ASC
 		LIMIT $%d OFFSET $%d
 	`, where, i, i+1), whereArgs...)
@@ -353,12 +353,12 @@ func (r *pgRepository) GetAnggotaByID(ctx context.Context, id string) (*Anggota,
 	var t string
 	var tglLahir string
 	err := r.db.QueryRowContext(ctx, `
-		SELECT a.id, a.nama_lengkap, COALESCE(a.nomor_anggota,''), a.jenis_kelamin, COALESCE(a.no_hp,''),
-			COALESCE(a.tanggal_lahir::text, ''), a.unit_id, u.nama, u.cabang_id::text, cb.nama,
-			a.tingkatan, a.jurus_saat_ini, a.counter_kehadiran, a.status, a.tanggal_daftar, COALESCE(a.foto_url,'')
+		SELECT a.id, a.nama_lengkap, COALESCE(a.nomor_anggota,''), COALESCE(a.jenis_kelamin,''), COALESCE(a.no_hp,''),
+			COALESCE(a.tanggal_lahir::text, ''), COALESCE(a.unit_id::text,''), COALESCE(u.nama,''), COALESCE(u.cabang_id::text, ''), COALESCE(cb.nama,''),
+			COALESCE(a.tingkatan::text, 'Pra Dasar'), COALESCE(a.jurus_saat_ini, 1), COALESCE(a.counter_kehadiran, 0), a.status, a.tanggal_daftar, COALESCE(a.foto_url,'')
 		FROM anggota a
-		JOIN unit_latihan u ON u.id = a.unit_id
-		JOIN cabang cb ON cb.id = u.cabang_id
+		LEFT JOIN unit_latihan u ON u.id = a.unit_id
+		LEFT JOIN cabang cb ON cb.id = u.cabang_id
 		WHERE a.id = $1
 	`, id).Scan(
 		&a.ID, &a.NamaLengkap, &a.NomorAnggota, &a.JenisKelamin, &a.NoHp,
