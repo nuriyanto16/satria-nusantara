@@ -126,16 +126,32 @@
         <div class="g-modal-body">
           <div style="max-height: 220px; overflow-y: auto; margin-bottom: 14px; padding-right: 2px;">
             <div
-              v-for="acc in savedAccounts"
+              v-for="(acc, idx) in savedAccounts"
               :key="acc.email"
-              style="display: flex; align-items: center; padding: 10px 12px; border: 1px solid #dadce0; border-radius: 12px; cursor: pointer; margin-bottom: 8px; transition: all 0.15s; text-align: left;"
+              :style="{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '10px 12px',
+                border: (acc.active || (idx === 0 && !savedAccounts.some(a => a.active))) ? '1px solid #1a73e8' : '1px solid #dadce0',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                marginBottom: '8px',
+                transition: 'all 0.15s',
+                textAlign: 'left',
+                background: (acc.active || (idx === 0 && !savedAccounts.some(a => a.active))) ? '#f8fafd' : '#fff'
+              }"
               @click="selectGoogleAccount(acc.email, acc.name)"
             >
               <div style="width: 36px; height: 36px; border-radius: 50%; background: #1a73e8; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; margin-right: 10px; flex-shrink: 0;">
                 {{ acc.name.charAt(0).toUpperCase() }}
               </div>
               <div style="flex: 1; overflow: hidden; margin-right: 6px;">
-                <div style="font-size: 13px; font-weight: 600; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ acc.name }}</div>
+                <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                  <span style="font-size: 13px; font-weight: 600; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ acc.name }}</span>
+                  <span v-if="acc.active || (idx === 0 && !savedAccounts.some(a => a.active))" style="background: #e6f4ea; color: #137333; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #34a853; display: inline-block;"></span> Aktif Login
+                  </span>
+                </div>
                 <div style="font-size: 11px; color: #5f6368; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ acc.email }}</div>
               </div>
               <button type="button" style="background: transparent; border: none; color: #9ca3af; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px;" title="Hapus dari daftar" @click.stop="removeAccount(acc.email)">✕</button>
@@ -170,34 +186,93 @@ const errorMsg = ref('')
 
 const showGoogleModal = ref(false)
 const customGoogleEmail = ref('')
-const savedAccounts = ref<Array<{ email: string; name: string }>>([])
+const savedAccounts = ref<Array<{ email: string; name: string; active?: boolean }>>([])
 
 const loadSavedAccounts = () => {
   if (typeof window === 'undefined') return
+
+  let activeEmail = ''
+  let activeName = ''
+  try {
+    const rawUser = localStorage.getItem('user') || localStorage.getItem('sn_user') || localStorage.getItem('sn_active_user')
+    if (rawUser) {
+      const u = JSON.parse(rawUser)
+      if (u && u.email) {
+        activeEmail = u.email.trim().toLowerCase()
+        activeName = u.namaLengkap || u.nama_lengkap || u.name || ''
+      }
+    }
+  } catch (e) {}
+
+  if (!activeEmail) {
+    activeEmail = (localStorage.getItem('sn_last_google_email') || '').trim().toLowerCase()
+  }
+
   const raw = localStorage.getItem('sn_saved_google_accounts')
-  let list: Array<{ email: string; name: string }> = []
+  let list: Array<{ email: string; name: string; active?: boolean }> = []
   if (raw) {
     try { list = JSON.parse(raw) } catch(e) {}
   }
+
   if (!Array.isArray(list) || list.length === 0) {
-    const last = localStorage.getItem('sn_last_google_email') || 'sertifikasisdppi@gmail.com'
-    const name = last.split('@')[0]
-    list = [{ email: last, name: name.charAt(0).toUpperCase() + name.slice(1) }]
-    if (last.toLowerCase() !== 'sertifikasisdppi@gmail.com') {
-      list.unshift({ email: 'sertifikasisdppi@gmail.com', name: 'Sertifikasi SDPPI' })
+    const defaultEmail = activeEmail || 'sertifikasisdppi@gmail.com'
+    const defaultName = activeName || defaultEmail.split('@')[0]
+    const cleanName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1)
+    list = [{ email: defaultEmail, name: cleanName, active: true }]
+    if (defaultEmail.toLowerCase() !== 'sertifikasisdppi@gmail.com') {
+      list.push({ email: 'sertifikasisdppi@gmail.com', name: 'Sertifikasi SDPPI', active: false })
+    }
+  } else {
+    if (activeEmail) {
+      const idx = list.findIndex(a => a.email.toLowerCase() === activeEmail)
+      if (idx > -1) {
+        const item = list.splice(idx, 1)[0]
+        if (activeName) item.name = activeName
+        item.active = true
+        list.unshift(item)
+      } else {
+        const nameToUse = activeName || activeEmail.split('@')[0]
+        const cleanName = nameToUse.charAt(0).toUpperCase() + nameToUse.slice(1)
+        list.unshift({ email: activeEmail, name: cleanName, active: true })
+      }
     }
   }
+
+  for (let i = 0; i < list.length; i++) {
+    if (activeEmail && list[i].email.toLowerCase() === activeEmail) {
+      list[i].active = true
+    } else if (i === 0 && !activeEmail) {
+      list[i].active = true
+    } else {
+      list[i].active = false
+    }
+  }
+
   savedAccounts.value = list
+  localStorage.setItem('sn_saved_google_accounts', JSON.stringify(list))
 }
 
 const saveAccount = (gEmail: string, gName?: string) => {
   if (!gEmail || !gEmail.includes('@')) return
   const cleanEmail = gEmail.trim().toLowerCase()
   const cleanName = gName || cleanEmail.split('@')[0]
-  const list = savedAccounts.value.slice()
-  if (!list.some(a => a.email.toLowerCase() === cleanEmail)) {
-    list.unshift({ email: cleanEmail, name: cleanName.charAt(0).toUpperCase() + cleanName.slice(1) })
+  
+  loadSavedAccounts()
+  const list = savedAccounts.value.map(a => ({ ...a, active: false }))
+  const idx = list.findIndex(a => a.email.toLowerCase() === cleanEmail)
+  if (idx > -1) {
+    list[idx].name = cleanName.charAt(0).toUpperCase() + cleanName.slice(1)
+    list[idx].active = true
+    const item = list.splice(idx, 1)[0]
+    list.unshift(item)
+  } else {
+    list.unshift({
+      email: cleanEmail,
+      name: cleanName.charAt(0).toUpperCase() + cleanName.slice(1),
+      active: true
+    })
   }
+
   savedAccounts.value = list
   if (typeof window !== 'undefined') {
     localStorage.setItem('sn_saved_google_accounts', JSON.stringify(list))
@@ -358,6 +433,7 @@ const triggerGoogleSSO = () => {
     
     // If Client ID is placeholder, fallback to account chooser modal
     if (!cid || cid.indexOf('1000000000000') === 0 || cid.indexOf('YOUR_') === 0) {
+      loadSavedAccounts()
       showGoogleModal.value = true
       loading.value = false
       return

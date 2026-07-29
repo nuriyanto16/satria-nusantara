@@ -49,38 +49,94 @@
       if (raw) {
         try { list = JSON.parse(raw); } catch(e) {}
       }
-      if (!Array.isArray(list) || list.length === 0) {
-        var lastEmail = localStorage.getItem('sn_last_google_email') || 'sertifikasisdppi@gmail.com';
-        var lastFirstName = lastEmail.split('@')[0];
-        lastFirstName = lastFirstName.charAt(0).toUpperCase() + lastFirstName.slice(1);
-        list = [
-          { email: lastEmail, name: lastFirstName }
-        ];
-        if (lastEmail.toLowerCase() !== 'sertifikasisdppi@gmail.com') {
-          list.unshift({ email: 'sertifikasisdppi@gmail.com', name: 'Sertifikasi SDPPI' });
+
+      var activeEmail = '';
+      var activeName = '';
+      try {
+        var uRaw = localStorage.getItem('user') || localStorage.getItem('sn_user') || localStorage.getItem('sn_active_user');
+        if (uRaw) {
+          var uObj = JSON.parse(uRaw);
+          if (uObj && uObj.email) {
+            activeEmail = uObj.email.trim().toLowerCase();
+            activeName = uObj.namaLengkap || uObj.nama_lengkap || uObj.name || '';
+          }
         }
-        localStorage.setItem('sn_saved_google_accounts', JSON.stringify(list));
+      } catch(e) {}
+
+      if (!activeEmail) {
+        activeEmail = (localStorage.getItem('sn_last_google_email') || '').trim().toLowerCase();
       }
+
+      if (!Array.isArray(list) || list.length === 0) {
+        var defaultEmail = activeEmail || 'sertifikasisdppi@gmail.com';
+        var defaultName = activeName || defaultEmail.split('@')[0];
+        defaultName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
+        list = [{ email: defaultEmail, name: defaultName, active: true }];
+        if (defaultEmail.toLowerCase() !== 'sertifikasisdppi@gmail.com') {
+          list.push({ email: 'sertifikasisdppi@gmail.com', name: 'Sertifikasi SDPPI', active: false });
+        }
+      } else {
+        if (activeEmail) {
+          var foundIdx = -1;
+          for (var i = 0; i < list.length; i++) {
+            if (list[i].email.toLowerCase() === activeEmail) {
+              foundIdx = i;
+              if (activeName) list[i].name = activeName;
+              break;
+            }
+          }
+          if (foundIdx > -1) {
+            var activeAcc = list.splice(foundIdx, 1)[0];
+            activeAcc.active = true;
+            list.unshift(activeAcc);
+          } else {
+            var nameToUse = activeName || activeEmail.split('@')[0];
+            nameToUse = nameToUse.charAt(0).toUpperCase() + nameToUse.slice(1);
+            list.unshift({ email: activeEmail, name: nameToUse, active: true });
+          }
+        }
+      }
+
+      for (var j = 0; j < list.length; j++) {
+        if (activeEmail && list[j].email.toLowerCase() === activeEmail) {
+          list[j].active = true;
+        } else if (j === 0 && !activeEmail) {
+          list[j].active = true;
+        } else {
+          list[j].active = false;
+        }
+      }
+
+      localStorage.setItem('sn_saved_google_accounts', JSON.stringify(list));
       return list;
     }
 
     function saveGoogleAccount(email, name) {
       if (!email || email.indexOf('@') === -1) return;
-      var list = getSavedGoogleAccounts();
       var cleanEmail = email.trim().toLowerCase();
       var cleanName = name || cleanEmail.split('@')[0];
       cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
 
-      var exists = false;
+      var list = getSavedGoogleAccounts();
       for (var i = 0; i < list.length; i++) {
-        if (list[i].email.toLowerCase() === cleanEmail) {
+        list[i].active = false;
+      }
+
+      var exists = false;
+      for (var k = 0; k < list.length; k++) {
+        if (list[k].email.toLowerCase() === cleanEmail) {
+          list[k].name = cleanName;
+          list[k].active = true;
+          var item = list.splice(k, 1)[0];
+          list.unshift(item);
           exists = true;
           break;
         }
       }
       if (!exists) {
-        list.unshift({ email: cleanEmail, name: cleanName });
+        list.unshift({ email: cleanEmail, name: cleanName, active: true });
       }
+
       localStorage.setItem('sn_saved_google_accounts', JSON.stringify(list));
       localStorage.setItem('sn_last_google_email', cleanEmail);
     }
@@ -126,13 +182,23 @@
         accounts.forEach(function(acc, idx) {
           var bg = colors[idx % colors.length];
           var initial = acc.name ? acc.name.charAt(0).toUpperCase() : 'G';
+          var isActive = acc.active || (idx === 0 && !accounts.some(function(a){ return a.active; }));
+          var activeBadge = isActive
+            ? '<span style="background:#e6f4ea;color:#137333;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;margin-left:6px;"><span style="width:6px;height:6px;border-radius:50%;background:#34a853;display:inline-block;"></span>Aktif Login</span>'
+            : '';
+          var itemBg = isActive ? '#f8fafd' : '#fff';
+          var borderCol = isActive ? '#1a73e8' : '#dadce0';
+
           html += `
-            <div class="sn-g-acc-item" data-email="${acc.email}" data-name="${acc.name}" style="display:flex;align-items:center;padding:10px 12px;border:1px solid #dadce0;border-radius:12px;cursor:pointer;margin-bottom:8px;transition:all 0.15s;text-align:left;">
+            <div class="sn-g-acc-item" data-email="${acc.email}" data-name="${acc.name}" style="display:flex;align-items:center;padding:10px 12px;border:1px solid ${borderCol};border-radius:12px;cursor:pointer;margin-bottom:8px;transition:all 0.15s;text-align:left;background:${itemBg};">
               <div style="width:36px;height:36px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:15px;margin-right:10px;flex-shrink:0;">
                 ${initial}
               </div>
               <div style="flex:1;overflow:hidden;margin-right:6px;">
-                <div style="font-size:13px;font-weight:600;color:#202124;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${acc.name}</div>
+                <div style="display:flex;align-items:center;flex-wrap:wrap;">
+                  <span style="font-size:13px;font-weight:600;color:#202124;">${acc.name}</span>
+                  ${activeBadge}
+                </div>
                 <div style="font-size:11px;color:#5f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${acc.email}</div>
               </div>
               <button class="sn-g-del-btn" data-del="${acc.email}" title="Hapus dari daftar" style="background:transparent;border:none;color:#9ca3af;width:26px;height:26px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s;">✕</button>
