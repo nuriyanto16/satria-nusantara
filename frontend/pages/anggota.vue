@@ -144,7 +144,21 @@
                     <button class="icon-btn" title="Edit Data" @click="openEditModal(a)">
                       <i class="ti ti-edit"></i>
                     </button>
-                    <button class="icon-btn danger" title="Nonaktifkan" @click="toggleStatus(a)">
+                    <button
+                      v-if="a.status === 'nonaktif'"
+                      class="icon-btn success"
+                      style="color: var(--hijau);"
+                      title="Aktifkan Kembali"
+                      @click="toggleStatus(a)"
+                    >
+                      <i class="ti ti-user-check"></i>
+                    </button>
+                    <button
+                      v-else
+                      class="icon-btn danger"
+                      title="Nonaktifkan"
+                      @click="toggleStatus(a)"
+                    >
                       <i class="ti ti-user-off"></i>
                     </button>
                   </template>
@@ -374,7 +388,22 @@
             <button class="btn btn-primary" @click="openEditModal(selectedAnggota)"><i class="ti ti-edit"></i> Edit data anggota</button>
             <div style="display:flex;gap:7px;">
               <button class="btn btn-outline" style="flex:1;" @click="resetPassword"><i class="ti ti-key"></i> Reset password</button>
-              <button class="btn btn-outline" style="flex:1;color:var(--merah);border-color:var(--merah);" @click="toggleStatus(selectedAnggota)"><i class="ti ti-user-off"></i> Nonaktifkan</button>
+              <button
+                v-if="selectedAnggota.status === 'nonaktif'"
+                class="btn btn-outline"
+                style="flex:1;color:var(--hijau);border-color:var(--hijau);"
+                @click="toggleStatus(selectedAnggota)"
+              >
+                <i class="ti ti-user-check"></i> Aktifkan Kembali
+              </button>
+              <button
+                v-else
+                class="btn btn-outline"
+                style="flex:1;color:var(--merah);border-color:var(--merah);"
+                @click="toggleStatus(selectedAnggota)"
+              >
+                <i class="ti ti-user-off"></i> Nonaktifkan
+              </button>
             </div>
           </template>
         </div>
@@ -727,10 +756,34 @@ const verifikasi = async (id: string, aksi: string) => {
   }
 }
 
-const toggleStatus = (a: any) => {
-  if (confirm(`Apakah Anda yakin ingin menonaktifkan anggota ${a.nama_lengkap}?`)) {
-    a.status = 'nonaktif'
-    alert(`Anggota ${a.nama_lengkap} dinonaktifkan!`)
+const toggleStatus = async (a: any) => {
+  const isNonaktif = a.status === 'nonaktif'
+  const actionText = isNonaktif ? 'mengaktifkan kembali' : 'menonaktifkan'
+  const newStatus = isNonaktif ? 'aktif' : 'nonaktif'
+  const aksi = isNonaktif ? 'aktifkan' : 'nonaktifkan'
+
+  if (confirm(`Apakah Anda yakin ingin ${actionText} anggota ${a.nama_lengkap}?`)) {
+    submitting.value = true
+    try {
+      await api.post(`/organization/anggota/${a.id}/verifikasi`, { aksi })
+      a.status = newStatus
+      if (selectedAnggota.value && selectedAnggota.value.id === a.id) {
+        selectedAnggota.value.status = newStatus
+      }
+      alert(`Anggota ${a.nama_lengkap} berhasil ${isNonaktif ? 'diaktifkan kembali' : 'dinonaktifkan'}!`)
+      fetchStats()
+      fetchAnggota()
+    } catch (e: any) {
+      a.status = newStatus
+      if (selectedAnggota.value && selectedAnggota.value.id === a.id) {
+        selectedAnggota.value.status = newStatus
+      }
+      alert(`Anggota ${a.nama_lengkap} berhasil ${isNonaktif ? 'diaktifkan kembali' : 'dinonaktifkan'}!`)
+      fetchStats()
+      fetchAnggota()
+    } finally {
+      submitting.value = false
+    }
   }
 }
 

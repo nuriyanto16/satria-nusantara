@@ -111,11 +111,11 @@ func (s *service) UpdateAnggota(id string, req UpdateAnggotaRequest) error {
 }
 
 func (s *service) VerifikasiAnggota(id string, req VerifikasiAnggotaRequest) error {
-	if req.Aksi != "approve" && req.Aksi != "reject" {
-		return errors.New("aksi harus 'approve' atau 'reject'")
+	if req.Aksi != "approve" && req.Aksi != "reject" && req.Aksi != "aktifkan" && req.Aksi != "nonaktifkan" {
+		return errors.New("aksi harus 'approve', 'reject', 'aktifkan', atau 'nonaktifkan'")
 	}
 	status := "aktif"
-	if req.Aksi == "reject" {
+	if req.Aksi == "reject" || req.Aksi == "nonaktifkan" {
 		status = "nonaktif"
 	}
 	return s.repo.VerifikasiAnggota(context.Background(), id, status)
