@@ -7566,3 +7566,687 @@ class _EventPaymentScreenState extends State<EventPaymentScreen> {
     );
   }
 }
+
+
+// ─── RESERVASI SCREEN ─────────────────────────────────────────────────────────
+class ReservasiScreen extends StatefulWidget {
+  const ReservasiScreen({super.key});
+
+  @override
+  State<ReservasiScreen> createState() => _ReservasiScreenState();
+}
+
+class _ReservasiScreenState extends State<ReservasiScreen> {
+  int? _selectedSlotIndex;
+  bool _isSubmitting = false;
+  bool _submitted = false;
+
+  final List<Map<String, dynamic>> _slots = [
+    {
+      'hari': 'Senin',
+      'tanggal': '2026-08-04',
+      'jam': '16:00 – 18:00',
+      'lokasi': 'Lapangan Gasibu Bandung',
+      'pelatih': 'Pak Budi Susanto',
+      'sisa': 8,
+      'kapasitas': 30,
+      'jenis': 'Rutin',
+    },
+    {
+      'hari': 'Rabu',
+      'tanggal': '2026-08-06',
+      'jam': '15:30 – 17:30',
+      'lokasi': 'GOR Arcamanik Bandung',
+      'pelatih': 'Bu Sari Rahayu',
+      'sisa': 3,
+      'kapasitas': 25,
+      'jenis': 'Gabungan',
+    },
+    {
+      'hari': 'Jumat',
+      'tanggal': '2026-08-08',
+      'jam': '17:00 – 19:00',
+      'lokasi': 'Lapangan Kotagede, Yogyakarta',
+      'pelatih': 'Pak Hendra Wijaya',
+      'sisa': 15,
+      'kapasitas': 35,
+      'jenis': 'Rutin',
+    },
+    {
+      'hari': 'Sabtu',
+      'tanggal': '2026-08-09',
+      'jam': '08:00 – 10:00',
+      'lokasi': 'GOR Manahan Solo',
+      'pelatih': 'Pak Agus Purnomo',
+      'sisa': 0,
+      'kapasitas': 20,
+      'jenis': 'EKT Jurus',
+    },
+  ];
+
+  Future<void> _submitReservasi() async {
+    setState(() => _isSubmitting = true);
+    await Future.delayed(const Duration(seconds: 2));
+    setState(() {
+      _isSubmitting = false;
+      _submitted = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Reservasi Latihan', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: _submitted ? _buildSuccessView() : _buildFormView(),
+      bottomNavigationBar: _submitted
+          ? null
+          : _selectedSlotIndex != null && (_slots[_selectedSlotIndex!]['sisa'] as int) > 0
+              ? SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submitReservasi,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: BrandColors.hijau,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 52),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 2,
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                            )
+                          : const Text('Konfirmasi Reservasi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    ),
+                  ),
+                )
+              : null,
+    );
+  }
+
+  Widget _buildFormView() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0078C8).withOpacity(0.1), Color(0xFF42B8F5).withOpacity(0.1)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: BrandColors.biru.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: BrandColors.biru, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Pilih slot latihan yang tersedia. Reservasi dikunci 30 menit sebelum sesi dimulai.',
+                    style: TextStyle(fontSize: 12.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Pilih Slot Latihan',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5),
+          ),
+          const SizedBox(height: 12),
+          ...List.generate(_slots.length, (i) {
+            final slot = _slots[i];
+            final sisa = slot['sisa'] as int;
+            final kapasitas = slot['kapasitas'] as int;
+            final isSelected = _selectedSlotIndex == i;
+            final isFull = sisa == 0;
+            final isLow = sisa > 0 && sisa <= 5;
+
+            return GestureDetector(
+              onTap: isFull ? null : () => setState(() => _selectedSlotIndex = i),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isFull
+                      ? (themeNotifier.isDarkMode ? Colors.grey[900] : Colors.grey[100])
+                      : isSelected
+                          ? BrandColors.hijauSoft
+                          : (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isFull
+                        ? (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300]!)
+                        : isSelected
+                            ? BrandColors.hijau
+                            : (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
+                    width: isSelected ? 2 : 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [BoxShadow(color: BrandColors.hijau.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4))]
+                      : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2))],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isFull
+                                ? Colors.grey[300]
+                                : slot['jenis'] == 'EKT Jurus'
+                                    ? Colors.purple.withOpacity(0.12)
+                                    : slot['jenis'] == 'Gabungan'
+                                        ? Colors.orange.withOpacity(0.12)
+                                        : BrandColors.hijauSoft,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            slot['jenis'] as String,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: isFull
+                                  ? Colors.grey[600]
+                                  : slot['jenis'] == 'EKT Jurus'
+                                      ? Colors.purple
+                                      : slot['jenis'] == 'Gabungan'
+                                          ? Colors.orange[800]
+                                          : BrandColors.hijau,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        if (isFull)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: BrandColors.merah.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                            child: Text('Penuh', style: TextStyle(color: BrandColors.merah, fontSize: 10, fontWeight: FontWeight.bold)),
+                          )
+                        else if (isLow)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                            child: Text('Sisa $sisa tempat', style: TextStyle(color: Colors.orange[800], fontSize: 10, fontWeight: FontWeight.bold)),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: BrandColors.hijauSoft, borderRadius: BorderRadius.circular(6)),
+                            child: Text('$sisa tempat', style: TextStyle(color: BrandColors.hijau, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                        if (isSelected) ...[
+                          const SizedBox(width: 8),
+                          Icon(Icons.check_circle, color: BrandColors.hijau, size: 20),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      '${slot['hari']}, ${slot['tanggal']}',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: isFull
+                            ? (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[500])
+                            : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    _buildSlotRow(Icons.access_time_outlined, slot['jam'] as String, isFull),
+                    const SizedBox(height: 4),
+                    _buildSlotRow(Icons.location_on_outlined, slot['lokasi'] as String, isFull),
+                    const SizedBox(height: 4),
+                    _buildSlotRow(Icons.person_outline, slot['pelatih'] as String, isFull),
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: (kapasitas - sisa) / kapasitas,
+                        backgroundColor: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
+                        color: isFull ? Colors.grey : isLow ? Colors.orange : BrandColors.hijau,
+                        minHeight: 5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${kapasitas - sisa} dari $kapasitas tempat terisi',
+                      style: TextStyle(fontSize: 10.5, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSlotRow(IconData icon, String text, bool isFull) {
+    return Row(
+      children: [
+        Icon(icon, size: 13, color: isFull ? Colors.grey[400] : (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 12.5, color: isFull ? Colors.grey[400] : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSuccessView() {
+    final slot = _slots[_selectedSlotIndex!];
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(color: BrandColors.hijauSoft, shape: BoxShape.circle),
+              child: Icon(Icons.check_rounded, color: BrandColors.hijau, size: 48),
+            ),
+            const SizedBox(height: 24),
+            Text('Reservasi Berhasil!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1), letterSpacing: -0.5)),
+            const SizedBox(height: 8),
+            Text(
+              'Reservasi Anda untuk sesi ${slot['hari']}, ${slot['tanggal']} pukul ${slot['jam']} telah dikonfirmasi.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), height: 1.5),
+            ),
+            const SizedBox(height: 28),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: BrandColors.hijauSoft,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: BrandColors.hijau.withOpacity(0.3)),
+              ),
+              child: Column(
+                children: [
+                  _buildConfirmRow('Lokasi', slot['lokasi'] as String),
+                  const Divider(height: 16),
+                  _buildConfirmRow('Pelatih', slot['pelatih'] as String),
+                  const Divider(height: 16),
+                  _buildConfirmRow('No. Antrian', '#${(_selectedSlotIndex! + 1) * 7 + 3}'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: BrandColors.hijau,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Kembali ke Beranda', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/antrian'),
+              child: Text('Lihat Status Antrian →', style: TextStyle(color: BrandColors.biru, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(fontSize: 12.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+        Text(value, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
+      ],
+    );
+  }
+}
+
+// ─── ANTRIAN SCREEN ───────────────────────────────────────────────────────────
+class AntrianScreen extends StatefulWidget {
+  const AntrianScreen({super.key});
+
+  @override
+  State<AntrianScreen> createState() => _AntrianScreenState();
+}
+
+class _AntrianScreenState extends State<AntrianScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  final int _nomorAntrian = 10;
+  final int _antrianSaatIni = 7;
+  final int _totalAntrian = 22;
+  final String _estimasi = '± 15 menit';
+  final String _namaSession = 'Latihan Rutin – Senin, 04 Agu 2026';
+  final String _lokasi = 'Lapangan Gasibu Bandung';
+
+  final List<Map<String, dynamic>> _semuaAntrian = [
+    {'no': 1, 'nama': 'Ahmad Fauzi', 'status': 'selesai'},
+    {'no': 2, 'nama': 'Budi Santoso', 'status': 'selesai'},
+    {'no': 3, 'nama': 'Citra Dewi', 'status': 'selesai'},
+    {'no': 4, 'nama': 'Dani Kurniawan', 'status': 'selesai'},
+    {'no': 5, 'nama': 'Eva Susanti', 'status': 'selesai'},
+    {'no': 6, 'nama': 'Fajar Nugroho', 'status': 'selesai'},
+    {'no': 7, 'nama': 'Galih Prasetyo', 'status': 'aktif'},
+    {'no': 8, 'nama': 'Hani Pertiwi', 'status': 'menunggu'},
+    {'no': 9, 'nama': 'Irfan Hakim', 'status': 'menunggu'},
+    {'no': 10, 'nama': 'Anda', 'status': 'menunggu'},
+    {'no': 11, 'nama': 'Kartika Sari', 'status': 'menunggu'},
+    {'no': 12, 'nama': 'Lukman Hakim', 'status': 'menunggu'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sisaAntrian = _nomorAntrian - _antrianSaatIni;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Status Antrian', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh_rounded, color: BrandColors.hijau),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Status antrian diperbarui'),
+                  backgroundColor: BrandColors.hijau,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0078C8), Color(0xFF42B8F5)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(_namaSession, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.location_on_outlined, color: Colors.white70, size: 13),
+                      const SizedBox(width: 4),
+                      Text(_lokasi, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  ScaleTransition(
+                    scale: _pulseAnimation,
+                    child: Container(
+                      width: 110,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 16, offset: const Offset(0, 6))],
+                      ),
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('$_nomorAntrian', style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: BrandColors.biru, height: 1)),
+                          Text('antrian Anda', style: TextStyle(fontSize: 10, color: BrandColors.text2, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildStatChip('Dipanggil ke-', '$_antrianSaatIni', Colors.white),
+                      _buildStatChip('Sisa giliran', '$sisaAntrian', Colors.white),
+                      _buildStatChip('Estimasi', _estimasi, Colors.white),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Progress Antrian', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
+                      Text('$_antrianSaatIni / $_totalAntrian', style: TextStyle(fontSize: 12, color: BrandColors.hijau, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: _antrianSaatIni / _totalAntrian,
+                      backgroundColor: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
+                      color: BrandColors.hijau,
+                      minHeight: 10,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text('Daftar Antrian', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1))),
+                  const SizedBox(height: 12),
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
+                    ),
+                    child: Column(
+                      children: List.generate(_semuaAntrian.length, (i) {
+                        final item = _semuaAntrian[i];
+                        final isMe = item['nama'] == 'Anda';
+                        final isAktif = item['status'] == 'aktif';
+                        final isSelesai = item['status'] == 'selesai';
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: isMe
+                                ? BrandColors.hijauSoft
+                                : isAktif
+                                    ? Colors.orange.withOpacity(0.07)
+                                    : Colors.transparent,
+                            borderRadius: i == 0
+                                ? const BorderRadius.vertical(top: Radius.circular(14))
+                                : i == _semuaAntrian.length - 1
+                                    ? const BorderRadius.vertical(bottom: Radius.circular(14))
+                                    : BorderRadius.zero,
+                          ),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 34,
+                                      height: 34,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: isSelesai
+                                            ? BrandColors.hijauSoft
+                                            : isAktif
+                                                ? Colors.orange.withOpacity(0.15)
+                                                : isMe
+                                                    ? BrandColors.hijau
+                                                    : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[200]),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: isSelesai
+                                          ? Icon(Icons.check, size: 16, color: BrandColors.hijau)
+                                          : isAktif
+                                              ? Icon(Icons.radio_button_checked, size: 16, color: Colors.orange[700])
+                                              : Text(
+                                                  '${item['no']}',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: isMe ? Colors.white : (themeNotifier.isDarkMode ? BrandColors.text2Dark : Colors.grey[600]),
+                                                  ),
+                                                ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            isMe ? '${item['nama']} (Saya)' : item['nama'] as String,
+                                            style: TextStyle(
+                                              fontWeight: isMe || isAktif ? FontWeight.bold : FontWeight.normal,
+                                              fontSize: 13.5,
+                                              color: isMe
+                                                  ? BrandColors.hijau
+                                                  : isSelesai
+                                                      ? (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[500])
+                                                      : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
+                                            ),
+                                          ),
+                                          if (isAktif)
+                                            Text('Sedang dilayani', style: TextStyle(fontSize: 11, color: Colors.orange[700], fontWeight: FontWeight.w500)),
+                                          if (isMe && !isAktif)
+                                            Text('Menunggu ${sisaAntrian} giliran lagi', style: TextStyle(fontSize: 11, color: BrandColors.hijau, fontWeight: FontWeight.w500)),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: isSelesai
+                                            ? BrandColors.hijauSoft
+                                            : isAktif
+                                                ? Colors.orange.withOpacity(0.12)
+                                                : isMe
+                                                    ? BrandColors.hijauSoft
+                                                    : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[100]),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        isSelesai ? 'Selesai' : isAktif ? 'Aktif' : 'Menunggu',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: isSelesai
+                                              ? BrandColors.hijau
+                                              : isAktif
+                                                  ? Colors.orange[800]
+                                                  : isMe
+                                                      ? BrandColors.hijau
+                                                      : (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[600]),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (i < _semuaAntrian.length - 1)
+                                Divider(height: 1, color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Text(
+                      'dan ${_totalAntrian - _semuaAntrian.length} peserta lainnya…',
+                      style: TextStyle(fontSize: 12, color: (themeNotifier.isDarkMode ? BrandColors.text3Dark : BrandColors.text3)),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.pushNamed(context, '/reservasi'),
+                      icon: Icon(Icons.add_circle_outline, color: BrandColors.biru),
+                      label: Text('Buat Reservasi Baru', style: TextStyle(color: BrandColors.biru, fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: BrandColors.biru),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatChip(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        Text(label, style: TextStyle(fontSize: 10, color: color.withOpacity(0.8))),
+      ],
+    );
+  }
+}
