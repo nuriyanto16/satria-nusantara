@@ -64,8 +64,8 @@ class MyApp extends StatelessWidget {
               '/wait_verification': (context) => const WaitVerificationScreen(),
               '/event_payment': (context) => const EventPaymentScreen(),
               '/nafas': (context) => const NafasDetailScreen(),
-              '/reservasi': (context) => const ReservasiScreen(),
-              '/antrian': (context) => const AntrianScreen(),
+              '/reservasi': (context) => ReservasiScreen(),
+              '/antrian': (context) => AntrianScreen(),
             },
           );
         },
