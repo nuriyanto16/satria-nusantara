@@ -91,6 +91,10 @@ func (s *service) GoogleLogin(ctx context.Context, req GoogleLoginRequest) (*Aut
 		return nil, err
 	}
 
+	if rec.Status != "aktif" {
+		return nil, ErrUserInactive
+	}
+
 	if req.GoogleID != "" && (rec.GoogleID == nil || *rec.GoogleID == "") {
 		_ = s.repo.UpdateGoogleID(ctx, rec.ID, req.GoogleID)
 	}

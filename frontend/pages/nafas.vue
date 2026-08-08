@@ -419,13 +419,13 @@ const getTeknikClass = (teknik) => {
 const formatDate = (ts) => {
   if (!ts) return '-'
   const d = new Date(ts)
-  return `${d.getDate().toString().padLeft(2, '0')}/${(d.getMonth() + 1).toString().padLeft(2, '0')}/${d.getFullYear()}`
+  return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
 }
 
 const formatTime = (ts) => {
   if (!ts) return '-'
   const d = new Date(ts)
-  return `${d.getHours().toString().padLeft(2, '0')}:${d.getMinutes().toString().padLeft(2, '0')}`
+  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
 
 const exportCSV = () => {

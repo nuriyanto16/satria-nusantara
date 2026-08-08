@@ -36,6 +36,12 @@
       <NuxtLink to="/user"       class="sb-item"><i class="ti ti-user-cog"></i> Manajemen User</NuxtLink>
       <NuxtLink to="/pengaturan" class="sb-item"><i class="ti ti-settings"></i> Pengaturan</NuxtLink>
       <NuxtLink to="/dokumentasi" class="sb-item"><i class="ti ti-file-text"></i> Dokumentasi</NuxtLink>
+
+      <div style="flex-grow: 1;"></div>
+      
+      <a v-if="apkUrl" :href="apkUrl" target="_blank" class="sb-item sb-apk-item" style="margin-top: 20px; background: rgba(74, 222, 128, 0.1); color: var(--hijau); font-weight: 700;">
+        <i class="ti ti-brand-android" style="font-size: 16px;"></i> Download APK Mobile
+      </a>
     </div>
     <!-- TOPBAR + MAIN -->
     <div style="flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column">
@@ -200,6 +206,7 @@ const authStore = useAuthStore()
 
 const isSidebarOpen = ref(false)
 const isDarkMode = ref(false)
+const apkUrl = ref('')
 
 const applyTheme = (isDark) => {
   if (isDark) {
@@ -337,6 +344,23 @@ onMounted(() => {
   authStore.rehydrate()
   if (!authStore.isAuthenticated) {
     navigateTo('/login')
+  }
+
+  const config = useRuntimeConfig()
+  const apiBase = config.public.apiBase || 'http://localhost:8080/api/v1'
+  let defaultApk = ''
+  if (apiBase.includes('localhost') || apiBase.includes('127.0.0.1')) {
+    defaultApk = 'http://localhost:8080/uploads/app-release.apk'
+  } else {
+    defaultApk = apiBase.replace(/\/api\/v1\/?$/, '/uploads/app-release.apk')
+                        .replace(/\/api\/?$/, '/uploads/app-release.apk')
+  }
+
+  const savedApk = localStorage.getItem('sn_apk_url')
+  if (savedApk) {
+    apkUrl.value = savedApk
+  } else {
+    apkUrl.value = defaultApk
   }
 
   // Close notifications & search popovers on click outside

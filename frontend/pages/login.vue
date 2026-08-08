@@ -102,6 +102,10 @@
 
         <div class="login-divider"><span>Lembaga Seni Pernapasan</span></div>
 
+        <a v-if="apkUrl" :href="apkUrl" target="_blank" class="btn-apk-download">
+          <i class="ti ti-brand-android"></i> Download Aplikasi Mobile (APK)
+        </a>
+
         <div class="login-footer">
           <div class="login-version">Versi 8.0 (LSP-SIMA)</div>
           <div class="login-org">© 2026 Yayasan Satria Nusantara</div>
@@ -183,6 +187,7 @@ const showPw = ref(false)
 const rememberMe = ref(false)
 const loading = ref(false)
 const errorMsg = ref('')
+const apkUrl = ref('')
 
 const showGoogleModal = ref(false)
 const customGoogleEmail = ref('')
@@ -380,6 +385,24 @@ const drawCaptchaCanvas = () => {
 onMounted(() => {
   generateCaptcha()
   loadSavedAccounts()
+  if (typeof window !== 'undefined') {
+    const config = useRuntimeConfig()
+    const apiBase = config.public.apiBase || 'http://localhost:8080/api/v1'
+    let defaultApk = ''
+    if (apiBase.includes('localhost') || apiBase.includes('127.0.0.1')) {
+      defaultApk = 'http://localhost:8080/uploads/app-release.apk'
+    } else {
+      defaultApk = apiBase.replace(/\/api\/v1\/?$/, '/uploads/app-release.apk')
+                          .replace(/\/api\/?$/, '/uploads/app-release.apk')
+    }
+
+    const savedApk = localStorage.getItem('sn_apk_url')
+    if (savedApk) {
+      apkUrl.value = savedApk
+    } else {
+      apkUrl.value = defaultApk
+    }
+  }
 })
 
 const authStore = useAuthStore()
@@ -512,23 +535,36 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
       nama_lengkap: gName,
       google_id: gId || ('goog_' + gEmail)
     })
-    authStore.setAuth(data.token, data.user)
-    if (data.user?.status === 'pending') {
-      alert('Pendaftaran via Gmail berhasil! Akun Anda sedang menunggu verifikasi dari Admin.')
+    
+    if (data.user?.status !== 'aktif') {
+      alert('Pendaftaran/Login berhasil! Namun akun Anda belum aktif (status: ' + data.user?.status + '). Hubungi Admin untuk aktivasi.')
+      errorMsg.value = 'Akun Anda belum aktif. Hubungi administrator.'
+      return
     }
+
+    authStore.setAuth(data.token, data.user)
     await navigateTo('/')
   } catch (e: any) {
-    // Fallback if backend API is offline during local UI test
-    authStore.setAuth('mock_google_token_web_' + Date.now(), {
-      id: 'u-google-admin',
-      email: gEmail,
-      nama_lengkap: gName,
-      role_id: 1,
-      role_name: 'Admin Pusat',
-      scope: 'pusat',
-      status: 'aktif'
-    } as any)
-    await navigateTo('/')
+    if (e.message && (e.message.includes('aktif') || e.message.includes('administrator') || e.message.includes('inactive'))) {
+      errorMsg.value = e.message
+      return
+    }
+
+    // Fallback ONLY if we are on localhost/development
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      authStore.setAuth('mock_google_token_web_' + Date.now(), {
+        id: 'u-google-admin',
+        email: gEmail,
+        nama_lengkap: gName,
+        role_id: 1,
+        role_name: 'Admin Pusat',
+        scope: 'pusat',
+        status: 'aktif'
+      } as any)
+      await navigateTo('/')
+      return
+    }
+    errorMsg.value = e.message || 'Gagal masuk dengan Google.'
   } finally {
     loading.value = false
   }
@@ -536,19 +572,21 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 .login-page {
   display: flex;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg);
 }
 
 /* Background panel left */
 .login-bg {
   flex: 1.2;
-  background: linear-gradient(135deg, #103c1b 0%, #1a5c2a 60%, #2e8b3a 100%);
+  background: linear-gradient(135deg, #071f11 0%, #0d3419 40%, #1a5c2a 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -557,18 +595,36 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   overflow: hidden;
 }
 
+.login-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(232, 196, 42, 0.12) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  opacity: 0.4;
+  z-index: 1;
+}
+
 .bg-gradient-shapes .shape {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
+  background: radial-gradient(circle, rgba(232, 196, 42, 0.08) 0%, rgba(26, 92, 42, 0.3) 50%, rgba(255,255,255,0) 70%);
+  filter: blur(40px);
 }
 .shape-1 {
   width: 600px; height: 600px;
   top: -150px; left: -150px;
+  animation: drift 15s ease-in-out infinite alternate;
 }
 .shape-2 {
   width: 500px; height: 500px;
   bottom: -100px; right: -100px;
+  animation: drift 20s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, 20px) scale(1.1); }
 }
 
 .login-brand {
@@ -578,51 +634,67 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 }
 
 .brand-logo {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .brand-icon {
-  width: 64px; height: 64px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  border-radius: 16px;
+  width: 72px; height: 72px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 24px; font-weight: 900; color: #fff;
-  backdrop-filter: blur(8px);
+  font-size: 28px; font-weight: 800; color: #fff;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-lg), 0 8px 32px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
 }
 
 .brand-name {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 800;
-  letter-spacing: -0.5px;
-  margin-bottom: 8px;
+  letter-spacing: -0.75px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 50%, #fef08a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .brand-sub {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(240, 253, 244, 0.75);
   margin-bottom: 48px;
   font-weight: 500;
+  line-height: 1.5;
 }
 
 .brand-features {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .bf-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.88);
   font-weight: 500;
+  transition: transform 0.2s ease;
+}
+.bf-item:hover {
+  transform: translateX(4px);
 }
 
 .bf-item i {
-  color: #4ade80;
-  font-size: 18px;
+  color: #fef08a; /* Gold colored check marks */
+  font-size: 20px;
 }
 
 /* Right input panel */
@@ -633,12 +705,18 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   justify-content: center;
   background: var(--card);
   padding: 40px;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.03);
+  box-shadow: -6px 0 30px rgba(0, 0, 0, 0.04);
 }
 
 .login-card {
   width: 100%;
   max-width: 380px;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
 }
 
 .login-header {
@@ -646,32 +724,32 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 }
 
 .login-title {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   color: var(--text1);
   letter-spacing: -0.5px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .login-sub {
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--text3);
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .form-label {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text2);
 }
@@ -684,54 +762,62 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 
 .input-icon {
   position: absolute;
-  left: 14px;
-  font-size: 16px;
+  left: 16px;
+  font-size: 17px;
   color: var(--text3);
+  transition: color 0.2s;
 }
 
 .form-input {
   width: 100%;
-  padding: 12px 14px 12px 42px;
+  padding: 13px 16px 13px 44px;
   border: 1.5px solid var(--border2);
-  border-radius: var(--r8);
-  font-size: 13px;
+  border-radius: 12px;
+  font-size: 13.5px;
   color: var(--text1);
-  background: #ffffff;
+  background: var(--surface);
   outline: none;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 .form-input:focus {
   border-color: var(--hijau);
-  box-shadow: 0 0 0 3.5px rgba(26, 92, 42, 0.08);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(26, 92, 42, 0.08);
+}
+.form-input:focus + .input-icon {
+  color: var(--hijau);
 }
 
 .pw-toggle {
   position: absolute;
-  right: 14px;
+  right: 16px;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 17px;
   color: var(--text3);
   display: flex;
   align-items: center;
   padding: 4px;
 }
+.pw-toggle:hover {
+  color: var(--text2);
+}
 
 .captcha-box {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 4px;
 }
 
 .captcha-canvas {
-  border-radius: var(--r8);
+  border-radius: 12px;
   border: 1.5px solid var(--border2);
   background: #f8fafc;
   cursor: pointer;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .btn-refresh-captcha {
@@ -739,14 +825,14 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   height: 44px;
   border: 1.5px solid var(--border2);
   background: var(--surface);
-  border-radius: var(--r8);
+  border-radius: 12px;
   color: var(--text2);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-refresh-captcha:hover {
@@ -756,7 +842,7 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 }
 
 .captcha-input {
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -765,7 +851,7 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .remember-label {
@@ -778,6 +864,8 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 
 .custom-checkbox {
   accent-color: var(--hijau);
+  width: 15px;
+  height: 15px;
 }
 
 .forgot-link {
@@ -791,11 +879,11 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 
 .btn-login {
   width: 100%;
-  padding: 13px;
+  padding: 14px;
   background: linear-gradient(135deg, var(--hijau2) 0%, var(--hijau) 100%);
   color: #ffffff;
   border: none;
-  border-radius: var(--r8);
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -803,31 +891,32 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 6px;
-  box-shadow: 0 4px 12px rgba(26, 92, 42, 0.15);
+  box-shadow: 0 4px 14px rgba(26, 92, 42, 0.18);
 }
 
 .btn-login:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(26, 92, 42, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 92, 42, 0.32);
 }
 
 .btn-login:disabled {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .error-msg {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px;
-  background: #fde8e8;
-  border: 1px solid #fca5a5;
-  border-radius: var(--r8);
-  font-size: 12px;
+  padding: 12px 16px;
+  background: #fdf2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  font-size: 13px;
   color: var(--merah);
   font-weight: 500;
 }
@@ -835,10 +924,10 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 .login-or-divider {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 11px;
+  gap: 12px;
+  font-size: 12px;
   color: var(--text3);
-  margin: 6px 0;
+  margin: 8px 0;
   text-align: center;
 }
 .login-or-divider::before, .login-or-divider::after {
@@ -850,12 +939,12 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 
 .btn-google-login {
   width: 100%;
-  padding: 11px;
+  padding: 12px;
   background: #ffffff;
   color: #374151;
-  border: 1.5px solid #d1d5db;
-  border-radius: var(--r8);
-  font-size: 13px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -863,13 +952,14 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   justify-content: center;
   gap: 10px;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .btn-google-login:hover {
   background: #f9fafb;
-  border-color: #9ca3af;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .google-modal-overlay {
@@ -935,90 +1025,12 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   gap: 12px;
 }
 
-.g-account-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.g-account-item:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-}
-
-.g-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: #2563eb;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-}
-
-.g-avatar.bg-green {
-  background: #16a34a;
-}
-
-.g-info {
-  flex: 1;
-}
-
-.g-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.g-email {
-  font-size: 11.5px;
-  color: #64748b;
-}
-
-.g-custom-input {
-  margin-top: 10px;
-  padding-top: 14px;
-  border-top: 1px dashed #e2e8f0;
-}
-
-.g-custom-input label {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #475569;
-  display: block;
-  margin-bottom: 8px;
-}
-
-.g-input-row {
-  display: flex;
-  gap: 8px;
-}
-
-.btn-g-submit {
-  padding: 0 16px;
-  background: #1a5c2a;
-  color: #ffffff;
-  border: none;
-  border-radius: var(--r8);
-  font-weight: 700;
-  font-size: 12px;
-  cursor: pointer;
-}
-
 .login-divider {
   margin: 28px 0 20px;
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text3);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1035,17 +1047,43 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 .login-footer {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--text3);
+  margin-top: 12px;
 }
 
-/* Animations */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.btn-apk-download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px;
+  margin-top: 18px;
+  margin-bottom: 24px;
+  background: rgba(26, 92, 42, 0.05);
+  color: var(--hijau);
+  border: 1.5px solid rgba(26, 92, 42, 0.15);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(26, 92, 42, 0.03);
+  animation: pulse-border 2s infinite;
 }
-.spin {
-  animation: spin 0.8s linear infinite;
+
+.btn-apk-download:hover {
+  background: rgba(26, 92, 42, 0.1);
+  border-color: var(--hijau);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 92, 42, 0.12);
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(26, 92, 42, 0.15); }
+  70% { box-shadow: 0 0 0 6px rgba(26, 92, 42, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(26, 92, 42, 0); }
 }
 
 /* Responsive Styles */
@@ -1059,8 +1097,8 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   }
   .login-card {
     background: #ffffff;
-    padding: 32px;
-    border-radius: var(--r12);
+    padding: 36px;
+    border-radius: 16px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-md);
   }

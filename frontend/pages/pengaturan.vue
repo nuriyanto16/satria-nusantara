@@ -79,6 +79,12 @@ const setTheme = (mode) => {
 const simpanPengaturan = () => {
   saving.value = true
   setTheme(currentTheme.value)
+
+  const apkSetting = allSettings.mobile.find(s => s.kunci === 'apk_download_url')
+  if (apkSetting && apkSetting.nilai) {
+    localStorage.setItem('sn_apk_url', apkSetting.nilai)
+  }
+
   setTimeout(() => {
     saving.value = false
     saveSuccess.value = true
@@ -94,6 +100,12 @@ onMounted(() => {
     currentTheme.value = 'dark'
   } else {
     currentTheme.value = 'light'
+  }
+
+  const savedApk = localStorage.getItem('sn_apk_url')
+  if (savedApk) {
+    const apkSetting = allSettings.mobile.find(s => s.kunci === 'apk_download_url')
+    if (apkSetting) apkSetting.nilai = savedApk
   }
 })
 
@@ -130,7 +142,10 @@ const allSettings = reactive({
     {kunci:'kota_pusat',label:'Kota Pusat',desc:'Kota lokasi kantor pusat',nilai:'Kota Yogyakarta'},
   ],
   notifikasi:[{kunci:'qr_berlaku_jam',label:'Durasi Berlaku QR Absensi (jam)',desc:'Setelah durasi ini, QR yang digenerate pelatih akan expired',nilai:'4',type:'number'}],
-  mobile:[{kunci:'qr_berlaku_jam',label:'Durasi Berlaku QR Absensi (jam)',desc:'Masa berlaku QR Code per sesi yang digenerate pelatih',nilai:'4',type:'number'}],
+  mobile:[
+    {kunci:'qr_berlaku_jam',label:'Durasi Berlaku QR Absensi (jam)',desc:'Masa berlaku QR Code per sesi yang digenerate pelatih',nilai:'4',type:'number'},
+    {kunci:'apk_download_url',label:'Link Download APK (VPS)',desc:'Tautan untuk mengunduh versi APK terbaru dari VPS',nilai:'',type:'url'}
+  ],
 })
 const currentSettings = computed(() => allSettings[activeKat.value] || [])
 </script>

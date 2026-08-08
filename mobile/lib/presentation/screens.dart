@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'dart:js' as js;
+import '../core/js_interop.dart' as js_interop;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -941,7 +941,7 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
 
   if (kIsWeb) {
     try {
-      js.context['flutterGoogleHandler'] = js.allowInterop((dynamic email, dynamic name, dynamic googleId) {
+      js_interop.jsContext['flutterGoogleHandler'] = js_interop.allowInterop((dynamic email, dynamic name, dynamic googleId) {
         final sEmail = email?.toString() ?? '';
         final sName = name?.toString() ?? (sEmail.isNotEmpty ? sEmail.split('@')[0] : 'User');
         final String initial = sName.isNotEmpty ? sName[0].toUpperCase() : 'G';
@@ -952,7 +952,7 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
         }
       });
 
-      js.context.callMethod('triggerGoogleOAuthFlow', [
+      js_interop.jsContext.callMethod('triggerGoogleOAuthFlow', [
         '1000000000000-satrianusantara.apps.googleusercontent.com',
         'onFlutterGoogleSuccess',
         'onFlutterGoogleError'

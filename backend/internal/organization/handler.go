@@ -319,7 +319,20 @@ func (h *Handler) uploadFoto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update foto_url in database (absolute URL pointing to backend host)
-	fotoURL := fmt.Sprintf("http://localhost:8080/uploads/%s", filename)
+	scheme := "http"
+	if r.Header.Get("X-Forwarded-Proto") != "" {
+		scheme = r.Header.Get("X-Forwarded-Proto")
+	}
+	host := r.Host
+	if host == "" {
+		host = "localhost:8080"
+	}
+	var fotoURL string
+	if host == "nfmtech.my.id" {
+		fotoURL = fmt.Sprintf("%s://%s/product/satrianusantara/uploads/%s", scheme, host, filename)
+	} else {
+		fotoURL = fmt.Sprintf("%s://%s/uploads/%s", scheme, host, filename)
+	}
 	if err := h.svc.UpdateFotoAnggota(id, fotoURL); err != nil {
 		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
