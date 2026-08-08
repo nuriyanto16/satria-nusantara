@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -71,9 +72,15 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	// Serve static uploads
+	// Serve static uploads with proper APK installer MIME type and headers
 	fs := http.FileServer(http.Dir("./uploads"))
-	r.Handle("/uploads/*", http.StripPrefix("/uploads/", fs))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(strings.ToLower(r.URL.Path), ".apk") {
+			w.Header().Set("Content-Type", "application/vnd.android.package-archive")
+			w.Header().Set("Content-Disposition", "attachment; filename=\"satria-nusantara.apk\"")
+		}
+		fs.ServeHTTP(w, r)
+	})))
 
 	// 7. Mount API Routes
 	r.Route("/api/v1", func(r chi.Router) {

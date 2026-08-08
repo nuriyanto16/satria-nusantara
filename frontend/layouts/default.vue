@@ -39,7 +39,7 @@
 
       <div style="flex-grow: 1;"></div>
       
-      <a v-if="apkUrl" :href="apkUrl" target="_blank" class="sb-item sb-apk-item" style="margin-top: 20px; background: rgba(74, 222, 128, 0.1); color: var(--hijau); font-weight: 700;">
+      <a v-if="apkUrl" :href="apkUrl" download="satria-nusantara.apk" target="_blank" class="sb-item sb-apk-item" style="margin-top: 20px; background: rgba(74, 222, 128, 0.1); color: var(--hijau); font-weight: 700;">
         <i class="ti ti-brand-android" style="font-size: 16px;"></i> Download APK Mobile
       </a>
     </div>

@@ -6679,6 +6679,67 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
   final _birthController = TextEditingController();
   String _gender = 'Laki-laki';
 
+  // Unit latihan state
+  List<Map<String, dynamic>> _units = [];
+  String? _selectedUnitId;
+  String _selectedUnitName = 'Pilih Unit Latihan';
+  bool _loadingUnits = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnits();
+  }
+
+  Future<void> _loadUnits() async {
+    // Hardcode units matching the database (fetched via API fallback)
+    final hardcodedUnits = [
+      {'id': 'd2222222-1111-2222-2222-222222222222', 'nama': 'Unit Balkot', 'hari': 'Sab & Sel 07.00'},
+      {'id': 'd2222222-2222-2222-2222-222222222222', 'nama': 'Unit Buah Batu', 'hari': 'Rab & Sab 07.00'},
+      {'id': 'd5555555-1111-5555-5555-555555555555', 'nama': 'Unit Menteng', 'hari': 'Sen & Kam 19.00'},
+      {'id': 'd3333333-1111-3333-3333-333333333333', 'nama': 'Unit Simpang Lima', 'hari': 'Rab & Sab 06.00'},
+      {'id': 'd1111111-1111-1111-1111-111111111111', 'nama': 'Unit Malioboro', 'hari': 'Sel & Jum 07.00'},
+      {'id': 'd1111111-2222-1111-1111-111111111111', 'nama': 'Unit Kotagede', 'hari': 'Kam & Sab 16.00'},
+      {'id': 'd4444444-1111-4444-4444-444444444444', 'nama': 'Unit Rungkut', 'hari': 'Sel & Sab 07.00'},
+    ];
+
+    try {
+      // Try fetching from backend
+      final response = await api.dio.get('${ApiConstants.getCabang}?limit=100');
+      final cabangList = (response.data['data'] as List?) ?? [];
+      final units = <Map<String, dynamic>>[];
+      for (final cabang in cabangList) {
+        try {
+          final unitRes = await api.dio.get('${ApiConstants.getCabang}/${cabang['id']}/unit');
+          final unitList = (unitRes.data as List?) ?? [];
+          for (final u in unitList) {
+            units.add({'id': u['id'], 'nama': u['nama'], 'hari': u['jadwal'] ?? ''});
+          }
+        } catch (_) {}
+      }
+      if (mounted) {
+        setState(() {
+          _units = units.isNotEmpty ? units : hardcodedUnits;
+          _loadingUnits = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _units = hardcodedUnits;
+          _loadingUnits = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _birthController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map?;
@@ -6691,6 +6752,361 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
         title: Text('Lengkapi Data', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Google Account Card
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      child: Text(
+                        initial,
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(email, style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 11.5)),
+                          SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: BrandColors.hijauSoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.check_circle, size: 10, color: BrandColors.hijau),
+                                SizedBox(width: 4),
+                                Text('Terhubung via Gmail', style: TextStyle(fontSize: 9, color: BrandColors.hijau, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              'Data yang perlu dilengkapi',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
+            ),
+            SizedBox(height: 16),
+
+            // ── Nomor HP ──
+            Text('Nomor HP *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+            SizedBox(height: 6),
+            TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                prefixText: '+62 ',
+                hintText: '812-3456-7890',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+            ),
+            SizedBox(height: 16),
+
+            // ── Tanggal Lahir ──
+            Text('Tanggal Lahir *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+            SizedBox(height: 6),
+            TextField(
+              controller: _birthController,
+              readOnly: true,
+              decoration: InputDecoration(
+                hintText: 'Pilih Tanggal Lahir',
+                suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime(1998, 8, 15),
+                  firstDate: DateTime(1950),
+                  lastDate: DateTime.now(),
+                );
+                if (date != null) {
+                  setState(() {
+                    _birthController.text = "${date.year}-${date.month.toString().padLeft(2,'0')}-${date.day.toString().padLeft(2,'0')}";
+                  });
+                }
+              },
+            ),
+            SizedBox(height: 16),
+
+            // ── Jenis Kelamin ──
+            Text('Jenis Kelamin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _gender == 'Laki-laki' ? BrandColors.hijauSoft : Colors.white,
+                      foregroundColor: _gender == 'Laki-laki' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
+                      side: BorderSide(color: _gender == 'Laki-laki' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () => setState(() => _gender = 'Laki-laki'),
+                    icon: Icon(Icons.male, size: 16),
+                    label: Text('Laki-laki', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _gender == 'Perempuan' ? BrandColors.hijauSoft : Colors.white,
+                      foregroundColor: _gender == 'Perempuan' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
+                      side: BorderSide(color: _gender == 'Perempuan' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () => setState(() => _gender = 'Perempuan'),
+                    icon: Icon(Icons.female, size: 16),
+                    label: Text('Perempuan', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+
+            // ── Unit Latihan ──
+            Text('Unit Latihan *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
+            SizedBox(height: 6),
+            _loadingUnits
+              ? Center(child: Padding(padding: const EdgeInsets.all(12), child: CircularProgressIndicator(strokeWidth: 2)))
+              : InkWell(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                      builder: (ctx) => SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text('Pilih Unit Latihan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            ),
+                            Divider(height: 1),
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: _units.length,
+                                itemBuilder: (_, i) {
+                                  final u = _units[i];
+                                  final isSelected = u['id'] == _selectedUnitId;
+                                  return ListTile(
+                                    leading: Icon(
+                                      Icons.location_on_outlined,
+                                      color: isSelected ? BrandColors.hijau : Colors.grey,
+                                    ),
+                                    title: Text(u['nama'] ?? '', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    subtitle: u['hari'] != null && u['hari'].toString().isNotEmpty
+                                      ? Text(u['hari'], style: TextStyle(fontSize: 11.5, color: Colors.grey))
+                                      : null,
+                                    trailing: isSelected ? Icon(Icons.check_circle, color: BrandColors.hijau) : null,
+                                    tileColor: isSelected ? BrandColors.hijauSoft : null,
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedUnitId = u['id'];
+                                        _selectedUnitName = u['nama'] ?? 'Unit';
+                                      });
+                                      Navigator.pop(ctx);
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: _selectedUnitId != null
+                          ? BrandColors.hijau
+                          : (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
+                        width: _selectedUnitId != null ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.location_city_rounded,
+                          color: _selectedUnitId != null ? BrandColors.hijau : Colors.grey,
+                          size: 20,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _selectedUnitName,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: _selectedUnitId != null
+                                ? (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)
+                                : Colors.grey,
+                            ),
+                          ),
+                        ),
+                        Icon(Icons.keyboard_arrow_down_rounded, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                ),
+            SizedBox(height: 32),
+
+            // ── Submit Button ──
+            SizedBox(
+              height: 52,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: BrandColors.hijau,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () async {
+                  final phone = _phoneController.text.trim();
+                  if (phone.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Silakan masukkan nomor HP terlebih dahulu')),
+                    );
+                    return;
+                  }
+                  final birth = _birthController.text.trim();
+                  if (birth.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Silakan pilih tanggal lahir')),
+                    );
+                    return;
+                  }
+                  if (_selectedUnitId == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Silakan pilih unit latihan terlebih dahulu')),
+                    );
+                    return;
+                  }
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Mendaftarkan akun Google...')),
+                  );
+
+                  final googleId = args?['googleId'] ?? 'goog_$email';
+
+                  try {
+                    final res = await AuthRepository().loginGoogle(
+                      email,
+                      name,
+                      noHp: phone,
+                      googleId: googleId,
+                      unitId: _selectedUnitId,
+                    );
+                    if (context.mounted) {
+                      context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
+                      if (res['user'] != null && res['user'].status == 'pending') {
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/wait_verification',
+                          arguments: {
+                            'name': res['user'].namaLengkap,
+                            'email': res['user'].email,
+                            'user': res['user'],
+                            'token': res['token'],
+                          },
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Pendaftaran Google berhasil! Selamat datang, ${res['user'].namaLengkap}')),
+                        );
+                        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                      }
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      final err = e.toString();
+                      if (err.contains('PENDING_VERIFICATION')) {
+                        final pendingUser = User(
+                          id: 'pending',
+                          email: email,
+                          namaLengkap: name,
+                          noHp: phone,
+                          roleId: 4,
+                          roleName: 'Anggota',
+                          scope: 'anggota',
+                          status: 'pending',
+                        );
+                        context.read<AuthBloc>().add(LoggedIn(token: 'pending_token', user: pendingUser));
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/wait_verification',
+                          arguments: {
+                            'name': name,
+                            'email': email,
+                            'user': pendingUser,
+                            'token': 'pending_token',
+                          },
+                        );
+                      } else {
+                        Navigator.pushNamed(
+                          context,
+                          '/register',
+                          arguments: {
+                            'name': name,
+                            'email': email,
+                            'initial': initial,
+                            'phone': phone,
+                          },
+                        );
+                      }
+                    }
+                  }
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.how_to_reg_rounded, size: 20),
+                    const SizedBox(width: 8),
+                    const Text('Daftar Sekarang', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

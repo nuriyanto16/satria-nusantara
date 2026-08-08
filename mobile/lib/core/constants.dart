@@ -11,4 +11,5 @@ class ApiConstants {
   static const String getSesi = '/training/sesi';
   static const String scanQr = '/training/scan-qr';
   static const String generateQr = '/training/sesi'; // dynamic path
+  static const String getCabang = '/organization/cabang';
 }

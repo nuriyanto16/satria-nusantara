@@ -102,8 +102,24 @@
 
         <div class="login-divider"><span>Lembaga Seni Pernapasan</span></div>
 
-        <a v-if="apkUrl" :href="apkUrl" target="_blank" class="btn-apk-download">
-          <i class="ti ti-brand-android"></i> Download Aplikasi Mobile (APK)
+        <a
+          v-if="apkUrl"
+          :href="apkUrl"
+          download="satria-nusantara.apk"
+          target="_blank"
+          class="btn-apk-download"
+        >
+          <div class="btn-apk-icon">
+            <i class="ti ti-brand-android"></i>
+          </div>
+          <div class="btn-apk-content">
+            <span class="btn-apk-sub">Aplikasi Mobile Resmi</span>
+            <span class="btn-apk-title">Download APK Satria Nusantara</span>
+          </div>
+          <div class="btn-apk-badge">
+            <span>v1.0</span>
+            <i class="ti ti-download"></i>
+          </div>
         </a>
 
         <div class="login-footer">

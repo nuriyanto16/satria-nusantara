@@ -116,7 +116,7 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> loginGoogle(String email, String name, {String? googleId, String? noHp, String? fotoUrl}) async {
+  Future<Map<String, dynamic>> loginGoogle(String email, String name, {String? googleId, String? noHp, String? fotoUrl, String? unitId}) async {
     final cleanEmail = email.trim().toLowerCase();
     try {
       final response = await api.dio.post(
@@ -127,6 +127,7 @@ class AuthRepository {
           if (googleId != null && googleId.isNotEmpty) 'google_id': googleId,
           if (noHp != null && noHp.isNotEmpty) 'no_hp': noHp,
           if (fotoUrl != null && fotoUrl.isNotEmpty) 'foto_url': fotoUrl,
+          if (unitId != null && unitId.isNotEmpty) 'unit_id': unitId,
         },
       );
       final data = response.data['data'];
