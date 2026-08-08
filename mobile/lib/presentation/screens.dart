@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../core/theme.dart';
 import '../core/constants.dart';
+import '../core/network.dart';
 import '../blocs/auth_bloc.dart';
 import '../blocs/sesi_bloc.dart';
 import '../blocs/iuran_bloc.dart';
@@ -980,15 +981,29 @@ Future<void> _triggerGoogleSignIn(BuildContext context) async {
         _processGoogleSignIn(context, email, name, initial, googleId: googleId);
       }
       return;
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pilihan akun Google dibatalkan.')),
+        );
+      }
     }
   } catch (e) {
     debugPrint('Native Google SSO error: $e');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menghubungkan akun Google: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
 
 void _processGoogleSignIn(BuildContext context, String email, String name, String initial, {String? googleId}) async {
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('Memproses masuk via Gmail: $email...')),
+    SnackBar(content: Text('Memproses akun Gmail: $email...')),
   );
   try {
     final res = await AuthRepository().loginGoogle(email, name, googleId: googleId ?? 'goog_$email');
@@ -1039,6 +1054,7 @@ void _processGoogleSignIn(BuildContext context, String email, String name, Strin
           },
         );
       } else {
+        // User not registered in database yet -> navigate to /google_complete to select Unit & fill No HP
         Navigator.pushNamed(
           context,
           '/google_complete',
@@ -7084,226 +7100,6 @@ class _GoogleDataCompleteScreenState extends State<GoogleDataCompleteScreen> {
                           },
                         );
                       }
-                    }
-                  }
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.how_to_reg_rounded, size: 20),
-                    const SizedBox(width: 8),
-                    const Text('Daftar Sekarang', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      child: Text(
-                        initial,
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          Text(email, style: TextStyle(color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2), fontSize: 11.5)),
-                          SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: BrandColors.hijauSoft,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.check_circle, size: 10, color: BrandColors.hijau),
-                                SizedBox(width: 4),
-                                Text('Terhubung via Gmail', style: TextStyle(fontSize: 9, color: BrandColors.hijau, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Data yang perlu dilengkapi',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
-            ),
-            SizedBox(height: 16),
-            Text('Nomor HP *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
-            SizedBox(height: 6),
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                prefixText: '+62 ',
-                hintText: '812-3456-7890',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-            SizedBox(height: 16),
-            Text('Tanggal Lahir *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
-            SizedBox(height: 6),
-            TextField(
-              controller: _birthController,
-              readOnly: true,
-              decoration: InputDecoration(
-                hintText: 'Pilih Tanggal Lahir',
-                suffixIcon: Icon(Icons.calendar_today_outlined, size: 18),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime(1998, 8, 15),
-                  firstDate: DateTime(1950),
-                  lastDate: DateTime.now(),
-                );
-                if (date != null) {
-                  _birthController.text = "${date.day} Agustus ${date.year}";
-                }
-              },
-            ),
-            SizedBox(height: 16),
-            Text('Jenis Kelamin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2))),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _gender == 'Laki-laki' ? BrandColors.hijauSoft : Colors.white,
-                      foregroundColor: _gender == 'Laki-laki' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
-                      side: BorderSide(color: _gender == 'Laki-laki' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: () => setState(() => _gender = 'Laki-laki'),
-                    icon: Icon(Icons.male, size: 16),
-                    label: Text('Laki-laki', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _gender == 'Perempuan' ? BrandColors.hijauSoft : Colors.white,
-                      foregroundColor: _gender == 'Perempuan' ? BrandColors.hijau : (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2),
-                      side: BorderSide(color: _gender == 'Perempuan' ? (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])! : BrandColors.hijau),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: () => setState(() => _gender = 'Perempuan'),
-                    icon: Icon(Icons.female, size: 16),
-                    label: Text('Perempuan', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 40),
-            SizedBox(
-              height: 52,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BrandColors.hijau,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () async {
-                  final phone = _phoneController.text.trim();
-                  if (phone.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Silakan masukkan nomor HP terlebih dahulu')),
-                    );
-                    return;
-                  }
-                  final birth = _birthController.text.trim();
-                  if (birth.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Silakan pilih tanggal lahir')),
-                    );
-                    return;
-                  }
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mendaftarkan akun Google...')),
-                  );
-
-                  final googleId = args?['googleId'] ?? 'goog_$email';
-
-                  try {
-                    final res = await AuthRepository().loginGoogle(
-                      email,
-                      name,
-                      noHp: phone,
-                      googleId: googleId,
-                    );
-                    if (context.mounted) {
-                      context.read<AuthBloc>().add(LoggedIn(token: res['token'], user: res['user']));
-                      if (res['user'] != null && res['user'].status == 'pending') {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/wait_verification',
-                          arguments: {
-                            'name': res['user'].namaLengkap,
-                            'email': res['user'].email,
-                            'user': res['user'],
-                            'token': res['token'],
-                          },
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Pendaftaran Google berhasil! Selamat datang, ${res['user'].namaLengkap}')),
-                        );
-                        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-                      }
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      Navigator.pushNamed(
-                        context,
-                        '/register',
-                        arguments: {
-                          'name': name,
-                          'email': email,
-                          'initial': initial,
-                          'phone': phone,
-                        },
-                      );
                     }
                   }
                 },

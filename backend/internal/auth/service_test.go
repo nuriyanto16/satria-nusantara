@@ -85,18 +85,32 @@ func TestGoogleLogin_NewUserAutoCreate(t *testing.T) {
 	repo := &mockRepo{users: make(map[string]*userRecord)}
 	svc := NewService(repo, "secret123")
 
+	// 1. Without NoHp/UnitID -> expect ErrUserNotFound (prompts profile completion)
 	resp, err := svc.GoogleLogin(context.Background(), GoogleLoginRequest{
 		Email:       "test.google@gmail.com",
 		NamaLengkap: "Test Google User",
 		GoogleID:    "goog_test123",
 	})
 
-	if !errors.Is(err, ErrUserInactive) {
-		t.Fatalf("expected ErrUserInactive, got: %v", err)
+	if !errors.Is(err, ErrUserNotFound) {
+		t.Fatalf("expected ErrUserNotFound, got: %v", err)
 	}
 
 	if resp != nil {
-		t.Fatalf("expected nil response for inactive user")
+		t.Fatalf("expected nil response for unregistered user")
+	}
+
+	// 2. With NoHp/UnitID -> creates pending user and expects ErrUserInactive
+	resp, err = svc.GoogleLogin(context.Background(), GoogleLoginRequest{
+		Email:       "test.google@gmail.com",
+		NamaLengkap: "Test Google User",
+		GoogleID:    "goog_test123",
+		NoHp:        "081234567890",
+		UnitID:      "unit-1",
+	})
+
+	if !errors.Is(err, ErrUserInactive) {
+		t.Fatalf("expected ErrUserInactive, got: %v", err)
 	}
 }
 

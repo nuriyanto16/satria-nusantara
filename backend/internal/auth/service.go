@@ -82,6 +82,9 @@ func (s *service) GoogleLogin(ctx context.Context, req GoogleLoginRequest) (*Aut
 
 	rec, err := s.repo.FindByEmail(ctx, req.Email)
 	if errors.Is(err, ErrNotFound) {
+		if req.NoHp == "" && req.UnitID == "" {
+			return nil, ErrUserNotFound
+		}
 		newRec, createErr := s.repo.CreateGoogleUser(ctx, req)
 		if createErr != nil {
 			return nil, createErr
