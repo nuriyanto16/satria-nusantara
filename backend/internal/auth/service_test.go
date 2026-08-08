@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"testing"
 )
 
@@ -90,22 +91,15 @@ func TestGoogleLogin_NewUserAutoCreate(t *testing.T) {
 		GoogleID:    "goog_test123",
 	})
 
-	if err != nil {
-		t.Fatalf("expected no error, got: %v", err)
+	if !errors.Is(err, ErrUserInactive) {
+		t.Fatalf("expected ErrUserInactive, got: %v", err)
 	}
 
-	if resp == nil || resp.Token == "" {
-		t.Fatalf("expected non-empty token")
-	}
-
-	if resp.User.Email != "test.google@gmail.com" {
-		t.Errorf("expected email test.google@gmail.com, got %s", resp.User.Email)
-	}
-
-	if resp.User.Status != "pending" {
-		t.Errorf("expected status pending, got %s", resp.User.Status)
+	if resp != nil {
+		t.Fatalf("expected nil response for inactive user")
 	}
 }
+
 
 func TestSignupAnggota_WithGoogleID(t *testing.T) {
 	repo := &mockRepo{users: make(map[string]*userRecord)}
