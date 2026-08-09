@@ -1042,17 +1042,86 @@ void _processGoogleSignIn(BuildContext context, String email, String name, Strin
           scope: 'anggota',
           status: 'pending',
         );
-        context.read<AuthBloc>().add(LoggedIn(token: 'pending_token', user: mockPendingUser));
-        Navigator.pushReplacementNamed(
-          context,
-          '/wait_verification',
-          arguments: {
-            'name': name,
-            'email': email,
-            'user': mockPendingUser,
-            'token': 'pending_token',
-          },
+        // Tampilkan dialog informatif sebelum redirect ke halaman menunggu
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                Icon(Icons.access_time_filled, color: Color(0xFF9A7000), size: 24),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Akun Belum Diaktivasi',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Akun Gmail Anda ($email) sudah terdaftar namun masih menunggu aktivasi dari pengurus unit.',
+                  style: TextStyle(fontSize: 13, height: 1.5),
+                ),
+                SizedBox(height: 12),
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFFFF8E0),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Color(0xFFE6C200), width: 0.8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, color: Color(0xFF9A7000), size: 16),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Harap hubungi pengurus unit atau tunggu pemberitahuan melalui email / WhatsApp.',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF7A5200), height: 1.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BrandColors.hijau,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text('Mengerti, Lanjutkan', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
         );
+        if (context.mounted) {
+          context.read<AuthBloc>().add(LoggedIn(token: 'pending_token', user: mockPendingUser));
+          Navigator.pushReplacementNamed(
+            context,
+            '/wait_verification',
+            arguments: {
+              'name': name,
+              'email': email,
+              'user': mockPendingUser,
+              'token': 'pending_token',
+            },
+          );
+        }
       } else {
         // User not registered in database yet -> navigate to /google_complete to select Unit & fill No HP
         Navigator.pushNamed(
@@ -1098,6 +1167,317 @@ Widget _buildGoogleAccountItem(
       _processGoogleSignIn(context, email, name, initial);
     },
   );
+}
+
+// ─── GOOGLE REGISTER HELPERS ─────────────────────────────────────────────────
+// Berbeda dari _triggerGoogleSignIn (untuk LOGIN), fungsi ini khusus untuk REGISTRASI.
+// Cek apakah email sudah terdaftar, jika iya tampilkan pesan, jika belum lanjut ke wizard.
+Future<void> _triggerGoogleRegister(BuildContext context) async {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Row(
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+          ),
+          SizedBox(width: 12),
+          Text('Menghubungkan ke Google...'),
+        ],
+      ),
+      duration: Duration(milliseconds: 1500),
+    ),
+  );
+
+  if (kIsWeb) {
+    try {
+      js_interop.jsContext['flutterGoogleRegisterHandler'] = js_interop.allowInterop(
+        (dynamic gEmail, dynamic gName, dynamic gGoogleId) {
+          final sEmail = gEmail?.toString() ?? '';
+          final sName = gName?.toString() ?? (sEmail.isNotEmpty ? sEmail.split('@')[0] : 'User');
+          final sInitial = sName.isNotEmpty ? sName[0].toUpperCase() : 'G';
+          final sGoogleId = gGoogleId?.toString() ?? 'goog_$sEmail';
+          if (context.mounted && sEmail.isNotEmpty) {
+            _processGoogleRegister(context, sEmail, sName, sInitial, googleId: sGoogleId);
+          }
+        },
+      );
+      js_interop.jsContext.callMethod('triggerGoogleOAuthFlow', [
+        '1000000000000-satrianusantara.apps.googleusercontent.com',
+        'onFlutterGoogleRegisterSuccess',
+        'onFlutterGoogleRegisterError',
+      ]);
+    } catch (e) {
+      debugPrint('Web Google SSO register error: $e');
+    }
+    return;
+  }
+
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+    final GoogleSignInAccount? account = await googleSignIn.signIn();
+    if (account == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pilihan akun Google dibatalkan.')),
+        );
+      }
+      return;
+    }
+    final String email = account.email;
+    final String name = (account.displayName != null && account.displayName!.isNotEmpty)
+        ? account.displayName!
+        : email.split('@')[0];
+    final String initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
+    final String googleId = account.id;
+
+    if (context.mounted) {
+      await _processGoogleRegister(context, email, name, initial, googleId: googleId);
+    }
+  } catch (e) {
+    debugPrint('Native Google SSO register error: $e');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menghubungkan akun Google: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
+
+Future<void> _processGoogleRegister(
+  BuildContext context,
+  String email,
+  String name,
+  String initial, {
+  String? googleId,
+}) async {
+  try {
+    // Cek apakah email sudah ada di sistem dengan mencoba login
+    final res = await AuthRepository().loginGoogle(email, name, googleId: googleId ?? 'goog_$email');
+    if (!context.mounted) return;
+
+    final user = res['user'] as User?;
+    final isPending = user?.status == 'pending';
+
+    if (isPending) {
+      // Email terdaftar tapi belum diaktivasi
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(Icons.access_time_filled, color: Color(0xFF9A7000), size: 24),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Akun Menunggu Verifikasi',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Email $email sudah terdaftar dan sedang menunggu aktivasi dari pengurus unit.',
+                style: TextStyle(fontSize: 13, height: 1.5),
+              ),
+              SizedBox(height: 12),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFF8E0),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Color(0xFFE6C200), width: 0.8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Color(0xFF9A7000), size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Harap tunggu pemberitahuan aktivasi dari pengurus unit melalui email atau WhatsApp.',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF7A5200), height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text('Tutup'),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      if (context.mounted) {
+                        Navigator.pushReplacementNamed(context, '/login');
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BrandColors.hijau,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text('Ke Login', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Email sudah terdaftar dan aktif — tidak bisa mendaftar ulang
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                Icon(Icons.check_circle_outline, color: BrandColors.hijau, size: 24),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Email Sudah Terdaftar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Email Gmail $email sudah terdaftar sebagai anggota aktif di sistem.',
+                  style: TextStyle(fontSize: 13, height: 1.5),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Gunakan tombol "Masuk dengan Gmail" di halaman Login untuk masuk ke akun Anda.',
+                  style: TextStyle(fontSize: 13, height: 1.5, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
+                ),
+              ],
+            ),
+            actions: [
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text('Tutup'),
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        if (context.mounted) {
+                          Navigator.pushReplacementNamed(context, '/login');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: BrandColors.hijau,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text('Login Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    final errorMsg = e.toString();
+    if (errorMsg.contains('PENDING_VERIFICATION')) {
+      // Fallback: pending verification dari backend
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: [
+                Icon(Icons.access_time_filled, color: Color(0xFF9A7000), size: 24),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Akun Menunggu Verifikasi',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              'Email $email sudah terdaftar dan masih menunggu aktivasi dari pengurus unit.\n\nHarap tunggu pemberitahuan aktivasi melalui email atau WhatsApp.',
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
+            actions: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BrandColors.hijau,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text('Mengerti', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } else {
+      // "User not found" atau error lain → email belum terdaftar → lanjut ke wizard registrasi
+      if (context.mounted) {
+        Navigator.pushNamed(
+          context,
+          '/register',
+          arguments: {
+            'name': name,
+            'email': email,
+            'initial': initial,
+            'googleId': googleId ?? 'goog_$email',
+          },
+        );
+      }
+    }
+  }
 }
 
 // ─── HOME SCREEN ─────────────────────────────────────────────────────────────
@@ -3769,13 +4149,15 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
   };
 
   // Step 3 Controllers
-  final TextEditingController _searchUnitController = TextEditingController(text: 'Bandung');
-  String _selectedUnit = 'Unit Balkot · Sab & Sel 07.00';
+  final TextEditingController _searchUnitController = TextEditingController();
+  // Kosong di awal — user wajib memilih sendiri
+  String _selectedUnit = '';
   List<String> _filteredUnits = [];
 
   @override
   void initState() {
     super.initState();
+    // Populasi list unit berdasarkan kota default, tapi TIDAK auto-pilih
     _updateFilteredUnits();
   }
 
@@ -3807,11 +4189,13 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
       _filteredUnits = filtered;
       
       if (_filteredUnits.isEmpty) {
-        _filteredUnits = ['Tidak ada unit ditemukan'];
+        _filteredUnits = [];
       }
       
-      if (!_filteredUnits.contains(_selectedUnit)) {
-        _selectedUnit = _filteredUnits.first;
+      // Hanya auto-update jika sudah ada pilihan sebelumnya dan tidak valid lagi
+      // Jika _selectedUnit masih kosong, biarkan user memilih sendiri
+      if (_selectedUnit.isNotEmpty && !_filteredUnits.contains(_selectedUnit)) {
+        _selectedUnit = _filteredUnits.isNotEmpty ? _filteredUnits.first : '';
       }
     });
   }
@@ -3955,7 +4339,7 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
           ),
           SizedBox(height: 16),
           OutlinedButton(
-            onPressed: () => _triggerGoogleSignIn(context),
+            onPressed: () => _triggerGoogleRegister(context),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: (themeNotifier.isDarkMode ? BrandColors.borderDark : Colors.grey[300])!),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -4427,21 +4811,28 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
+                  color: _selectedUnit.isEmpty
+                      ? BrandColors.merah.withOpacity(0.5)
+                      : (themeNotifier.isDarkMode ? BrandColors.borderDark : BrandColors.border),
+                  width: _selectedUnit.isEmpty ? 1.5 : 1.0,
                 ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.location_city_rounded, color: BrandColors.hijau, size: 20),
+                  Icon(
+                    Icons.location_city_rounded,
+                    color: _selectedUnit.isEmpty ? BrandColors.merah.withOpacity(0.6) : BrandColors.hijau,
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      _selectedUnit == 'Tidak ada unit ditemukan' ? 'Pilih Unit Latihan' : _selectedUnit,
+                      _selectedUnit.isEmpty ? 'Tap untuk memilih unit latihan' : _selectedUnit,
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: _selectedUnit == 'Tidak ada unit ditemukan'
-                            ? (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey)
+                        fontWeight: _selectedUnit.isEmpty ? FontWeight.normal : FontWeight.bold,
+                        color: _selectedUnit.isEmpty
+                            ? (themeNotifier.isDarkMode ? BrandColors.text3Dark : Colors.grey[500])
                             : (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1),
                       ),
                     ),
@@ -4454,8 +4845,17 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
               ),
             ),
           ),
+          if (_selectedUnit.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 4),
+              child: Text(
+                'Wajib memilih unit latihan sebelum melanjutkan',
+                style: TextStyle(fontSize: 11, color: BrandColors.merah),
+              ),
+            ),
           SizedBox(height: 20),
-          // Selected Unit Card
+          // Selected Unit Card — hanya tampil jika unit sudah dipilih
+          if (_selectedUnit.isNotEmpty)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -4486,11 +4886,23 @@ class _RegisterWizardScreenState extends State<RegisterWizardScreen> {
             ),
           ),
           SizedBox(height: 32),
+          SizedBox(height: 16),
           ElevatedButton(
             onPressed: () async {
-              if (_selectedUnit == 'Tidak ada unit ditemukan') {
+              if (_selectedUnit.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Silakan pilih unit latihan yang valid')),
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Text('Silakan pilih unit latihan terlebih dahulu'),
+                      ],
+                    ),
+                    backgroundColor: BrandColors.merah,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                 );
                 return;
               }
