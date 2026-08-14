@@ -488,6 +488,10 @@
             <label class="form-label">Alamat Sekretariat</label>
             <textarea v-model="form.alamat" class="form-input textarea" placeholder="Alamat lengkap kantor sekretariat..."></textarea>
           </div>
+          <div class="form-group">
+            <label class="form-label">Pilih Titik Lokasi Peta</label>
+            <div id="map-cabang" style="height: 200px; width: 100%; border-radius: 8px; border: 1.5px solid var(--border2); z-index: 1;"></div>
+          </div>
           <div class="form-row" style="display:flex; gap:10px;">
             <div class="form-group" style="flex:1;">
               <label class="form-label">Latitude Peta</label>
@@ -529,6 +533,10 @@
           <div class="form-group">
             <label class="form-label">PIC / Koordinator Unit</label>
             <input v-model="unitForm.pic" type="text" class="form-input" placeholder="Nama Koordinator Unit" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pilih Titik Lokasi Peta</label>
+            <div id="map-unit" style="height: 200px; width: 100%; border-radius: 8px; border: 1.5px solid var(--border2); z-index: 1;"></div>
           </div>
           <div class="form-row" style="display:flex; gap:10px;">
             <div class="form-group" style="flex:1;">
@@ -986,6 +994,7 @@ const openCreateModal = () => {
     lng: ''
   }
   showModal.value = true
+  initMap('map-cabang', form)
 }
 
 const openEditModal = (c: any) => {
@@ -1004,6 +1013,7 @@ const openEditModal = (c: any) => {
     lng: c.lng || ''
   }
   showModal.value = true
+  initMap('map-cabang', form)
 }
 
 const saveCabang = async () => {
@@ -1043,6 +1053,7 @@ const openAddUnitModal = () => {
   editingUnitId.value = null
   unitForm.value = { id: '', nama: '', lokasi: '', jadwal: '', pic: '', lat: '-7.7956', lng: '110.3695' }
   showUnitModal.value = true
+  initMap('map-unit', unitForm)
 }
 
 const openEditUnitModal = (u: any) => {
@@ -1057,6 +1068,7 @@ const openEditUnitModal = (u: any) => {
     lng: u.lng || '110.3695'
   }
   showUnitModal.value = true
+  initMap('map-unit', unitForm)
 }
 
 const saveUnit = () => {
@@ -1259,6 +1271,54 @@ const formatRupiah = (val: number) => {
   return new Intl.NumberFormat('id-ID').format(val)
 }
 
+let mapInstance: any = null
+let markerInstance: any = null
+
+const initMap = async (mapId: string, formRef: any) => {
+  if (!process.client) return
+  const L = (await import('leaflet')).default
+
+  nextTick(() => {
+    const el = document.getElementById(mapId)
+    if (!el) return
+    if (mapInstance) {
+      mapInstance.remove()
+      mapInstance = null
+    }
+
+    const initialLat = parseFloat(formRef.value.lat) || -7.7956
+    const initialLng = parseFloat(formRef.value.lng) || 110.3695
+
+    mapInstance = L.map(mapId).setView([initialLat, initialLng], 13)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance)
+
+    delete (L.Icon.Default.prototype as any)._getIconUrl
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+    })
+
+    markerInstance = L.marker([initialLat, initialLng], { draggable: true }).addTo(mapInstance)
+
+    const updateForm = (pos: any) => {
+      formRef.value.lat = pos.lat.toFixed(6)
+      formRef.value.lng = pos.lng.toFixed(6)
+    }
+
+    markerInstance.on('dragend', (e: any) => updateForm(e.target.getLatLng()))
+    mapInstance.on('click', (e: any) => {
+      markerInstance.setLatLng(e.latlng)
+      updateForm(e.latlng)
+    })
+    
+    // Fix resize issue in modals
+    setTimeout(() => {
+      if (mapInstance) mapInstance.invalidateSize()
+    }, 200)
+  })
+}
+
 onMounted(() => {
   fetchCabang()
   fetchProvinsi()
@@ -1266,6 +1326,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@import "leaflet/dist/leaflet.css";
+
 .cabang-split-layout {
   display: flex;
   height: calc(100vh - 64px - 44px);

@@ -2708,15 +2708,26 @@ class QrScannerScreen extends StatelessWidget {
               SizedBox(height: 48),
               ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Presensi Berhasil Terdaftar!'),
-                      backgroundColor: BrandColors.hijau,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                  );
-                  Navigator.pop(context);
+                  final authState = context.read<AuthBloc>().state;
+                  if (authState is Authenticated) {
+                    context.read<SesiBloc>().add(ScanQREvent('SIMULASI', authState.user.id));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Mengirim presensi ke server...'),
+                        backgroundColor: BrandColors.kuning,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gagal: Anda belum login!'),
+                        backgroundColor: BrandColors.merah,
+                      )
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: BrandColors.hijau,

@@ -494,15 +494,6 @@ const viewDetail = async (sesi: any) => {
     detailList.value = []
   }
 
-  if (detailList.value.length === 0) {
-    // Generate mockup attendance records
-    detailList.value = [
-      { id: '1', nama: 'Ahmad Santoso', waktu_scan: '2026-06-15T07:05:00Z', metode: 'QR Scan' },
-      { id: '2', nama: 'Budi Hartono', waktu_scan: '2026-06-15T07:07:00Z', metode: 'QR Scan' },
-      { id: '3', nama: 'Cahyo Wibowo', waktu_scan: '2026-06-15T07:11:00Z', metode: 'QR Scan' },
-      { id: '4', nama: 'Dewi Wardani', waktu_scan: '2026-06-15T07:12:00Z', metode: 'QR Scan' }
-    ]
-  }
   loadingDetail.value = false
 }
 
