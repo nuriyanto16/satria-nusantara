@@ -490,63 +490,92 @@
             <div class="sum-row"><span class="sum-key">Berlaku hingga</span><span class="sum-val">24 jam</span></div>
           </div>
           <div v-else style="display:flex;flex-direction:column;gap:20px;">
-            <div class="alert-info-box" style="border-color:#0066ff40;background:#0066ff0d;margin-bottom:0;">
-              <i class="ti ti-info-circle" style="color:#0066ff;"></i>
-              <span>Anggota akan menerima link pembayaran yang dapat dibuka di browser. Mendukung <strong>OVO, DANA, GoPay, Transfer Bank, Alfamart</strong> dan lainnya.</span>
+            <div style="background:linear-gradient(135deg,#f0f5ff,#e8f5e9);border:1px solid #0066ff30;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0050ff,#0080ff);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="ti ti-credit-card" style="color:#fff;font-size:16px;"></i>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#0050ff;">Pembayaran via Xendit Gateway</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;">Mendukung OVO, DANA, GoPay, Transfer Bank, Alfamart, dan lainnya</div>
+              </div>
             </div>
-            
-            <div class="form-group">
-              <label class="form-label">Pilih Anggota</label>
+
+            <!-- Pilih Anggota -->
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:12px;font-weight:700;">Pilih Anggota <span style="color:var(--merah);">*</span></label>
               <div class="combobox-wrapper" style="position:relative;">
-                <div class="search-input-wrap">
-                  <i class="ti ti-search search-icon"></i>
-                  <input 
-                    type="text" 
-                    class="form-input with-icon" 
-                    placeholder="Ketik nama anggota..."
+                <div class="search-input-wrap" style="position:relative;">
+                  <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;z-index:1;"></i>
+                  <input
+                    type="text"
+                    class="form-input"
+                    style="padding-left:36px;padding-right:36px;"
+                    placeholder="Ketik nama atau nomor anggota..."
                     v-model="xenditSearchQuery"
                     @input="onXenditSearchInput"
-                    @focus="showXenditDropdown = true"
+                    @focus="onXenditFocus"
+                    autocomplete="off"
                   />
-                  <i v-if="xenditForm.memberId" class="ti ti-circle-check check-icon" style="color:var(--hijau);"></i>
+                  <i v-if="xenditForm.memberId" class="ti ti-circle-check" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--hijau);font-size:16px;"></i>
                 </div>
-                
-                <ul v-if="showXenditDropdown && xenditSearchResults.length > 0" class="combobox-dropdown">
-                  <li 
-                    v-for="m in xenditSearchResults" 
-                    :key="m.id" 
-                    @click="selectXenditMember(m)"
+
+                <ul v-if="showXenditDropdown && xenditSearchResults.length > 0" class="combobox-dropdown" style="position:absolute;z-index:9999;">
+                  <li
+                    v-for="m in xenditSearchResults"
+                    :key="m.id"
+                    @mousedown.prevent="selectXenditMember(m)"
                     class="combobox-item"
                   >
-                    <div style="font-weight:600;">{{ m.nama }}</div>
-                    <div style="font-size:10px;color:var(--text3);">{{ m.unit_nama || m.unit }}</div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div :style="{ width:'28px',height:'28px',borderRadius:'50%',background:getAvatarBg(m.nama || m.nama_lengkap || ''),display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',fontWeight:'700',color:'#fff',flexShrink:'0' }">
+                        {{ getInitials(m.nama || m.nama_lengkap || '') }}
+                      </div>
+                      <div>
+                        <div style="font-weight:600;font-size:12px;">{{ m.nama || m.nama_lengkap }}</div>
+                        <div style="font-size:10px;color:var(--text3);">{{ m.nomor || m.nomor_anggota }} · {{ m.unit || m.unit_nama || '' }}</div>
+                      </div>
+                    </div>
                   </li>
                 </ul>
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group" style="flex:1;">
-                <label class="form-label">Email <span style="font-weight:400;color:var(--text3);">(Opsional)</span></label>
-                <div class="input-icon-wrap">
-                  <i class="ti ti-mail icon-prefix"></i>
-                  <input v-model="xenditForm.email" class="form-input with-prefix" type="email" placeholder="email@contoh.com" />
-                </div>
-              </div>
-              <div class="form-group" style="flex:1;">
-                <label class="form-label">Periode Pembayaran</label>
-                <div class="input-icon-wrap">
-                  <i class="ti ti-calendar icon-prefix"></i>
-                  <input v-model="xenditForm.bulanDate" class="form-input with-prefix" type="month" />
+                <div v-if="showXenditDropdown && xenditSearchQuery && xenditSearchResults.length === 0" class="combobox-dropdown" style="position:absolute;z-index:9999;padding:16px;text-align:center;color:var(--text3);font-size:12px;">
+                  <i class="ti ti-user-x" style="font-size:24px;display:block;margin-bottom:6px;"></i>
+                  Anggota tidak ditemukan
                 </div>
               </div>
             </div>
-            
-            <div class="form-group">
-              <label class="form-label">Nominal (Rp)</label>
-              <div class="input-icon-wrap">
-                <span class="text-prefix">Rp</span>
-                <input :value="formatRupiah(xenditForm.amount)" @input="onAmountInput" class="form-input with-text-prefix" type="text" placeholder="40.000" style="font-weight:700;font-size:16px;" />
+
+            <!-- Email & Periode -->
+            <div style="display:flex;gap:14px;">
+              <div class="form-group" style="flex:1;margin-bottom:0;">
+                <label class="form-label" style="font-size:12px;font-weight:700;">Email <span style="font-weight:400;color:var(--text3);">(Opsional)</span></label>
+                <div style="position:relative;">
+                  <i class="ti ti-mail" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;"></i>
+                  <input v-model="xenditForm.email" class="form-input" type="email" placeholder="email@contoh.com" style="padding-left:36px;" />
+                </div>
+              </div>
+              <div class="form-group" style="flex:1;margin-bottom:0;">
+                <label class="form-label" style="font-size:12px;font-weight:700;">Periode Pembayaran <span style="color:var(--merah);">*</span></label>
+                <div style="position:relative;">
+                  <i class="ti ti-calendar" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none;z-index:1;"></i>
+                  <input
+                    v-model="xenditForm.bulanDate"
+                    class="form-input"
+                    type="month"
+                    style="padding-left:36px;cursor:pointer;"
+                    :min="minMonth"
+                    :max="maxMonth"
+                  />
+                </div>
+                <div style="font-size:10px;color:var(--text3);margin-top:4px;">Format: Bulan / Tahun</div>
+              </div>
+            </div>
+
+            <!-- Nominal -->
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" style="font-size:12px;font-weight:700;">Nominal Tagihan</label>
+              <div style="position:relative;">
+                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);font-weight:700;font-size:14px;">Rp</span>
+                <input :value="formatRupiah(xenditForm.amount)" @input="onAmountInput" class="form-input" type="text" placeholder="40.000" style="padding-left:44px;font-weight:700;font-size:16px;" />
               </div>
             </div>
           </div>
@@ -801,15 +830,35 @@ const xenditSearchResults = ref<any[]>([])
 const showXenditDropdown = ref(false)
 let xenditSearchTimeout: any = null
 
+// Min/Max month for the period picker
+const minMonth = computed(() => {
+  const d = new Date()
+  d.setMonth(d.getMonth() - 12)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+})
+const maxMonth = computed(() => {
+  const d = new Date()
+  d.setMonth(d.getMonth() + 3)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+})
+
+const onXenditFocus = () => {
+  if (xenditSearchQuery.value.length > 0) {
+    onXenditSearchInput()
+  } else {
+    xenditSearchResults.value = anggotaBLBAList.value.slice(0, 10)
+    showXenditDropdown.value = true
+  }
+}
+
 const onXenditSearchInput = () => {
   if (xenditSearchTimeout) clearTimeout(xenditSearchTimeout)
   if (!xenditSearchQuery.value) {
-    xenditSearchResults.value = []
-    showXenditDropdown.value = false
+    xenditSearchResults.value = anggotaBLBAList.value.slice(0, 10)
+    showXenditDropdown.value = true
     xenditForm.value.memberId = ''
     return
   }
-  // Clear selected if typing new query that doesn't match
   if (xenditForm.value.nama !== xenditSearchQuery.value) {
     xenditForm.value.memberId = ''
   }
@@ -817,7 +866,10 @@ const onXenditSearchInput = () => {
   xenditSearchTimeout = setTimeout(() => {
     try {
       const query = xenditSearchQuery.value.toLowerCase()
-      xenditSearchResults.value = anggotaBLBAList.value.filter(m => m.nama.toLowerCase().includes(query) || m.nomor.toLowerCase().includes(query))
+      xenditSearchResults.value = anggotaBLBAList.value.filter(m =>
+        (m.nama || '').toLowerCase().includes(query) ||
+        (m.nomor || '').toLowerCase().includes(query)
+      ).slice(0, 10)
       showXenditDropdown.value = true
     } catch (e) {
       console.error(e)

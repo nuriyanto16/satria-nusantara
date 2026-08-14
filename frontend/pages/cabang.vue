@@ -981,7 +981,9 @@ const openCreateModal = () => {
     alamat: '',
     telepon: '',
     email: '',
-    berdiri_sejak: ''
+    berdiri_sejak: '',
+    lat: '',
+    lng: ''
   }
   showModal.value = true
 }
@@ -997,7 +999,9 @@ const openEditModal = (c: any) => {
     alamat: c.alamat || '',
     telepon: c.telepon || '0274-512345',
     email: c.email || 'ygy@satrianusantara.org',
-    berdiri_sejak: c.berdiri_sejak || '12 Maret 1998'
+    berdiri_sejak: c.berdiri_sejak || '12 Maret 1998',
+    lat: c.lat || '',
+    lng: c.lng || ''
   }
   showModal.value = true
 }

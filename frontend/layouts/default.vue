@@ -159,35 +159,45 @@
               </div>
             </div>
           </div>
-          <div class="tb-user-info" @click.stop="showUserMenu = !showUserMenu" title="Menu Akun">
+          <div class="tb-user-info" @click.stop="showUserMenu = !showUserMenu" title="Menu Akun" ref="userMenuRef">
             <div class="tb-avatar">{{ userInitials }}</div>
             <div class="user-meta-details">
               <div class="tb-uname">{{ authStore.user?.nama_lengkap || 'Sri Astuti' }}</div>
               <div class="tb-urole">{{ authStore.user?.role_name || 'Admin Pusat' }}</div>
             </div>
             <i class="ti ti-chevron-down" style="font-size:12px;color:var(--text3);margin-left:4px"></i>
-            
-            <!-- User Menu Dropdown -->
-            <div v-if="showUserMenu" class="user-dropdown" @click.stop>
+          </div>
+
+          <!-- User Menu Dropdown — placed outside to avoid overflow clipping -->
+          <Teleport to="body">
+            <div v-if="showUserMenu" class="user-dropdown-fixed" :style="dropdownStyle" @click.stop>
               <div class="ud-header">
-                <div class="ud-name">{{ authStore.user?.nama_lengkap || 'Sri Astuti' }}</div>
-                <div class="ud-email">{{ authStore.user?.email || 'admin@satrianusantara.id' }}</div>
+                <div class="ud-avatar-row">
+                  <div class="ud-big-av">{{ userInitials }}</div>
+                  <div>
+                    <div class="ud-name">{{ authStore.user?.nama_lengkap || 'Sri Astuti' }}</div>
+                    <div class="ud-email">{{ authStore.user?.email || 'admin@satrianusantara.id' }}</div>
+                  </div>
+                </div>
               </div>
               <div class="ud-body">
                 <NuxtLink to="/profil" class="ud-item" @click="showUserMenu = false">
-                  <i class="ti ti-user"></i> Profil Saya
+                  <i class="ti ti-user-circle"></i> Profil Saya
                 </NuxtLink>
-                <div class="ud-item mobile-only" @click="toggleTheme">
-                  <i :class="isDarkMode ? 'ti ti-sun' : 'ti ti-moon'"></i> Mode Gelap
+                <div class="ud-item" @click="toggleTheme; showUserMenu = false">
+                  <i :class="isDarkMode ? 'ti ti-sun' : 'ti ti-moon'"></i> {{ isDarkMode ? 'Mode Terang' : 'Mode Gelap' }}
                 </div>
+                <NuxtLink to="/pengaturan" class="ud-item" @click="showUserMenu = false">
+                  <i class="ti ti-settings"></i> Pengaturan
+                </NuxtLink>
               </div>
               <div class="ud-footer">
                 <div class="ud-item text-red" @click="handleLogout">
-                  <i class="ti ti-logout"></i> Keluar
+                  <i class="ti ti-logout"></i> Keluar dari Sistem
                 </div>
               </div>
             </div>
-          </div>
+          </Teleport>
         </div>
       </div>
  
@@ -230,6 +240,8 @@ const isSidebarOpen = ref(false)
 const isDarkMode = ref(false)
 const apkUrl = ref('')
 const showUserMenu = ref(false)
+const userMenuRef = ref<HTMLElement | null>(null)
+const dropdownStyle = ref({ top: '0px', right: '0px' })
 
 const applyTheme = (isDark) => {
   if (isDark) {
@@ -391,6 +403,17 @@ onMounted(() => {
     showNotificationsPopover.value = false
     showSearchModal.value = false
     showUserMenu.value = false
+  })
+
+  // Position the user dropdown correctly whenever it opens
+  watch(showUserMenu, (val) => {
+    if (val && userMenuRef.value) {
+      const rect = userMenuRef.value.getBoundingClientRect()
+      dropdownStyle.value = {
+        top: `${rect.bottom + 8}px`,
+        right: `${window.innerWidth - rect.right}px`
+      }
+    }
   })
 
   // Keyboard shortcut Cmd+K or Ctrl+K
@@ -724,10 +747,28 @@ watch(() => route.path, () => {
 .sdf-view-all { background: none; border: none; color: var(--hijau); font-weight: 700; cursor: pointer; font-size: 10px; }
 .sdf-view-all:hover { text-decoration: underline; }
 
-/* User Menu Dropdown */
+/* User Menu Dropdown (fixed position via Teleport) */
 .tb-user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: var(--r8); position: relative; }
 .tb-user-info:hover { background: var(--surface); }
-.user-dropdown { position: absolute; top: calc(100% + 8px); right: 12px; width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r12); box-shadow: var(--shadow-lg); z-index: 1002; overflow: hidden; display: flex; flex-direction: column; }
+.user-dropdown-fixed {
+  position: fixed;
+  width: 260px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 9999;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.ud-avatar-row { display: flex; align-items: center; gap: 12px; }
+.ud-big-av {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--hijau), var(--hijau2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
 .ud-header { padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--surface); }
 .ud-name { font-weight: 700; font-size: 13px; color: var(--text1); }
 .ud-email { font-size: 11px; color: var(--text3); margin-top: 2px; }
