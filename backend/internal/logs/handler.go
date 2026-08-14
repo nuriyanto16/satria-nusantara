@@ -34,7 +34,7 @@ func (h *Handler) getAuditLogs(w http.ResponseWriter, r *http.Request) {
 	offset := (page - 1) * limit
 
 	rows, err := h.db.QueryContext(r.Context(), `
-		SELECT a.id, a.user_id, u.nama, a.action, a.entity, a.entity_id, a.details, a.ip_address, a.created_at
+		SELECT a.id, a.user_id, u.nama_lengkap, a.action, a.entity, a.entity_id, a.details, a.ip_address, a.created_at
 		FROM audit_logs a
 		LEFT JOIN users u ON a.user_id = u.id
 		ORDER BY a.created_at DESC
