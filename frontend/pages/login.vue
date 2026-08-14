@@ -124,7 +124,10 @@
 
         <div class="login-footer">
           <div class="login-version">Versi 8.0 (LSP-SIMA)</div>
-          <div class="login-org">© 2026 Yayasan Satria Nusantara</div>
+          <div class="login-org">
+            <nuxt-link to="/privacy-policy" style="color:var(--hijau); text-decoration:none; margin-right: 12px; font-weight: 600;">Kebijakan Privasi</nuxt-link>
+            © 2026 Yayasan Satria Nusantara
+          </div>
         </div>
       </div>
     </div>
