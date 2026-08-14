@@ -40,18 +40,21 @@
               <td style="font-size: 13px; color: var(--text2);">{{ formatDate(log.createdAt) }}</td>
               <td>
                 <div style="font-weight: 600; font-size: 13px;">{{ log.userName || 'Sistem' }}</div>
-                <div style="font-size: 11px; color: var(--text3); font-family: monospace;">{{ log.userId || '-' }}</div>
+                <div style="font-size: 11px; color: var(--text3); font-family: monospace;">{{ log.userId ? log.userId.substring(0, 8) + '...' : '-' }}</div>
               </td>
               <td>
                 <span class="bdg bdg-b">{{ log.action }}</span>
               </td>
               <td>
-                <div style="font-size: 13px;">{{ log.entity || '-' }} ({{ log.entityId || '-' }})</div>
+                <div style="font-size: 13px;">{{ log.entity || '-' }} ({{ log.entityId ? log.entityId.substring(0, 8) + '...' : '-' }})</div>
                 <div style="font-size: 11px; color: var(--text3);"><i class="ti ti-network"></i> {{ log.ipAddress || 'Unknown' }}</div>
               </td>
             </tr>
             <tr v-if="auditLogs.length === 0">
-              <td colspan="4" style="padding: 30px; text-align: center; color: var(--text3);">Belum ada catatan aktivitas</td>
+              <td colspan="4" style="padding: 40px; text-align: center; color: var(--text3);">
+                <i class="ti ti-inbox" style="font-size: 32px; color: var(--border2); margin-bottom: 12px; display: inline-block;"></i>
+                <div>Belum ada catatan aktivitas</div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -74,7 +77,7 @@
               <td>
                 <div style="font-weight: 700; font-size: 13px;">{{ log.provider }}</div>
                 <div style="font-size: 11px; color: var(--text3); font-family: monospace;" :title="log.endpoint">{{ log.endpoint.substring(0, 30) }}...</div>
-                <div style="font-size: 11px; color: var(--text3); font-family: monospace; margin-top: 4px;">Tx: {{ log.transactionId || '-' }}</div>
+                <div style="font-size: 11px; color: var(--text3); font-family: monospace; margin-top: 4px;">Tx: {{ log.transactionId ? log.transactionId.substring(0, 8) + '...' : '-' }}</div>
               </td>
               <td>
                 <span :class="['bdg', log.statusCode >= 200 && log.statusCode < 300 ? 'bdg-g' : 'bdg-r']">
@@ -91,7 +94,10 @@
               </td>
             </tr>
             <tr v-if="paymentLogs.length === 0">
-              <td colspan="4" style="padding: 30px; text-align: center; color: var(--text3);">Belum ada log dari Gateway Pembayaran</td>
+              <td colspan="4" style="padding: 40px; text-align: center; color: var(--text3);">
+                <i class="ti ti-inbox" style="font-size: 32px; color: var(--border2); margin-bottom: 12px; display: inline-block;"></i>
+                <div>Belum ada log dari Gateway Pembayaran</div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -125,7 +131,10 @@
               </td>
             </tr>
             <tr v-if="appErrors.length === 0">
-              <td colspan="4" style="padding: 30px; text-align: center; color: var(--text3);">Sistem berjalan mulus tanpa error terdeteksi</td>
+              <td colspan="4" style="padding: 40px; text-align: center; color: var(--text3);">
+                <i class="ti ti-shield-check" style="font-size: 32px; color: var(--hijauSoft); margin-bottom: 12px; display: inline-block;"></i>
+                <div>Sistem berjalan mulus tanpa error terdeteksi</div>
+              </td>
             </tr>
           </tbody>
         </table>

@@ -727,7 +727,7 @@ watch(() => route.path, () => {
 /* User Menu Dropdown */
 .tb-user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: var(--r8); position: relative; }
 .tb-user-info:hover { background: var(--surface); }
-.user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r12); box-shadow: var(--shadow-lg); z-index: 1002; overflow: hidden; display: flex; flex-direction: column; }
+.user-dropdown { position: absolute; top: calc(100% + 8px); right: 12px; width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r12); box-shadow: var(--shadow-lg); z-index: 1002; overflow: hidden; display: flex; flex-direction: column; }
 .ud-header { padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--surface); }
 .ud-name { font-weight: 700; font-size: 13px; color: var(--text1); }
 .ud-email { font-size: 11px; color: var(--text3); margin-top: 2px; }

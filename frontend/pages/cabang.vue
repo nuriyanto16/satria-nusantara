@@ -145,9 +145,9 @@
                     <td><span class="bdg bdg-y"><i class="ti ti-award"></i> {{ p.tingkatan }}</span></td>
                     <td class="pg-contact">{{ p.kontak }}</td>
                     <td>
-                      <div class="action-btns">
-                        <button class="icon-btn-sm" @click="openEditPengurusModal(p)" title="Edit Pengurus"><i class="ti ti-edit"></i></button>
-                        <button class="icon-btn-sm danger" @click="deletePengurus(p.id)" title="Hapus"><i class="ti ti-trash"></i></button>
+                      <div class="action-btns" style="gap: 8px;">
+                        <button class="action-btn-styled btn-edit-styled" @click="openEditPengurusModal(p)" title="Edit Pengurus"><i class="ti ti-edit"></i> Edit</button>
+                        <button class="action-btn-styled btn-delete-styled" @click="deletePengurus(p.id)" title="Hapus"><i class="ti ti-trash"></i> Hapus</button>
                       </div>
                     </td>
                   </tr>
@@ -259,10 +259,10 @@
                     <td><strong>{{ u.jumlah_anggota || 0 }}</strong></td>
                     <td><span class="bdg bdg-g">Aktif</span></td>
                     <td @click.stopPropagation>
-                      <div class="action-btns">
-                        <button class="icon-btn-sm" @click="selectedUnit = u" title="Lihat Detail"><i class="ti ti-eye"></i></button>
-                        <button class="icon-btn-sm" @click="openEditUnitModal(u)" title="Edit Unit"><i class="ti ti-edit"></i></button>
-                        <button class="icon-btn-sm danger" @click="deleteUnit(u.id)" title="Hapus Unit"><i class="ti ti-trash"></i></button>
+                      <div class="action-btns" style="gap: 8px;">
+                        <button class="action-btn-styled btn-view-styled" @click="selectedUnit = u" title="Lihat Detail"><i class="ti ti-eye"></i> Detail</button>
+                        <button class="action-btn-styled btn-edit-styled" @click="openEditUnitModal(u)" title="Edit Unit"><i class="ti ti-edit"></i> Edit</button>
+                        <button class="action-btn-styled btn-delete-styled" @click="deleteUnit(u.id)" title="Hapus Unit"><i class="ti ti-trash"></i> Hapus</button>
                       </div>
                     </td>
                   </tr>
@@ -314,9 +314,9 @@
                     <td style="font-weight:700;color:var(--text1)">Rp {{ formatRupiah(t.transport || 30000) }}</td>
                     <td><span :class="['bdg', t.status === 'Aktif' ? 'bdg-g' : 'bdg-r']">{{ t.status || 'Aktif' }}</span></td>
                     <td>
-                      <div class="action-btns">
-                        <button class="icon-btn-sm" @click="openEditTrainerModal(t)" title="Edit Pelatih"><i class="ti ti-edit"></i></button>
-                        <button class="icon-btn-sm danger" @click="deleteTrainer(t.id)" title="Hapus"><i class="ti ti-trash"></i></button>
+                      <div class="action-btns" style="gap: 8px;">
+                        <button class="action-btn-styled btn-edit-styled" @click="openEditTrainerModal(t)" title="Edit Pelatih"><i class="ti ti-edit"></i> Edit</button>
+                        <button class="action-btn-styled btn-delete-styled" @click="deleteTrainer(t.id)" title="Hapus"><i class="ti ti-trash"></i> Hapus</button>
                       </div>
                     </td>
                   </tr>
@@ -487,6 +487,16 @@
           <div class="form-group">
             <label class="form-label">Alamat Sekretariat</label>
             <textarea v-model="form.alamat" class="form-input textarea" placeholder="Alamat lengkap kantor sekretariat..."></textarea>
+          </div>
+          <div class="form-row" style="display:flex; gap:10px;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Latitude Peta</label>
+              <input v-model="form.lat" type="text" class="form-input" placeholder="Contoh: -7.7956" />
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Longitude Peta</label>
+              <input v-model="form.lng" type="text" class="form-input" placeholder="Contoh: 110.3695" />
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" style="width:auto" @click="showModal = false">Batal</button>
@@ -786,7 +796,9 @@ const form = ref({
   alamat: '',
   telepon: '',
   email: '',
-  berdiri_sejak: ''
+  berdiri_sejak: '',
+  lat: '',
+  lng: ''
 })
 
 const unitForm = ref({
@@ -1387,4 +1399,16 @@ onMounted(() => {
 .loading-state-list, .empty-state-list { text-align: center; padding: 20px; font-size: 12px; color: var(--text3); }
 .spin { animation: spin .8s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+
+<style scoped>
+.action-btn-styled {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+}
+.btn-edit-styled { background: #eff6ff; color: #3b82f6; }
+.btn-edit-styled:hover { background: #dbeafe; }
+.btn-delete-styled { background: #fef2f2; color: #ef4444; }
+.btn-delete-styled:hover { background: #fee2e2; }
+.btn-view-styled { background: #f0fdf4; color: #22c55e; }
+.btn-view-styled:hover { background: #dcfce7; }
 </style>

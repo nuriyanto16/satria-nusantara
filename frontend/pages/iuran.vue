@@ -385,10 +385,8 @@
           <table v-else class="data-table">
             <thead>
               <tr>
-                <th>ID Transaksi</th>
                 <th>Referensi</th>
                 <th>Provider</th>
-                <th>Provider ID</th>
                 <th>Nominal</th>
                 <th>Waktu Dibuat</th>
                 <th>Status</th>
@@ -396,7 +394,6 @@
             </thead>
             <tbody>
               <tr v-for="gw in filteredGatewayList" :key="gw.id" class="table-row-clickable">
-                <td style="font-size:11px;font-family:monospace;color:var(--text2);">{{ gw.id }}</td>
                 <td>
                   <div style="font-size:12px;font-weight:600;text-transform:uppercase;">{{ gw.referenceType || 'BLBA' }}</div>
                   <div style="font-size:10px;color:var(--text3);">{{ gw.description || '-' }}</div>
@@ -406,7 +403,6 @@
                     <i class="ti ti-plug" style="margin-right:2px;"></i>{{ gw.provider || 'Xendit' }}
                   </span>
                 </td>
-                <td style="font-size:11px;font-family:monospace;color:var(--text2);">{{ gw.providerId || '-' }}</td>
                 <td style="font-weight:700;color:var(--text1);">Rp {{ formatRupiah(gw.amount) }}</td>
                 <td style="font-size:11px;color:var(--text3);">
                   <div style="font-weight:600;color:var(--text2);">{{ new Date(gw.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) }}</div>
@@ -493,8 +489,8 @@
             <div class="sum-row"><span class="sum-key">Xendit ID</span><span class="sum-val" style="font-size:10px;font-family:monospace;">{{ xenditResult.invoiceId || xenditResult.xenditId }}</span></div>
             <div class="sum-row"><span class="sum-key">Berlaku hingga</span><span class="sum-val">24 jam</span></div>
           </div>
-          <div v-else style="display:flex;flex-direction:column;gap:14px;">
-            <div class="alert-info-box" style="border-color:#0066ff40;background:#0066ff0d;">
+          <div v-else style="display:flex;flex-direction:column;gap:20px;">
+            <div class="alert-info-box" style="border-color:#0066ff40;background:#0066ff0d;margin-bottom:0;">
               <i class="ti ti-info-circle" style="color:#0066ff;"></i>
               <span>Anggota akan menerima link pembayaran yang dapat dibuka di browser. Mendukung <strong>OVO, DANA, GoPay, Transfer Bank, Alfamart</strong> dan lainnya.</span>
             </div>
@@ -818,21 +814,21 @@ const onXenditSearchInput = () => {
     xenditForm.value.memberId = ''
   }
 
-  xenditSearchTimeout = setTimeout(async () => {
+  xenditSearchTimeout = setTimeout(() => {
     try {
-      const data = await api.get(`/organization/anggota?search=${xenditSearchQuery.value}&limit=20`)
-      xenditSearchResults.value = data || []
+      const query = xenditSearchQuery.value.toLowerCase()
+      xenditSearchResults.value = anggotaBLBAList.value.filter(m => m.nama.toLowerCase().includes(query) || m.nomor.toLowerCase().includes(query))
       showXenditDropdown.value = true
     } catch (e) {
       console.error(e)
     }
-  }, 300)
+  }, 100)
 }
 
 const selectXenditMember = (m: any) => {
   xenditForm.value.memberId = m.id
   xenditForm.value.nama = m.nama
-  xenditForm.value.email = m.email || ''
+  xenditForm.value.email = m.email || (m.nama.split(' ')[0].toLowerCase() + '@satrianusantara.org')
   xenditSearchQuery.value = m.nama
   showXenditDropdown.value = false
 }
