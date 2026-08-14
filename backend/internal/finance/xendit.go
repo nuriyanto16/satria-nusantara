@@ -164,6 +164,32 @@ func (x *XenditService) CreateInvoice(req CreateInvoiceRequest) (*XenditInvoice,
 	return &invoice, nil
 }
 
+// GetInvoice fetches an invoice by ID
+func (x *XenditService) GetInvoice(invoiceID string) (*XenditInvoice, error) {
+	httpReq, err := http.NewRequest("GET", xenditBaseURL+"/v2/invoices/"+invoiceID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("new request: %w", err)
+	}
+	httpReq.Header.Set("Authorization", x.basicAuthHeader())
+
+	resp, err := x.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("http do: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("xendit error [%d]: %s", resp.StatusCode, string(respBody))
+	}
+
+	var invoice XenditInvoice
+	if err := json.Unmarshal(respBody, &invoice); err != nil {
+		return nil, fmt.Errorf("unmarshal: %w", err)
+	}
+	return &invoice, nil
+}
+
 // VerifyWebhookToken validates the incoming Xendit webhook token
 func (x *XenditService) VerifyWebhookToken(r *http.Request) bool {
 	incoming := r.Header.Get("x-callback-token")

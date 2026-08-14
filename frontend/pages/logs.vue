@@ -222,14 +222,14 @@ const fetchLogs = async () => {
   loading.value = true
   try {
     const endpoint = `/admin/logs/${activeTab.value === 'error' ? 'errors' : activeTab.value === 'audit' ? 'audit' : 'payments'}?page=${page.value}`
-    const { data } = await api.get(endpoint)
+    const res = await api.get(endpoint)
     
     if (activeTab.value === 'audit') {
-      auditLogs.value = data.data || []
+      auditLogs.value = res.data || []
     } else if (activeTab.value === 'payment') {
-      paymentLogs.value = data.data || []
+      paymentLogs.value = res.data || []
     } else {
-      appErrors.value = data.data || []
+      appErrors.value = res.data || []
     }
   } catch (e) {
     console.error('Failed fetching logs', e)
@@ -281,3 +281,10 @@ onMounted(() => {
   fetchLogs()
 })
 </script>
+
+<style scoped>
+.tabs-bar { display: flex; gap: 4px; border-bottom: 1px solid var(--border); background: var(--card); padding: 0 20px; flex-shrink: 0; }
+.tab { padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--text2); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 6px; }
+.tab.active { color: var(--hijau); border-bottom-color: var(--hijau); }
+.tab-count { background: var(--hijau3); color: var(--hijau); border-radius: 10px; padding: 1px 5px; font-size: 9px; font-weight: 700; }
+</style>

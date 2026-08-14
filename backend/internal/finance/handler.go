@@ -20,6 +20,8 @@ type PaymentTransaction struct {
 	ReferenceType string     `json:"referenceType"`
 	ReferenceID   string     `json:"referenceId"`
 	UserID        string     `json:"userId"`
+	Nama          string     `json:"nama"`
+	Nomor         string     `json:"nomor"`
 	Amount        int        `json:"amount"`
 	Description   string     `json:"description"`
 	Provider      string     `json:"provider"`
@@ -66,9 +68,10 @@ func (h *Handler) GetTransactions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.db.QueryContext(r.Context(), `
-		SELECT id, reference_type, reference_id, user_id, amount, description, provider, provider_id, payment_url, status, paid_at, created_at
-		FROM payment_transactions
-		ORDER BY created_at DESC
+		SELECT p.id, p.reference_type, p.reference_id, p.user_id, p.amount, p.description, p.provider, p.provider_id, p.payment_url, p.status, p.paid_at, p.created_at, u.nama_lengkap, u.nomor_anggota
+		FROM payment_transactions p
+		LEFT JOIN users u ON p.user_id = u.id
+		ORDER BY p.created_at DESC
 	`)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to query transactions")
@@ -79,21 +82,60 @@ func (h *Handler) GetTransactions(w http.ResponseWriter, r *http.Request) {
 	var txs []PaymentTransaction
 	for rows.Next() {
 		var tx PaymentTransaction
-		var refID sql.NullString
-		var uID sql.NullString
+		var refID, uID, nama, nomor sql.NullString
 		var paidAt sql.NullTime
-		if err := rows.Scan(&tx.ID, &tx.ReferenceType, &refID, &uID, &tx.Amount, &tx.Description, &tx.Provider, &tx.ProviderID, &tx.PaymentURL, &tx.Status, &paidAt, &tx.CreatedAt); err != nil {
+		if err := rows.Scan(&tx.ID, &tx.ReferenceType, &refID, &uID, &tx.Amount, &tx.Description, &tx.Provider, &tx.ProviderID, &tx.PaymentURL, &tx.Status, &paidAt, &tx.CreatedAt, &nama, &nomor); err != nil {
 			log.Println("Scan error:", err)
 			continue
 		}
 		if refID.Valid { tx.ReferenceID = refID.String }
 		if uID.Valid { tx.UserID = uID.String }
+		if nama.Valid { tx.Nama = nama.String }
+		if nomor.Valid { tx.Nomor = nomor.String }
 		if paidAt.Valid { tx.PaidAt = &paidAt.Time }
 		txs = append(txs, tx)
 	}
 	if txs == nil { txs = []PaymentTransaction{} }
 
 	response.Success(w, http.StatusOK, "Admin Transactions", txs)
+}
+
+// POST /api/v1/admin/iuran-transactions/{id}/sync
+func (h *Handler) SyncXenditTransaction(w http.ResponseWriter, r *http.Request) {
+	txID := chi.URLParam(r, "id")
+	if h.db == nil {
+		response.Error(w, http.StatusInternalServerError, "No DB connection")
+		return
+	}
+
+	var providerID string
+	err := h.db.QueryRow(`SELECT provider_id FROM payment_transactions WHERE id = $1`, txID).Scan(&providerID)
+	if err != nil {
+		response.Error(w, http.StatusNotFound, "Transaction not found")
+		return
+	}
+
+	// Fetch from Xendit
+	inv, err := h.xendit.GetInvoice(providerID)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Gagal sinkronisasi dari Xendit: " + err.Error())
+		return
+	}
+
+	// Update DB
+	if inv.Status == "PAID" {
+		var paidAt time.Time
+		if inv.PaidAt != nil {
+			paidAt, _ = time.Parse(time.RFC3339, *inv.PaidAt)
+		} else {
+			paidAt = time.Now()
+		}
+		h.db.Exec(`UPDATE payment_transactions SET status = 'PAID', paid_at = $1 WHERE id = $2`, paidAt, txID)
+	} else if inv.Status == "EXPIRED" {
+		h.db.Exec(`UPDATE payment_transactions SET status = 'EXPIRED' WHERE id = $1`, txID)
+	}
+
+	response.Success(w, http.StatusOK, "Sinkronisasi berhasil", inv)
 }
 
 // GET /api/v1/finance/history?userId=xxx

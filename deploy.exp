@@ -1,0 +1,16 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.133.150.102
+expect "password:"
+send "mountain-87%-ninja\r"
+expect "$ "
+send "cd /home/ubuntu/apps/satrianusantara\r"
+expect "$ "
+send "git pull origin main\r"
+expect "$ "
+send "sudo docker-compose up -d --build frontend backend\r"
+expect "password for ubuntu: "
+send "mountain-87%-ninja\r"
+expect "$ "
+send "exit\r"
+expect eof

@@ -116,6 +116,7 @@ func main() {
 		r.Route("/admin", func(r chi.Router) {
 			r.Get("/iuran-transactions", financeHandler.GetTransactions)
 			r.Post("/iuran-transactions/{id}/verify", financeHandler.VerifyTransaction)
+			r.Post("/iuran-transactions/{id}/sync", financeHandler.SyncXenditTransaction)
 			r.Route("/logs", logsHandler.Routes())
 		})
 	})

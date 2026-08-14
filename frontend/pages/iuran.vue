@@ -409,10 +409,15 @@
                   <div>{{ new Date(gw.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}</div>
                 </td>
                 <td>
-                  <span :class="['status-badge', gw.status === 'PAID' ? 'lunas' : gw.status === 'PENDING' ? 'pending' : 'belum']">
-                    <i :class="gw.status === 'PAID' ? 'ti ti-check' : gw.status === 'PENDING' ? 'ti ti-clock' : 'ti ti-x'"></i>
-                    {{ gw.status }}
-                  </span>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span :class="['status-badge', gw.status === 'PAID' ? 'lunas' : gw.status === 'PENDING' ? 'pending' : 'belum']">
+                      <i :class="gw.status === 'PAID' ? 'ti ti-check' : gw.status === 'PENDING' ? 'ti ti-clock' : 'ti ti-x'"></i>
+                      {{ gw.status === 'PAID' ? 'LUNAS' : gw.status === 'PENDING' ? 'MENUNGGU' : 'EXPIRED' }}
+                    </span>
+                    <button v-if="gw.status === 'PENDING'" class="action-btn-styled btn-edit-styled" @click.stop="syncGatewayTrx(gw)" title="Cek Status Pembayaran">
+                      <i class="ti ti-refresh"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -975,22 +980,55 @@ const fetchTransactions = async () => {
           relTime = `${diffDays} hari lalu`
         }
 
+        let mappedStatus = t.status
+        if (t.status === 'PENDING') mappedStatus = 'pending'
+        else if (t.status === 'PAID') mappedStatus = 'lunas'
+        else if (t.status === 'EXPIRED') mappedStatus = 'ditolak'
+
+        let bulan = t.bulan || 'Juli 2026'
+        if (!t.bulan && t.description && t.description.includes('BLBA')) {
+           bulan = t.description.replace('BLBA Satria Nusantara - ', '')
+        }
+
         return {
           id: t.id,
           nama: t.nama || 'Anggota SN',
           nomor: t.nomor || 'SN-ANGGOTA',
-          bulan: t.bulan || 'Juli 2026',
-          metode: t.paymentMethod,
+          bulan: bulan,
+          metode: t.paymentMethod || t.provider || 'Transfer',
           nominal: t.amount,
           waktu: formattedTime,
           relativeTime: relTime,
-          status: t.status,
+          status: mappedStatus,
           buktiUrl: t.buktiUrl
         }
       })
     }
   } catch (e) {
     console.error('Gagal memuat transaksi:', e)
+  }
+}
+
+const syncGatewayTrx = async (gw: any) => {
+  try {
+    gw._syncing = true
+    const res = await api.post(`/admin/iuran-transactions/${gw.id}/sync`)
+    if (res && res.status) {
+       gw.status = res.status
+       if (res.status === 'PAID') {
+         alert('✅ Pembayaran telah berhasil dilunasi!')
+       } else if (res.status === 'EXPIRED') {
+         alert('❌ Link pembayaran telah kadaluarsa.')
+       } else {
+         alert('⏳ Status pembayaran masih ' + res.status)
+       }
+    }
+    await fetchGatewayTransactions()
+    await fetchTransactions()
+  } catch (e: any) {
+    alert('Gagal cek pembayaran: ' + (e?.message || 'Error dari server'))
+  } finally {
+    gw._syncing = false
   }
 }
 const fetchGatewayTransactions = async () => {
