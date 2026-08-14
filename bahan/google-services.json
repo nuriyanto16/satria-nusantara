@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "897350322480",
+    "project_id": "satria-nusantara-project01",
+    "storage_bucket": "satria-nusantara-project01.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897350322480:android:06f60bca01e37dce4e60f5",
+        "android_client_info": {
+          "package_name": "com.example.satria_nusantara_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxPB75YwgidibFF-8tf3Ss1Sj0iGEF1XE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

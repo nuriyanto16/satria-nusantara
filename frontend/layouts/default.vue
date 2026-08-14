@@ -33,6 +33,7 @@
       <NuxtLink to="/konten" class="sb-item"><i class="ti ti-news"></i> Konten & Artikel</NuxtLink>
 
       <div class="sb-section">Sistem</div>
+      <NuxtLink to="/logs" class="sb-item"><i class="ti ti-activity"></i> Log & Audit</NuxtLink>
       <NuxtLink to="/user"       class="sb-item"><i class="ti ti-user-cog"></i> Manajemen User</NuxtLink>
       <NuxtLink to="/pengaturan" class="sb-item"><i class="ti ti-settings"></i> Pengaturan</NuxtLink>
       <NuxtLink to="/dokumentasi" class="sb-item"><i class="ti ti-file-text"></i> Dokumentasi</NuxtLink>
@@ -158,13 +159,34 @@
               </div>
             </div>
           </div>
-          <div class="tb-user-info" @click="handleLogout" title="Klik untuk keluar dari sistem">
+          <div class="tb-user-info" @click.stop="showUserMenu = !showUserMenu" title="Menu Akun">
             <div class="tb-avatar">{{ userInitials }}</div>
             <div class="user-meta-details">
               <div class="tb-uname">{{ authStore.user?.nama_lengkap || 'Sri Astuti' }}</div>
               <div class="tb-urole">{{ authStore.user?.role_name || 'Admin Pusat' }}</div>
             </div>
-            <i class="ti ti-logout" style="font-size:15px;color:var(--merah);margin-left:4px"></i>
+            <i class="ti ti-chevron-down" style="font-size:12px;color:var(--text3);margin-left:4px"></i>
+            
+            <!-- User Menu Dropdown -->
+            <div v-if="showUserMenu" class="user-dropdown" @click.stop>
+              <div class="ud-header">
+                <div class="ud-name">{{ authStore.user?.nama_lengkap || 'Sri Astuti' }}</div>
+                <div class="ud-email">{{ authStore.user?.email || 'admin@satrianusantara.id' }}</div>
+              </div>
+              <div class="ud-body">
+                <NuxtLink to="/profil" class="ud-item" @click="showUserMenu = false">
+                  <i class="ti ti-user"></i> Profil Saya
+                </NuxtLink>
+                <div class="ud-item mobile-only" @click="toggleTheme">
+                  <i :class="isDarkMode ? 'ti ti-sun' : 'ti ti-moon'"></i> Mode Gelap
+                </div>
+              </div>
+              <div class="ud-footer">
+                <div class="ud-item text-red" @click="handleLogout">
+                  <i class="ti ti-logout"></i> Keluar
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -207,6 +229,7 @@ const authStore = useAuthStore()
 const isSidebarOpen = ref(false)
 const isDarkMode = ref(false)
 const apkUrl = ref('')
+const showUserMenu = ref(false)
 
 const applyTheme = (isDark) => {
   if (isDark) {
@@ -367,6 +390,7 @@ onMounted(() => {
   document.addEventListener('click', () => {
     showNotificationsPopover.value = false
     showSearchModal.value = false
+    showUserMenu.value = false
   })
 
   // Keyboard shortcut Cmd+K or Ctrl+K
@@ -428,6 +452,7 @@ watch(() => route.path, () => {
   display: flex;
   height: 100vh;
   overflow: hidden;
+  position: relative;
 }
 
 .topbar {
@@ -699,4 +724,63 @@ watch(() => route.path, () => {
 .sdf-view-all { background: none; border: none; color: var(--hijau); font-weight: 700; cursor: pointer; font-size: 10px; }
 .sdf-view-all:hover { text-decoration: underline; }
 
+/* User Menu Dropdown */
+.tb-user-info { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: var(--r8); position: relative; }
+.tb-user-info:hover { background: var(--surface); }
+.user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; width: 220px; background: var(--card); border: 1px solid var(--border); border-radius: var(--r12); box-shadow: var(--shadow-lg); z-index: 1002; overflow: hidden; display: flex; flex-direction: column; }
+.ud-header { padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.ud-name { font-weight: 700; font-size: 13px; color: var(--text1); }
+.ud-email { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.ud-body { padding: 6px 0; }
+.ud-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; text-decoration: none; }
+.ud-item:hover { background: var(--surface); color: var(--hijau); }
+.ud-footer { border-top: 1px solid var(--border); padding: 6px 0; }
+.ud-item.text-red { color: var(--merah); }
+.ud-item.text-red:hover { background: rgba(220, 38, 38, 0.05); }
+.mobile-only { display: none; }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .tb-breadcrumb { display: none; }
+  .tb-scope-badge { display: none; }
+  .tb-search-bar { width: 40px; justify-content: center; overflow: hidden; padding: 6px; cursor: pointer; }
+  .tb-search-bar input { display: none; }
+  .tb-search-bar .search-kbd { display: none; }
+  .user-meta-details { display: none; }
+  .mobile-only { display: flex; }
+  
+  .search-dropdown { position: fixed; top: 60px; left: 16px; right: 16px; width: auto; }
+  
+  .layout .sidebar {
+    position: absolute;
+    left: -280px;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    z-index: 2000;
+    transition: left 0.3s ease;
+    box-shadow: none;
+  }
+  
+  .layout.sidebar-open .sidebar {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.1);
+  }
+  
+  /* Semi-transparent overlay for mobile sidebar */
+  .layout.sidebar-open::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1999;
+  }
+}
+
+@media print {
+  .sidebar, .topbar, .tabs-header, .toolbar, .list-footer, .action-btns { display: none !important; }
+  .layout { height: auto; overflow: visible; display: block; }
+  .panel-left, .panel-right { width: 100%; border: none; }
+  .list-scroll { overflow: visible; max-height: none; }
+}
 </style>

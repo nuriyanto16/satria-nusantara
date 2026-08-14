@@ -69,6 +69,9 @@ services:
       - REDIS_PASS=sn_redis_2026
       - JWT_SECRET=satria-nusantara-jwt-secret-key-2026
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - XENDIT_API_KEY=${XENDIT_API_KEY:-xnd_public_development_7wB51nwFxZasCXmyAe4x_bxA3vBeqqQfKvGCFdFHeVaPha3LgQkRDRmGoA8GqrOp}
+      - XENDIT_SECRET_KEY=${XENDIT_SECRET_KEY:-xnd_development_fugSZrUg7cxqcqPSH6DDxhViGFS0J7TYYbYCKV45aVY0fyev8uTjWn4PzUFWx}
+      - XENDIT_WEBHOOK_TOKEN=${XENDIT_WEBHOOK_TOKEN:-tA4z5aeBchmLxkkTV5d0Hynwcbn2ovuyD1nHSDylhbbGgrT5}
       - MIDTRANS_SERVER_KEY=${MIDTRANS_SERVER_KEY:-}
       - MIDTRANS_CLIENT_KEY=${MIDTRANS_CLIENT_KEY:-}
       - MIDTRANS_ENV=sandbox

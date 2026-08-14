@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:app_links/app_links.dart';
 import 'core/theme.dart';
 import 'data/repositories.dart';
 import 'blocs/auth_bloc.dart';
@@ -11,8 +12,34 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  late AppLinks _appLinks;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinks();
+  }
+
+  void _initDeepLinks() {
+    _appLinks = AppLinks();
+    
+    // Handle link when app is in foreground/background
+    _appLinks.uriLinkStream.listen((uri) {
+      debugPrint('Deep Link received: $uri');
+      if (uri.host == 'payment-success') {
+        _navigatorKey.currentState?.pushNamed('/payment_success');
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +66,7 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'Satria Nusantara',
             debugShowCheckedModeBanner: false,
+            navigatorKey: _navigatorKey,
             theme: getBrandTheme(),
             darkTheme: getBrandDarkTheme(),
             themeMode: currentMode,
@@ -66,6 +94,7 @@ class MyApp extends StatelessWidget {
               '/nafas': (context) => const NafasDetailScreen(),
               '/reservasi': (context) => ReservasiScreen(),
               '/antrian': (context) => AntrianScreen(),
+              '/payment_history': (context) => const PaymentHistoryScreen(),
             },
           );
         },

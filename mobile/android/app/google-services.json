@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "897350322480",
+    "project_id": "satria-nusantara-project01",
+    "storage_bucket": "satria-nusantara-project01.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897350322480:android:06f60bca01e37dce4e60f5",
+        "android_client_info": {
+          "package_name": "com.example.satria_nusantara_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "897350322480-4nds88agc51fb7r4oev745qufsmitsf4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.satria_nusantara_mobile",
+            "certificate_hash": "b9e6398eb836cff664e3ca4f772a36532f944440"
+          }
+        },
+        {
+          "client_id": "897350322480-3jbn2lkvk1vh8vs8dtgrj4lnlpfvgm96.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxPB75YwgidibFF-8tf3Ss1Sj0iGEF1XE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "897350322480-3jbn2lkvk1vh8vs8dtgrj4lnlpfvgm96.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

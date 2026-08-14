@@ -81,11 +81,14 @@
         <div class="calendar-day-header">Min</div>
 
         <!-- Cells -->
-        <div v-for="(day, index) in daysInMonth" :key="index" :class="['calendar-cell', { empty: !day.day }]">
+        <div v-for="(day, index) in daysInMonth" :key="index" :class="['calendar-cell', { empty: !day.day, 'is-today': day.isToday }]">
           <template v-if="day.day">
-            <span class="calendar-day-num">{{ day.day }}</span>
+            <div class="calendar-day-header-wrap">
+              <span :class="['calendar-day-num', { 'today-num': day.isToday }]">{{ day.day }}</span>
+              <span v-if="day.sessions.length > 0" class="calendar-day-badge">{{ day.sessions.length }} sesi</span>
+            </div>
             <div class="calendar-sessions">
-              <div v-for="s in day.sessions" :key="s.id" class="calendar-session-item" :title="`${s.unit_nama} - ${s.jenis}`" @click="showCalendarDetail(s)">
+              <div v-for="s in day.sessions" :key="s.id" :class="['calendar-session-item', getJenisClass(s.jenis)]" :title="`${s.unit_nama} - ${s.jenis}`" @click="showCalendarDetail(s)">
                 <span class="csi-time">{{ s.jam_mulai.substring(0, 5) }}</span>
                 <span class="csi-title">{{ s.unit_nama }}</span>
               </div>
@@ -320,9 +323,13 @@ const daysInMonth = computed(() => {
       return s.tanggal && s.tanggal.startsWith(dStr)
     })
     
+    const today = new Date()
+    const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d
+
     days.push({
       day: d,
       dateStr: dStr,
+      isToday: isToday,
       sessions: matchedSessions
     })
   }
@@ -634,20 +641,37 @@ watch(currentView, () => {
 .view-toggle-btn.active { background: var(--hijau); color: #fff; }
 
 /* Calendar CSS styling */
-.calendar-view { background: var(--card); border: 1px solid var(--border); border-radius: var(--r12); padding: 20px; box-shadow: var(--shadow-sm); }
-.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.calendar-month-title { font-size: 16px; font-weight: 800; margin: 0; color: var(--text1); }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-.calendar-day-header { text-align: center; font-weight: 700; font-size: 11px; color: var(--text3); text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-.calendar-cell { min-height: 100px; border: 1px solid var(--border); border-radius: var(--r8); padding: 8px; background: var(--surface); display: flex; flex-direction: column; gap: 6px; transition: border-color .15s; }
-.calendar-cell:hover:not(.empty) { border-color: var(--hijau); }
+.calendar-view { background: var(--card); border: 1px solid var(--border); border-radius: var(--r12); padding: 24px; box-shadow: var(--shadow-sm); }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.calendar-month-title { font-size: 18px; font-weight: 800; margin: 0; color: var(--text1); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.calendar-day-header { text-align: center; font-weight: 800; font-size: 11px; color: var(--text3); text-transform: uppercase; padding-bottom: 12px; border-bottom: 1px solid var(--border); letter-spacing: 0.5px; }
+
+.calendar-cell { min-height: 120px; border: 1px solid var(--border2); border-radius: var(--r8); padding: 10px; background: #fff; display: flex; flex-direction: column; gap: 8px; transition: all .2s ease; position: relative; overflow: hidden; }
+.calendar-cell:hover:not(.empty) { border-color: var(--hijau); box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 1; transform: translateY(-2px); }
+.calendar-cell.is-today { border-color: var(--hijau); background: var(--hijau3); }
 .calendar-cell.empty { background: transparent; border: none; }
-.calendar-day-num { font-size: 12px; font-weight: 700; color: var(--text2); align-self: flex-start; }
-.calendar-sessions { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 70px; }
-.calendar-session-item { font-size: 9px; font-weight: 700; background: var(--hijau3); color: var(--hijau); padding: 3px 6px; border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; gap: 1px; line-height: 1.2; text-align: left; transition: all .15s; border-left: 2.5px solid var(--hijau); }
-.calendar-session-item:hover { background: var(--hijau4); transform: translateY(-1px); }
-.csi-time { font-size: 8px; color: var(--hijau2); }
+
+.calendar-day-header-wrap { display: flex; justify-content: space-between; align-items: center; }
+.calendar-day-num { font-size: 13px; font-weight: 700; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; }
+.today-num { background: var(--hijau); color: #fff; }
+.calendar-day-badge { font-size: 9px; font-weight: 700; color: var(--text3); background: var(--surface); padding: 2px 6px; border-radius: 10px; }
+.is-today .calendar-day-badge { background: #fff; color: var(--hijau); }
+
+.calendar-sessions { display: flex; flex-direction: column; gap: 5px; overflow-y: auto; max-height: 80px; padding-right: 2px; }
+.calendar-sessions::-webkit-scrollbar { width: 4px; }
+.calendar-sessions::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.calendar-session-item { font-size: 10px; padding: 4px 8px; border-radius: 6px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; text-align: left; transition: all .15s; border-left: 3px solid transparent; }
+.calendar-session-item:hover { filter: brightness(0.95); transform: translateX(2px); }
+.csi-time { font-size: 8px; font-weight: 600; opacity: 0.8; }
 .csi-title { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Colors based on jenis */
+.calendar-session-item.rutin { background: #e6f6ec; color: #1a5c2a; border-left-color: #22c55e; }
+.calendar-session-item.khusus { background: #fff8e0; color: #855c00; border-left-color: #f59e0b; }
+.calendar-session-item.pelatih { background: #e0f5fb; color: #0c5478; border-left-color: #3b82f6; }
 
 /* Responsive tweaks */
 @media(max-width: 768px) {

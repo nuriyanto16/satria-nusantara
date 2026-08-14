@@ -4,6 +4,8 @@ import 'dart:async';
 import '../core/js_interop.dart' as js_interop;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../core/theme.dart';
@@ -1984,6 +1986,15 @@ class IuranTab extends StatelessWidget {
           'BLBA Bulanan',
           style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Riwayat Pembayaran',
+            onPressed: () {
+              Navigator.pushNamed(context, '/payment_history');
+            },
+          ),
+        ],
       ),
       body: BlocBuilder<IuranBloc, IuranState>(
         builder: (context, state) {
@@ -6706,61 +6717,214 @@ class _TransferBuktiScreenState extends State<TransferBuktiScreen> {
 }
 
 // ─── PAYMENT SUCCESS SCREEN ──────────────────────────────────────────────────
-class PaymentSuccessScreen extends StatelessWidget {
+
+class PaymentSuccessScreen extends StatefulWidget {
   const PaymentSuccessScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments as Map?;
-    final walletName = args?['wallet'] ?? 'E-wallet';
+  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+}
 
+class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
+  bool _isLoading = true;
+  Map<String, dynamic>? _transaction;
+  String _userName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLatestTransaction();
+  }
+
+  Future<void> _fetchLatestTransaction() async {
+    try {
+      final dio = Dio();
+      final authBloc = context.read<AuthBloc>();
+      String userId = '';
+      if (authBloc.state is Authenticated) {
+        userId = (authBloc.state as Authenticated).user.id;
+        _userName = (authBloc.state as Authenticated).user.nama;
+      }
+      
+      final resp = await dio.get('https://nfmtech.my.id/product/satrianusantara/api/v1/finance/history?userId=$userId');
+      if (resp.statusCode == 200 && resp.data != null) {
+        final List<dynamic> data = resp.data['data'] ?? [];
+        if (data.isNotEmpty) {
+          setState(() {
+            _transaction = data.first;
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching latest transaction: $e');
+    }
+    setState(() => _isLoading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Colors.green,
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+
+    final String noDaftar = _transaction?['referenceId'] ?? 'INV-UNKNOWN';
+    final int amount = _transaction?['amount'] ?? 0;
+    final String desc = _transaction?['description'] ?? 'Pembayaran Satria Nusantara';
+    
     return Scaffold(
-      backgroundColor: (themeNotifier.isDarkMode ? BrandColors.cardDark : Colors.white),
+      backgroundColor: Colors.green,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.check_circle, color: BrandColors.hijau, size: 80),
-                SizedBox(height: 24),
-                Text(
-                  'Pembayaran Berhasil',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: (themeNotifier.isDarkMode ? BrandColors.text1Dark : BrandColors.text1)),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Pembayaran BLBA Anda via $walletName telah berhasil dikonfirmasi.',
-                  style: TextStyle(fontSize: 14, color: (themeNotifier.isDarkMode ? BrandColors.text2Dark : BrandColors.text2)),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: BrandColors.hijau,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: () {
-                      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-                    },
-                    child: Text('Kembali ke Beranda', style: TextStyle(fontWeight: FontWeight.bold)),
+        bottom: false,
+        child: Column(
+          children: [
+            const SizedBox(height: 30),
+            const Icon(Icons.check_circle_outline, color: Colors.white, size: 60),
+            const SizedBox(height: 12),
+            const Text(
+              'Pembayaran Berhasil!',
+              style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'E-tiket Anda sudah aktif. Simpan bukti ini.',
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 30),
+            
+            // Ticket View
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F5F7), // Light grayish background for the bottom half
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
                   ),
                 ),
-              ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Top Card (Nominal)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                        ),
+                        child: Column(
+                          children: [
+                            Text('NOMOR INVOICE', style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text(noDaftar, style: TextStyle(fontSize: 18, color: Colors.green.shade700, fontWeight: FontWeight.bold)),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Divider(),
+                            ),
+                            Text('TOTAL TRANSFER', style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text('Rp $amount', style: const TextStyle(fontSize: 28, color: Colors.black87, fontWeight: FontWeight.w900)),
+                            const SizedBox(height: 8),
+                            Text(desc, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Bottom Card (QR Code)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                        ),
+                        child: Column(
+                          children: [
+                            Text(_userName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text('SATRIA NUSANTARA', style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
+                            
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              child: CustomPaint(
+                                size: const Size(double.infinity, 1),
+                                painter: DashedLinePainter(),
+                              ),
+                            ),
+                            
+                            Center(
+                              child: QrImageView(
+                                data: noDaftar,
+                                version: QrVersions.auto,
+                                size: 180.0,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Tunjukkan QR ini sebagai bukti
+pembayaran jika diperlukan.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                            )
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 30),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                          ),
+                          child: const Text('Kembali ke Beranda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
+
+class DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dashWidth = 5, dashSpace = 5, startX = 0;
+    final paint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = 2;
+    while (startX < size.width) {
+      canvas.drawLine(Offset(startX, 0), Offset(startX + dashWidth, 0), paint);
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
 
 // ─── SESI DETAIL SCREEN ──────────────────────────────────────────────────────
 class SesiDetailScreen extends StatelessWidget {
@@ -8871,6 +9035,163 @@ class _AntrianScreenState extends State<AntrianScreen> with SingleTickerProvider
         Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
         Text(label, style: TextStyle(fontSize: 10, color: color.withOpacity(0.8))),
       ],
+    );
+  }
+}
+
+
+// ─── PAYMENT HISTORY SCREEN ──────────────────────────────────────────────────
+class PaymentHistoryScreen extends StatefulWidget {
+  const PaymentHistoryScreen({super.key});
+
+  @override
+  State<PaymentHistoryScreen> createState() => _PaymentHistoryScreenState();
+}
+
+class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
+  bool _isLoading = true;
+  List<dynamic> _history = [];
+  String _error = '';
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHistory();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) { if (mounted) setState(() {}); });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _getRemainingTime(String createdAt) {
+    try {
+      final created = DateTime.parse(createdAt);
+      final expiry = created.add(const Duration(hours: 24));
+      final now = DateTime.now();
+      final diff = expiry.difference(now);
+      
+      if (diff.isNegative) return 'Expired';
+      
+      final h = diff.inHours;
+      final m = diff.inMinutes % 60;
+      final s = diff.inSeconds % 60;
+      return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  Future<void> _fetchHistory() async {
+    try {
+      final dio = Dio();
+      final authBloc = context.read<AuthBloc>();
+      String userId = '';
+      if (authBloc.state is Authenticated) {
+        userId = (authBloc.state as Authenticated).user.id;
+      }
+      
+      final resp = await dio.get('https://nfmtech.my.id/product/satrianusantara/api/v1/finance/history?userId=$userId');
+      if (resp.statusCode == 200 && resp.data != null) {
+        setState(() {
+          _history = resp.data['data'] ?? [];
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = 'Gagal memuat riwayat.';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Terjadi kesalahan: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toUpperCase()) {
+      case 'PAID': return Colors.green;
+      case 'PENDING': return Colors.orange;
+      case 'EXPIRED': return Colors.red;
+      default: return Colors.grey;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status.toUpperCase()) {
+      case 'PAID': return 'Berhasil';
+      case 'PENDING': return 'Menunggu Pembayaran';
+      case 'EXPIRED': return 'Kadaluarsa';
+      default: return status;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Riwayat Pembayaran')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error.isNotEmpty
+              ? Center(child: Text(_error))
+              : _history.isEmpty
+                  ? const Center(child: Text('Belum ada riwayat pembayaran.'))
+                  : ListView.builder(
+                      itemCount: _history.length,
+                      itemBuilder: (context, index) {
+                        final tx = _history[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: _getStatusColor(tx['status'] ?? '').withOpacity(0.2),
+                              child: Icon(
+                                (tx['status'] ?? '').toUpperCase() == 'PAID' ? Icons.check : Icons.access_time,
+                                color: _getStatusColor(tx['status'] ?? ''),
+                              ),
+                            ),
+                            title: Text(tx['description'] ?? 'Pembayaran'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Nominal: Rp ${tx['amount']}'),
+                                Row(
+                                  children: [
+                                    Text('Status: ${_getStatusText(tx['status'] ?? '')}', style: TextStyle(color: _getStatusColor(tx['status'] ?? ''), fontWeight: FontWeight.bold)),
+                                    if ((tx['status'] ?? '').toUpperCase() == 'PENDING' && tx['createdAt'] != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8.0),
+                                        child: Text(
+                                          '🕒 ${_getRemainingTime(tx['createdAt'])}',
+                                          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            trailing: (tx['status'] ?? '').toUpperCase() == 'PENDING'
+                                ? IconButton(
+                                    icon: const Icon(Icons.payment, color: Colors.blue),
+                                    onPressed: () async {
+                                      final url = tx['paymentUrl'];
+                                      if (url != null && await canLaunchUrl(Uri.parse(url))) {
+                                        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                                      }
+                                    },
+                                  )
+                                : null,
+                            isThreeLine: true,
+                          ),
+                        );
+                      },
+                    ),
     );
   }
 }

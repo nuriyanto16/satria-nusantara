@@ -567,6 +567,15 @@ html, body {
   padding: 4px;
 }
 
+@media (max-width: 992px) {
+  .tb-scope-badge {
+    display: none; /* Hide scope on tablet/mobile to save space */
+  }
+  .tb-search-bar {
+    width: 180px;
+  }
+}
+
 @media (max-width: 768px) {
   .tb-menu-toggle-btn {
     display: block;
@@ -594,10 +603,19 @@ html, body {
   
   .topbar {
     left: 0 !important;
+    padding: 0 12px;
   }
   .page-container {
     left: 0 !important;
-    padding: 16px;
+    padding: 16px 12px;
+  }
+
+  .tb-search-bar {
+    display: none; /* Hide search bar on mobile header entirely, or replace with icon */
+  }
+
+  .tb-breadcrumb {
+    font-size: 11px;
   }
 
   /* Grid layout overrides for responsiveness */
@@ -610,9 +628,7 @@ html, body {
   .cabang-grid {
     grid-template-columns: 1fr !important;
   }
-}
-
-@media (max-width: 768px) {
+  
   .table-card {
     overflow-x: auto !important;
   }
@@ -627,6 +643,16 @@ html, body {
   }
   .tb-uname, .tb-urole {
     display: none;
+  }
+  .tb-user-info {
+    padding: 4px;
+  }
+  .tb-right {
+    gap: 8px;
+  }
+  .tb-notif-btn {
+    width: 32px;
+    height: 32px;
   }
 }
 

@@ -432,3 +432,57 @@ CREATE INDEX idx_tagihan_blba_anggota ON tagihan_blba(anggota_id);
 CREATE INDEX idx_pendaftaran_event ON pendaftaran_event(event_id);
 CREATE INDEX idx_events_tanggal ON events(tanggal);
 CREATE INDEX idx_konten_slug ON konten(slug);
+
+-- ============================================================
+-- SCHEMA: PAYMENT TRANSACTIONS (GATEWAY)
+-- ============================================================
+CREATE TABLE payment_transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reference_type VARCHAR(50), -- 'blba', 'event'
+    reference_id UUID,          -- ID of tagihan_blba or pendaftaran_event
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    amount INT NOT NULL,
+    description TEXT,
+    provider VARCHAR(50) DEFAULT 'xendit',       
+    provider_id VARCHAR(255),   -- Xendit invoice ID
+    payment_url VARCHAR(500),   -- Xendit invoice URL
+    status VARCHAR(50) DEFAULT 'PENDING', -- PENDING, PAID, EXPIRED, FAILED
+    paid_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- LOGS MODULE --
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(255) NOT NULL,
+    entity VARCHAR(255),
+    entity_id VARCHAR(255),
+    details JSONB,
+    ip_address VARCHAR(50),
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS payment_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    transaction_id UUID,
+    provider VARCHAR(50) NOT NULL,
+    endpoint VARCHAR(255) NOT NULL,
+    request_payload JSONB,
+    response_payload JSONB,
+    status_code INTEGER,
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS app_errors (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    service VARCHAR(100),
+    error_type VARCHAR(100),
+    message TEXT NOT NULL,
+    stack_trace TEXT,
+    context JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);

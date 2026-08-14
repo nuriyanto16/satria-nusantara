@@ -87,6 +87,7 @@
           <i class="ti ti-arrows-exchange"></i> Transaksi Terbaru
           <span v-if="pendingCount > 0" class="tab-badge">{{ pendingCount }}</span>
         </button>
+        <button :class="['tab', { active: activeTab === 'gateway' }]" @click="activeTab = 'gateway'">Histori Gateway</button>
       </div>
 
       <!-- TAB 1: PER ANGGOTA -->
@@ -264,6 +265,9 @@
               <i class="ti ti-clock-exclamation"></i>
               {{ pendingCount }} menunggu konfirmasi
             </div>
+            <button class="export-btn" style="background:linear-gradient(135deg,#0050ff,#006fff);color:#fff;border-color:#0050ff;" @click="openXenditModal">
+              <i class="ti ti-credit-card"></i> Bayar via Xendit
+            </button>
             <button class="export-btn" @click="exportData('PDF')"><i class="ti ti-file-type-pdf"></i> PDF</button>
           </div>
         </div>
@@ -297,12 +301,12 @@
                   </div>
                 </td>
                 <td style="font-size:11px;color:var(--text2);">
-                  {{ trx.bulan.startsWith('BLBA') || trx.bulan.startsWith('EKT') || trx.bulan.startsWith('Latgab') || trx.bulan.startsWith('Pelatnas') ? trx.bulan : 'BLBA ' + trx.bulan }}
+                  {{ (trx.bulan || '').startsWith('BLBA') || (trx.bulan || '').startsWith('EKT') || (trx.bulan || '').startsWith('Latgab') || (trx.bulan || '').startsWith('Pelatnas') ? trx.bulan : 'BLBA ' + trx.bulan }}
                 </td>
                 <td>
                   <div style="display:flex;flex-direction:column;gap:3px;">
-                    <span class="metode-badge" :class="trx.metode.startsWith('Transfer') ? 'metode-bank' : ''">
-                      <i :class="trx.metode.startsWith('Transfer') ? 'ti ti-building-bank' : 'ti ti-wallet'"></i>
+                    <span class="metode-badge" :class="(trx.metode || '').startsWith('Transfer') ? 'metode-bank' : ''">
+                      <i :class="(trx.metode || '').startsWith('Transfer') ? 'ti ti-building-bank' : 'ti ti-wallet'"></i>
                       {{ trx.metode }}
                     </span>
                     <span v-if="trx.buktiUrl" style="font-size:10px;color:var(--biru);cursor:pointer;" @click.stop="viewBukti(trx)"><i class="ti ti-paperclip"></i> Lihat bukti</span>
@@ -352,6 +356,73 @@
           </div>
         </div>
       </div>
+
+      <!-- TAB 4: HISTORI GATEWAY -->
+      <div v-else-if="activeTab === 'gateway'" class="tab-container">
+        <div class="toolbar">
+          <div style="display:flex;gap:12px;align-items:center;">
+            <div class="search-box">
+              <i class="ti ti-search" style="color:var(--text3);margin-left:10px;"></i>
+              <input type="text" class="form-input" style="width: 250px;border:none;background:transparent;padding-left:8px;" placeholder="Cari transaksi..." v-model="searchGateway" />
+            </div>
+            <div class="toolbar-info">{{ filteredGatewayList.length }} transaksi gateway</div>
+          </div>
+          <div style="display:flex;gap:7px;align-items:center;">
+            <button class="export-btn" @click="fetchGatewayTransactions"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="export-btn" @click="exportData('Excel')"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+          </div>
+        </div>
+
+        <div class="list-scroll">
+          <div v-if="loadingGateway" style="padding: 20px; text-align: center;">
+            <i class="ti ti-loader-2 spin" style="font-size:24px; color:var(--hijau)"></i>
+            <div style="font-size:12px; color:var(--text3); margin-top:8px;">Memuat data gateway...</div>
+          </div>
+          <div v-else-if="filteredGatewayList.length === 0" class="empty-state">
+            <i class="ti ti-inbox" style="font-size:36px;color:var(--text3);"></i>
+            <div style="font-size:13px;color:var(--text3);margin-top:8px;">Belum ada riwayat gateway</div>
+          </div>
+          <table v-else class="data-table">
+            <thead>
+              <tr>
+                <th>ID Transaksi</th>
+                <th>Referensi</th>
+                <th>Provider</th>
+                <th>Provider ID</th>
+                <th>Nominal</th>
+                <th>Waktu Dibuat</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="gw in filteredGatewayList" :key="gw.id" class="table-row-clickable">
+                <td style="font-size:11px;font-family:monospace;color:var(--text2);">{{ gw.id }}</td>
+                <td>
+                  <div style="font-size:12px;font-weight:600;text-transform:uppercase;">{{ gw.referenceType || 'BLBA' }}</div>
+                  <div style="font-size:10px;color:var(--text3);">{{ gw.description || '-' }}</div>
+                </td>
+                <td>
+                  <span class="metode-badge" style="background:#f0f5ff;color:#0050ff;border:1px solid #0050ff40;">
+                    <i class="ti ti-plug" style="margin-right:2px;"></i>{{ gw.provider || 'Xendit' }}
+                  </span>
+                </td>
+                <td style="font-size:11px;font-family:monospace;color:var(--text2);">{{ gw.providerId || '-' }}</td>
+                <td style="font-weight:700;color:var(--text1);">Rp {{ formatRupiah(gw.amount) }}</td>
+                <td style="font-size:11px;color:var(--text3);">
+                  <div style="font-weight:600;color:var(--text2);">{{ new Date(gw.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) }}</div>
+                  <div>{{ new Date(gw.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}</div>
+                </td>
+                <td>
+                  <span :class="['status-badge', gw.status === 'PAID' ? 'lunas' : gw.status === 'PENDING' ? 'pending' : 'belum']">
+                    <i :class="gw.status === 'PAID' ? 'ti ti-check' : gw.status === 'PENDING' ? 'ti ti-clock' : 'ti ti-x'"></i>
+                    {{ gw.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- MODAL: LIHAT BUKTI TRANSFER -->
@@ -370,7 +441,7 @@
             <div class="sum-row">
                <span class="sum-key">Periode</span>
                <span class="sum-val">
-                 {{ selectedTrx.bulan.startsWith('BLBA') || selectedTrx.bulan.startsWith('EKT') || selectedTrx.bulan.startsWith('Latgab') || selectedTrx.bulan.startsWith('Pelatnas') ? selectedTrx.bulan : 'BLBA ' + selectedTrx.bulan }}
+                 {{ (selectedTrx.bulan || '').startsWith('BLBA') || (selectedTrx.bulan || '').startsWith('EKT') || (selectedTrx.bulan || '').startsWith('Latgab') || (selectedTrx.bulan || '').startsWith('Pelatnas') ? selectedTrx.bulan : 'BLBA ' + selectedTrx.bulan }}
                </span>
              </div>
             <div class="sum-row"><span class="sum-key">Metode</span><span class="sum-val">{{ selectedTrx.metode }}</span></div>
@@ -391,6 +462,106 @@
             <i class="ti ti-check"></i> Konfirmasi Lunas
           </button>
           <button v-else class="btn btn-outline" style="width:auto" @click="showBuktiModal = false">Tutup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: KIRIM LINK PEMBAYARAN XENDIT -->
+    <div v-if="showXenditModal" class="modal-overlay" @click.self="showXenditModal = false">
+      <div class="modal-card mini" style="overflow:visible;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="ti ti-credit-card" style="color:#0066ff;margin-right:6px;"></i>
+            Kirim Link Pembayaran Xendit
+          </div>
+          <button class="modal-close" @click="showXenditModal = false"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body" style="overflow:visible;">
+          <div v-if="xenditResult" style="display:flex;flex-direction:column;gap:12px;">
+            <div style="background:linear-gradient(135deg,#0050ff15,#00d4aa15);border:1.5px solid #0066ff40;border-radius:12px;padding:16px;text-align:center;">
+              <i class="ti ti-circle-check" style="font-size:32px;color:#00c853;"></i>
+              <div style="font-size:14px;font-weight:700;margin-top:8px;color:var(--text1);">Invoice Berhasil Dibuat!</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">Salin link di bawah dan kirim ke anggota</div>
+            </div>
+            <div style="background:var(--bg2);border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:var(--biru);word-break:break-all;flex:1;">{{ xenditResult.invoiceUrl }}</span>
+              <button class="action-btn" title="Salin Link" @click="copyLink(xenditResult.invoiceUrl)">
+                <i class="ti ti-copy"></i>
+              </button>
+            </div>
+            <div class="sum-row"><span class="sum-key">Nominal</span><span class="sum-val green">Rp {{ formatRupiah(xenditResult.amount || xenditForm.amount) }}</span></div>
+            <div class="sum-row"><span class="sum-key">Xendit ID</span><span class="sum-val" style="font-size:10px;font-family:monospace;">{{ xenditResult.invoiceId || xenditResult.xenditId }}</span></div>
+            <div class="sum-row"><span class="sum-key">Berlaku hingga</span><span class="sum-val">24 jam</span></div>
+          </div>
+          <div v-else style="display:flex;flex-direction:column;gap:14px;">
+            <div class="alert-info-box" style="border-color:#0066ff40;background:#0066ff0d;">
+              <i class="ti ti-info-circle" style="color:#0066ff;"></i>
+              <span>Anggota akan menerima link pembayaran yang dapat dibuka di browser. Mendukung <strong>OVO, DANA, GoPay, Transfer Bank, Alfamart</strong> dan lainnya.</span>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Pilih Anggota</label>
+              <div class="combobox-wrapper" style="position:relative;">
+                <div class="search-input-wrap">
+                  <i class="ti ti-search search-icon"></i>
+                  <input 
+                    type="text" 
+                    class="form-input with-icon" 
+                    placeholder="Ketik nama anggota..."
+                    v-model="xenditSearchQuery"
+                    @input="onXenditSearchInput"
+                    @focus="showXenditDropdown = true"
+                  />
+                  <i v-if="xenditForm.memberId" class="ti ti-circle-check check-icon" style="color:var(--hijau);"></i>
+                </div>
+                
+                <ul v-if="showXenditDropdown && xenditSearchResults.length > 0" class="combobox-dropdown">
+                  <li 
+                    v-for="m in xenditSearchResults" 
+                    :key="m.id" 
+                    @click="selectXenditMember(m)"
+                    class="combobox-item"
+                  >
+                    <div style="font-weight:600;">{{ m.nama }}</div>
+                    <div style="font-size:10px;color:var(--text3);">{{ m.unit_nama || m.unit }}</div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Email <span style="font-weight:400;color:var(--text3);">(Opsional)</span></label>
+                <div class="input-icon-wrap">
+                  <i class="ti ti-mail icon-prefix"></i>
+                  <input v-model="xenditForm.email" class="form-input with-prefix" type="email" placeholder="email@contoh.com" />
+                </div>
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label class="form-label">Periode Pembayaran</label>
+                <div class="input-icon-wrap">
+                  <i class="ti ti-calendar icon-prefix"></i>
+                  <input v-model="xenditForm.bulanDate" class="form-input with-prefix" type="month" />
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Nominal (Rp)</label>
+              <div class="input-icon-wrap">
+                <span class="text-prefix">Rp</span>
+                <input :value="formatRupiah(xenditForm.amount)" @input="onAmountInput" class="form-input with-text-prefix" type="text" placeholder="40.000" style="font-weight:700;font-size:16px;" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding-top:16px;border-top:1px solid var(--border);">
+          <button class="btn btn-outline" style="width:auto" @click="showXenditModal = false; xenditResult = null">Batal</button>
+          <button v-if="!xenditResult" :disabled="xenditLoading" class="btn btn-primary" style="width:auto;background:linear-gradient(135deg,#0050ff,#006fff);padding:0 24px;" @click="buatInvoiceXendit">
+            <i v-if="xenditLoading" class="ti ti-loader-2 spin"></i>
+            <i v-else class="ti ti-link"></i>
+            {{ xenditLoading ? 'Membuat...' : 'Buat Link Pembayaran' }}
+          </button>
         </div>
       </div>
     </div>
@@ -507,6 +678,35 @@ definePageMeta({ title: 'BLBA' })
 const api = useApi()
 
 const activeTab = ref('anggota')
+const searchGateway = ref('')
+const gatewayList = ref([])
+const loadingGateway = ref(false)
+const currentTime = ref(Date.now())
+let timerInterval: any = null
+
+onMounted(() => {
+  timerInterval = setInterval(() => {
+    currentTime.value = Date.now()
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (timerInterval) clearInterval(timerInterval)
+})
+
+const getRemainingTime = (createdAt: string) => {
+  if (!createdAt) return ''
+  const createdDate = new Date(createdAt).getTime()
+  const expiry = createdDate + (24 * 60 * 60 * 1000)
+  const diff = expiry - currentTime.value
+  
+  if (diff <= 0) return 'Expired'
+  
+  const h = Math.floor(diff / (1000 * 60 * 60))
+  const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  const s = Math.floor((diff % (1000 * 60)) / 1000)
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+}
 const filterStatus = ref('')
 const filterTrxStatus = ref('')
 const loading = ref(false)
@@ -578,6 +778,134 @@ const viewBukti = (trx: any) => {
   showBuktiModal.value = true
 }
 
+// ─── XENDIT STATE ─────────────────────────────────────────────────────────────
+const showXenditModal = ref(false)
+const xenditLoading = ref(false)
+const xenditResult = ref<any>(null)
+const xenditForm = ref({ memberId: '', nama: '', email: '', bulanDate: '', amount: 40000 })
+
+const openXenditModal = () => {
+  xenditResult.value = null
+  xenditSearchQuery.value = ''
+  xenditSearchResults.value = []
+  showXenditDropdown.value = false
+  const now = new Date()
+  const yyyy = now.getFullYear()
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  xenditForm.value = { memberId: '', nama: '', email: '', bulanDate: `${yyyy}-${mm}`, amount: 40000 }
+  showXenditModal.value = true
+}
+
+const API_BASE = 'https://nfmtech.my.id/product/satrianusantara/api/v1'
+
+
+
+const xenditSearchQuery = ref('')
+const xenditSearchResults = ref<any[]>([])
+const showXenditDropdown = ref(false)
+let xenditSearchTimeout: any = null
+
+const onXenditSearchInput = () => {
+  if (xenditSearchTimeout) clearTimeout(xenditSearchTimeout)
+  if (!xenditSearchQuery.value) {
+    xenditSearchResults.value = []
+    showXenditDropdown.value = false
+    xenditForm.value.memberId = ''
+    return
+  }
+  // Clear selected if typing new query that doesn't match
+  if (xenditForm.value.nama !== xenditSearchQuery.value) {
+    xenditForm.value.memberId = ''
+  }
+
+  xenditSearchTimeout = setTimeout(async () => {
+    try {
+      const data = await api.get(`/organization/anggota?search=${xenditSearchQuery.value}&limit=20`)
+      xenditSearchResults.value = data || []
+      showXenditDropdown.value = true
+    } catch (e) {
+      console.error(e)
+    }
+  }, 300)
+}
+
+const selectXenditMember = (m: any) => {
+  xenditForm.value.memberId = m.id
+  xenditForm.value.nama = m.nama
+  xenditForm.value.email = m.email || ''
+  xenditSearchQuery.value = m.nama
+  showXenditDropdown.value = false
+}
+
+// Click outside handler for dropdown
+onMounted(() => {
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    if (!target.closest('.combobox-wrapper')) {
+      showXenditDropdown.value = false
+    }
+  })
+})
+
+const onMemberSelect = () => {
+  const m = anggotaBLBAList.value.find(x => x.id === xenditForm.value.memberId)
+  if (m) {
+    xenditForm.value.nama = m.nama
+    // xenditForm.value.email = m.email // kalau ada
+  }
+}
+
+const onAmountInput = (e: Event) => {
+  const val = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '')
+  xenditForm.value.amount = val ? parseInt(val, 10) : 0
+}
+
+const buatInvoiceXendit = async () => {
+  if (!xenditForm.value.nama) {
+    alert('Nama anggota wajib dipilih!')
+    return
+  }
+  if (!xenditForm.value.bulanDate) {
+    alert('Periode pembayaran wajib diisi!')
+    return
+  }
+  
+  // Format bulanDate "YYYY-MM" to "Bulan YYYY"
+  const [yyyy, mm] = xenditForm.value.bulanDate.split('-')
+  const dateObj = new Date(parseInt(yyyy), parseInt(mm) - 1, 1)
+  const bulanFormatted = dateObj.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+  
+  xenditLoading.value = true
+  try {
+    const res = await api.post('/finance/iuran/xendit/create-invoice', {
+      userId: xenditForm.value.memberId || 'admin-generated',
+      nama: xenditForm.value.nama,
+      email: xenditForm.value.email,
+      bulan: bulanFormatted,
+      amount: xenditForm.value.amount,
+      transactionId: 'admin-' + Date.now()
+    })
+    
+    if (res) {
+      xenditResult.value = res
+      await fetchTransactions()
+      fetchGatewayTransactions()
+    } else {
+      alert('Gagal membuat invoice, respons kosong dari server')
+    }
+  } catch (e: any) {
+    alert('Error: ' + (e?.message || 'Gagal menghubungi server'))
+  } finally {
+    xenditLoading.value = false
+  }
+}
+
+const copyLink = (url: string) => {
+  navigator.clipboard.writeText(url).then(() => {
+    alert('Link berhasil disalin!')
+  })
+}
+
 const transaksiList = ref<any[]>([])
 
 const fetchTransactions = async () => {
@@ -617,6 +945,18 @@ const fetchTransactions = async () => {
     console.error('Gagal memuat transaksi:', e)
   }
 }
+const fetchGatewayTransactions = async () => {
+  try {
+    loadingGateway.value = true
+    const data = await api.get('/admin/iuran-transactions')
+    gatewayList.value = data || []
+  } catch (error) {
+    console.error('Error fetching gateway transactions', error)
+  } finally {
+    loadingGateway.value = false
+  }
+}
+
 
 const filteredTrxList = computed(() => {
   if (!filterTrxStatus.value) return transaksiList.value
@@ -642,6 +982,7 @@ const konfirmasiTrx = async (trx: any) => {
     alert(`✅ Pembayaran ${trx.nama} untuk BLBA ${trx.bulan} berhasil dikonfirmasi!`)
     await generateIuranData()
     await fetchTransactions()
+  fetchGatewayTransactions()
   } catch (e) {
     console.error(e)
     alert('Gagal mengonfirmasi pembayaran')
@@ -657,6 +998,7 @@ const tolakTrx = async (trx: any) => {
     alert(`❌ Pembayaran ${trx.nama} ditolak.`)
     await generateIuranData()
     await fetchTransactions()
+  fetchGatewayTransactions()
   } catch (e) {
     console.error(e)
     alert('Gagal menolak pembayaran')
@@ -810,6 +1152,15 @@ const limitTrx = ref(10)
 const paginatedTrxList = computed(() => {
   return filteredTrxList.value.slice((pageTrx.value - 1) * limitTrx.value, pageTrx.value * limitTrx.value)
 })
+const filteredGatewayList = computed(() => {
+  let list = gatewayList.value
+  if (searchGateway.value) {
+    const q = searchGateway.value.toLowerCase()
+    list = list.filter(i => (i.description || '').toLowerCase().includes(q) || (i.providerId || '').toLowerCase().includes(q))
+  }
+  return list
+})
+
 
 // Summary numbers
 const totalAnggotaUnit = computed(() => anggotaBLBAList.value.length)
@@ -863,7 +1214,8 @@ const rekapCabangPct = computed(() => {
 })
 
 // Visual formatting helpers
-const formatRupiah = (val: number) => {
+const formatRupiah = (val: number | string | null | undefined) => {
+  if (val === null || val === undefined) return '0'
   return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
 
@@ -893,16 +1245,51 @@ const getInitials = (name: string) => {
 }
 
 const exportData = (type: string) => {
-  alert(`Data pembayaran BLBA berhasil diekspor ke format ${type}!`)
+  if (type === 'Excel') {
+    let csv = ''
+    if (activeTab.value === 'anggota') {
+      csv = 'Anggota,Unit,Status,Tanggal Bayar,Metode,BLBA Berjalan\n'
+      filteredAnggotaBLBA.value.forEach((item: any) => {
+        csv += `"${item.nama}","${item.unit}","${item.status}","${item.tanggalBayar || '-'}","${item.metode}","${item.blbaBerjalan}"\n`
+      })
+    } else if (activeTab.value === 'transaksi') {
+      csv = 'Anggota,Periode,Metode,Nominal,Waktu,Status\n'
+      filteredTrxList.value.forEach((trx: any) => {
+        csv += `"${trx.nama}","${trx.bulan}","${trx.metode}","${trx.nominal}","${trx.waktu}","${trx.status}"\n`
+      })
+    } else if (activeTab.value === 'unit') {
+      csv = 'Unit,Aktif,Lunas,Belum,Terkumpul,Target,Pencapaian\n'
+      rekapUnitList.value.forEach((unit: any) => {
+        csv += `"${unit.name}","${unit.aktif}","${unit.lunas}","${unit.belum}","${unit.terkumpul}","${unit.target}","${unit.pencapaian}%"\n`
+      })
+    } else if (activeTab.value === 'gateway') {
+      csv = 'ID,Referensi,Provider,ProviderID,Nominal,Status\n'
+      filteredGatewayList.value.forEach((gw: any) => {
+        csv += `"${gw.id}","${gw.referenceType}","${gw.provider}","${gw.providerId}","${gw.amount}","${gw.status}"\n`
+      })
+    }
+    
+    if (!csv) return
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.setAttribute('download', `Export_${activeTab.value}_${new Date().getTime()}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } else if (type === 'PDF') {
+    window.print()
+  }
 }
 
 const exportHistory = () => {
-  alert('Riwayat pembayaran berhasil diekspor!')
+  window.print()
 }
 
 onMounted(() => {
   fetchCabang()
   fetchTransactions()
+  fetchGatewayTransactions()
 })
 </script>
 
@@ -1051,4 +1438,22 @@ onMounted(() => {
 
 .spin { animation: spin .8s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* New Search & Combobox styling */
+.search-box { display: flex; align-items: center; border: 1px solid var(--border); border-radius: var(--r8); background: #fff; overflow: hidden; }
+.search-input-wrap { position: relative; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 16px; }
+.check-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+.with-icon { padding-left: 36px !important; padding-right: 36px !important; }
+
+.combobox-dropdown { position: absolute; z-index: 1000; background: white; border: 1px solid var(--border); width: 100%; max-height: 220px; overflow-y: auto; list-style: none; padding: 4px; margin: 4px 0 0 0; box-shadow: var(--shadow-md); border-radius: var(--r8); }
+.combobox-item { padding: 10px 12px; cursor: pointer; border-radius: 6px; margin-bottom: 2px; }
+.combobox-item:hover { background: var(--surface); }
+
+.form-row { display: flex; gap: 12px; }
+.input-icon-wrap { position: relative; display: flex; align-items: center; }
+.icon-prefix { position: absolute; left: 12px; color: var(--text3); font-size: 16px; }
+.text-prefix { position: absolute; left: 14px; color: var(--text2); font-weight: 700; font-size: 14px; }
+.with-prefix { padding-left: 38px !important; }
+.with-text-prefix { padding-left: 44px !important; }
 </style>

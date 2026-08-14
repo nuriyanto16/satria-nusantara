@@ -520,6 +520,16 @@
             <label class="form-label">PIC / Koordinator Unit</label>
             <input v-model="unitForm.pic" type="text" class="form-input" placeholder="Nama Koordinator Unit" required />
           </div>
+          <div class="form-row" style="display:flex; gap:10px;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Latitude Peta</label>
+              <input v-model="unitForm.lat" type="text" class="form-input" placeholder="Contoh: -7.7956" />
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label">Longitude Peta</label>
+              <input v-model="unitForm.lng" type="text" class="form-input" placeholder="Contoh: 110.3695" />
+            </div>
+          </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline" style="width:auto" @click="showUnitModal = false">Batal</button>
             <button type="submit" class="btn btn-primary" style="width:auto">Simpan Unit</button>
@@ -784,7 +794,9 @@ const unitForm = ref({
   nama: '',
   lokasi: '',
   jadwal: '',
-  pic: ''
+  pic: '',
+  lat: '',
+  lng: ''
 })
 const editingUnitId = ref<string | null>(null)
 
@@ -890,9 +902,9 @@ const fetchUnitsForCabang = async (cabangId: string) => {
   } catch (e) {
     console.error(e)
     unitList.value = [
-      { id: '1', nama: 'Unit Malioboro', lokasi: 'Jl. Malioboro, Yogyakarta', jadwal: 'Sabtu & Selasa, 06.00 WIB', pic: 'Wisnu Saputro', jumlah_anggota: 124 },
-      { id: '2', nama: 'Unit Kotagede', lokasi: 'Kotagede, Yogyakarta', jadwal: 'Minggu 07.00 WIB', pic: 'Pratiwi Riyadi', jumlah_anggota: 98 },
-      { id: '3', nama: 'Unit Gondokusuman', lokasi: 'Gondokusuman, Yogyakarta', jadwal: 'Rabu & Sabtu, 06.30 WIB', pic: 'Sunaryo', jumlah_anggota: 87 }
+      { id: '1', nama: 'Unit Malioboro', lokasi: 'Jl. Malioboro, Yogyakarta', jadwal: 'Sabtu & Selasa, 06.00 WIB', pic: 'Wisnu Saputro', jumlah_anggota: 124, lat: '-7.7926', lng: '110.3658' },
+      { id: '2', nama: 'Unit Kotagede', lokasi: 'Kotagede, Yogyakarta', jadwal: 'Minggu 07.00 WIB', pic: 'Pratiwi Riyadi', jumlah_anggota: 98, lat: '-7.8284', lng: '110.4008' },
+      { id: '3', nama: 'Unit Gondokusuman', lokasi: 'Gondokusuman, Yogyakarta', jadwal: 'Rabu & Sabtu, 06.30 WIB', pic: 'Sunaryo', jumlah_anggota: 87, lat: '-7.7865', lng: '110.3831' }
     ]
   }
 }
@@ -1013,7 +1025,7 @@ const saveCabang = async () => {
 // Unit Actions
 const openAddUnitModal = () => {
   editingUnitId.value = null
-  unitForm.value = { id: '', nama: '', lokasi: '', jadwal: '', pic: '' }
+  unitForm.value = { id: '', nama: '', lokasi: '', jadwal: '', pic: '', lat: '-7.7956', lng: '110.3695' }
   showUnitModal.value = true
 }
 
@@ -1024,7 +1036,9 @@ const openEditUnitModal = (u: any) => {
     nama: u.nama,
     lokasi: u.lokasi || '',
     jadwal: u.jadwal || '',
-    pic: u.pic || ''
+    pic: u.pic || '',
+    lat: u.lat || '-7.7956',
+    lng: u.lng || '110.3695'
   }
   showUnitModal.value = true
 }
@@ -1038,7 +1052,9 @@ const saveUnit = () => {
         nama: unitForm.value.nama,
         lokasi: unitForm.value.lokasi,
         jadwal: unitForm.value.jadwal,
-        pic: unitForm.value.pic
+        pic: unitForm.value.pic,
+        lat: unitForm.value.lat || '-7.7956',
+        lng: unitForm.value.lng || '110.3695'
       }
       alert('Unit latihan berhasil diperbarui!')
     }
@@ -1049,6 +1065,8 @@ const saveUnit = () => {
       lokasi: unitForm.value.lokasi,
       jadwal: unitForm.value.jadwal,
       pic: unitForm.value.pic,
+      lat: unitForm.value.lat || '-7.7956',
+      lng: unitForm.value.lng || '110.3695',
       jumlah_anggota: 0
     })
     alert('Unit latihan baru berhasil ditambahkan!')

@@ -354,7 +354,7 @@ const periods = [
 
 // Geographic coordinates of provinces in Indonesia
 const geoMap: Record<string, [number, number]> = {
-  'Aceh': [-4.6951, 96.7494],
+  'Aceh': [4.6951, 96.7494],
   'Sumatera Utara': [2.1121, 99.1342],
   'Sumatera Barat': [-0.7399, 100.8000],
   'Riau': [0.2933, 101.7068],
@@ -371,7 +371,16 @@ const geoMap: Record<string, [number, number]> = {
   'DI Yogyakarta': [-7.7956, 110.3695],
   'Jawa Timur': [-7.2575, 112.7521],
   'Sulawesi Selatan': [-5.1477, 119.4327],
-  'Bali': [-8.4095, 115.1889]
+  'Bali': [-8.4095, 115.1889],
+  'Nusa Tenggara Barat': [-8.6529, 117.3616],
+  'Nusa Tenggara Timur': [-8.6574, 121.0794],
+  'Kalimantan Barat': [-0.2787, 111.4753],
+  'Kalimantan Tengah': [-1.6815, 113.3824],
+  'Kalimantan Selatan': [-3.0926, 115.2838],
+  'Kalimantan Timur': [0.5387, 116.4194],
+  'Sulawesi Utara': [0.6247, 123.9750],
+  'Maluku': [-3.2385, 130.1453],
+  'Papua': [-4.2699, 138.0804]
 }
 
 const statGender = ref({ laki_laki: 75, perempuan: 25 })

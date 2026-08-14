@@ -15,6 +15,7 @@ import (
 	"satria-nusantara/backend/internal/event"
 	"satria-nusantara/backend/internal/finance"
 	"satria-nusantara/backend/internal/kebugaran"
+	"satria-nusantara/backend/internal/logs"
 	"satria-nusantara/backend/internal/nafas"
 	"satria-nusantara/backend/internal/organization"
 	"satria-nusantara/backend/internal/training"
@@ -50,6 +51,7 @@ func main() {
 	trainHandler := training.NewHandler(trainSvc)
 	eventHandler := event.NewHandler()
 	financeHandler := finance.NewHandler(db)
+	logsHandler := logs.NewHandler(db)
 	contentHandler := content.NewHandler()
 	kebugaranHandler := kebugaran.NewHandler()
 	nafasHandler := nafas.NewHandler()
@@ -92,6 +94,16 @@ func main() {
 			})
 		})
 
+		r.Get("/app-version", func(w http.ResponseWriter, r *http.Request) {
+			response.Success(w, http.StatusOK, "Latest app version", map[string]interface{}{
+				"versionCode":     1, // Increment this value to force/show updates
+				"versionName":     "1.0.0",
+				"updateMandatory": false, // Set to true to force update
+				"downloadUrl":     "https://nfmtech.my.id/uploads/app-release.apk",
+				"releaseNotes":    "Pembaruan Pertama: Integrasi sistem pembayaran.",
+			})
+		})
+
 		r.Route("/auth", authHandler.Routes(cfg.JWTSecret))
 		r.Route("/organization", orgHandler.Routes(cfg.JWTSecret))
 		r.Route("/training", trainHandler.Routes(cfg.JWTSecret))
@@ -104,6 +116,7 @@ func main() {
 		r.Route("/admin", func(r chi.Router) {
 			r.Get("/iuran-transactions", financeHandler.GetTransactions)
 			r.Post("/iuran-transactions/{id}/verify", financeHandler.VerifyTransaction)
+			r.Route("/logs", logsHandler.Routes())
 		})
 	})
 

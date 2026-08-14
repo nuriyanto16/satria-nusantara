@@ -1110,13 +1110,41 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
   .login-panel {
     flex: 1;
     background: var(--bg);
+    padding: 24px;
   }
   .login-card {
     background: #ffffff;
-    padding: 36px;
+    padding: 32px;
     border-radius: 16px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .login-panel {
+    padding: 16px;
+  }
+  .login-card {
+    padding: 24px;
+  }
+  .login-title {
+    font-size: 24px;
+  }
+  .captcha-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn-refresh-captcha {
+    width: 100%;
+  }
+  .login-extra {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .btn-apk-download {
+    padding: 10px;
   }
 }
 </style>

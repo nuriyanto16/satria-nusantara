@@ -287,7 +287,7 @@ class FinanceRepository {
         bulan: old.bulan,
         tahun: old.tahun,
         nominal: old.nominal,
-        status: 'lunas',
+        status: 'pending',
         tanggalBayar: DateTime.now().toString().split(' ')[0],
       );
     }
