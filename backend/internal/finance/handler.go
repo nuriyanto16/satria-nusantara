@@ -182,7 +182,59 @@ func (h *Handler) webhookXenditTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getIuranHistory(w http.ResponseWriter, r *http.Request) {
-	response.Success(w, http.StatusOK, "Finance BLBA API", []interface{}{})
+	userId := r.URL.Query().Get("userId")
+	if h.db == nil {
+		response.Success(w, http.StatusOK, "Finance BLBA API", []interface{}{})
+		return
+	}
+
+	query := `SELECT id, anggota_id, bulan, tahun, nominal, status, tanggal_bayar FROM tagihan_blba`
+	var rows *sql.Rows
+	var err error
+
+	if userId != "" {
+		query += ` WHERE anggota_id = $1 ORDER BY tahun DESC, bulan DESC`
+		rows, err = h.db.QueryContext(r.Context(), query, userId)
+	} else {
+		query += ` ORDER BY tahun DESC, bulan DESC`
+		rows, err = h.db.QueryContext(r.Context(), query)
+	}
+
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to query tagihan: " + err.Error())
+		return
+	}
+	defer rows.Close()
+
+	var results []map[string]interface{}
+	for rows.Next() {
+		var id, anggotaId, status string
+		var bulan, tahun, nominal int
+		var tglBayar sql.NullTime
+		if err := rows.Scan(&id, &anggotaId, &bulan, &tahun, &nominal, &status, &tglBayar); err != nil {
+			continue
+		}
+		
+		var tglStr string
+		if tglBayar.Valid {
+			tglStr = tglBayar.Time.Format("2006-01-02")
+		}
+
+		results = append(results, map[string]interface{}{
+			"id": id,
+			"anggotaId": anggotaId,
+			"bulan": bulan,
+			"tahun": tahun,
+			"nominal": nominal,
+			"status": status,
+			"tanggalBayar": tglStr,
+		})
+	}
+	if results == nil {
+		results = []map[string]interface{}{}
+	}
+
+	response.Success(w, http.StatusOK, "Finance BLBA API", results)
 }
 
 type PayRequest struct {

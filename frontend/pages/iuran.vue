@@ -1158,59 +1158,48 @@ const generateIuranData = async () => {
       const res = await api.get(`/organization/anggota?limit=100&unit_id=${selectedUnitId.value}&status=aktif`)
       members = res.data || []
     } catch (e) {
-      console.warn('API lookup failed, falling back to mockup', e)
+      console.warn('API lookup failed', e)
     }
 
-    if (members.length === 0) {
-      if (activeUnitName.value.includes('Kotagede')) {
-        members = [
-          { id: '8', nama_lengkap: 'Pratiwi Riyadi', nomor_anggota: 'YO-YGY-00287', unit_nama: activeUnitName.value },
-          { id: '9', nama_lengkap: 'Rian Wijaya', nomor_anggota: 'YO-YGY-00288', unit_nama: activeUnitName.value },
-          { id: '10', nama_lengkap: 'Siti Aminah', nomor_anggota: 'YO-YGY-00289', unit_nama: activeUnitName.value }
-        ]
-      } else if (activeUnitName.value.includes('Gondokusuman')) {
-        members = [
-          { id: '11', nama_lengkap: 'Sunaryo', nomor_anggota: 'YO-YGY-00312', unit_nama: activeUnitName.value },
-          { id: '12', nama_lengkap: 'Edi Santoso', nomor_anggota: 'YO-YGY-00313', unit_nama: activeUnitName.value }
-        ]
-      } else if (activeUnitName.value.includes('Mantrijeron')) {
-        members = [
-          { id: '13', nama_lengkap: 'Haryono N.', nomor_anggota: 'YO-YGY-00398', unit_nama: activeUnitName.value },
-          { id: '14', nama_lengkap: 'Lilis Karlina', nomor_anggota: 'YO-YGY-00399', unit_nama: activeUnitName.value }
-        ]
-      } else {
-        members = [
-          { id: '1', nama_lengkap: 'Budi Santoso', nomor_anggota: 'YO-YGY-00142', unit_nama: activeUnitName.value },
-          { id: '2', nama_lengkap: 'Sari Rahmawati', nomor_anggota: 'YO-YGY-00098', unit_nama: activeUnitName.value },
-          { id: '3', nama_lengkap: 'Hendra Kusuma', nomor_anggota: 'YO-YGY-00067', unit_nama: activeUnitName.value },
-          { id: '4', nama_lengkap: 'Agus Prasetyo', nomor_anggota: 'YO-YGY-00201', unit_nama: activeUnitName.value },
-          { id: '5', nama_lengkap: 'Dwi Wahyuni', nomor_anggota: 'YO-YGY-00167', unit_nama: activeUnitName.value },
-          { id: '6', nama_lengkap: 'Farid Nugroho', nomor_anggota: 'YO-YGY-00312', unit_nama: activeUnitName.value },
-          { id: '7', nama_lengkap: 'Nurul Rahayu', nomor_anggota: 'YO-YGY-00089', unit_nama: activeUnitName.value }
-        ]
-      }
+    let allIuran: any[] = []
+    try {
+      const iuranRes = await api.get(`/finance/iuran`)
+      allIuran = iuranRes || []
+    } catch (e) {
+      console.warn('API iuran lookup failed', e)
     }
 
-    const todayStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+    const targetDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + currentMonthOffset.value, 1)
+    const targetMonth = targetDate.getMonth() + 1
+    const targetYear = targetDate.getFullYear()
 
-    anggotaBLBAList.value = members.map((m, idx) => {
-      const isLunas = idx % 3 !== 2
+    anggotaBLBAList.value = members.map((m: any) => {
+      const memberIuran = allIuran.filter((i: any) => i.anggotaId === m.id)
+      const currentMonthIuran = memberIuran.find((i: any) => i.bulan === targetMonth && i.tahun === targetYear)
+      
+      const isLunas = currentMonthIuran && currentMonthIuran.status === 'lunas'
+      
+      const riwayatList = memberIuran.map((i: any) => {
+         const d = new Date(i.tahun, i.bulan - 1, 1)
+         const monthStr = d.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })
+         return {
+           bulan: monthStr,
+           status: i.status === 'lunas' ? 'Lunas' : 'Belum',
+           tanggal: i.tanggalBayar || '',
+           metode: 'Gateway' 
+         }
+      })
+
       return {
         id: m.id,
         nama: m.nama_lengkap,
-        nomor: m.nomor_anggota || `YO-YGY-${100 + idx}`,
+        nomor: m.nomor_anggota,
         unit: m.unit_nama || activeUnitName.value,
         status: isLunas ? 'lunas' : 'belum',
-        tanggalBayar: isLunas ? `${idx + 1} ${currentMonthShort.value}` : null,
-        metode: isLunas ? ['DANA', 'GoPay', 'ShopeePay', 'OVO'][idx % 4] : '—',
-        blbaBerjalan: isLunas ? 15 : 14,
-        riwayatList: [
-          { bulan: `Jun ${baseDate.getFullYear()}`, status: 'Lunas', tanggal: `3 Jun ${baseDate.getFullYear()}`, metode: 'DANA' },
-          { bulan: `Mei ${baseDate.getFullYear()}`, status: 'Lunas', tanggal: `1 Mei ${baseDate.getFullYear()}`, metode: 'DANA' },
-          { bulan: `Apr ${baseDate.getFullYear()}`, status: 'Lunas', tanggal: `2 Apr ${baseDate.getFullYear()}`, metode: 'GoPay' },
-          { bulan: `Mar ${baseDate.getFullYear()}`, status: 'Lunas', tanggal: `5 Mar ${baseDate.getFullYear()}`, metode: 'GoPay' },
-          { bulan: `Feb ${baseDate.getFullYear()}`, status: 'Lunas', tanggal: `3 Feb ${baseDate.getFullYear()}`, metode: 'OVO' }
-        ]
+        tanggalBayar: currentMonthIuran ? currentMonthIuran.tanggalBayar : null,
+        metode: isLunas ? 'Gateway' : '—',
+        blbaBerjalan: riwayatList.filter((r: any) => r.status === 'Lunas').length,
+        riwayatList: riwayatList.sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime())
       }
     })
   } catch (e) {

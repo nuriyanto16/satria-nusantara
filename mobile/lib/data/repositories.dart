@@ -176,46 +176,11 @@ class SesiRepository {
       );
       final List<dynamic> list = response.data['data'] ?? [];
       return list.map((item) => Sesi.fromJson(item)).toList();
-    } catch (_) {
-      // Fallback stub data for testing offline
-      return [
-        Sesi(
-          id: '1',
-          unitId: 'unit-01',
-          unitNama: 'Unit Bandung',
-          pelatihId: 'p001', pelatihNama: 'Pak Budi Susanto',
-          jenis: 'Rutin',
-          tanggal: '2026-07-20',
-          jamMulai: '16:00',
-          jamSelesai: '18:00',
-          lokasi: 'Lapangan Gasibu Bandung',
-          materi: 'Jurus Dasar 1-5',
-        ),
-        Sesi(
-          id: '2',
-          unitId: 'unit-01',
-          unitNama: 'Unit Bandung',
-          pelatihId: 'p001', pelatihNama: 'Pak Budi Susanto',
-          jenis: 'Gabungan',
-          tanggal: '2026-07-22',
-          jamMulai: '15:30',
-          jamSelesai: '17:30',
-          lokasi: 'GOR Arcamanik Bandung',
-          materi: 'Napas Pengolahan',
-        ),
-        Sesi(
-          id: '3',
-          unitId: 'unit-01',
-          unitNama: 'Unit Bandung',
-          pelatihId: 'p001', pelatihNama: 'Pak Budi Susanto',
-          jenis: 'Rutin',
-          tanggal: '2026-07-25',
-          jamMulai: '16:00',
-          jamSelesai: '18:00',
-          lokasi: 'Lapangan Gasibu Bandung',
-          materi: 'Jurus Praktis',
-        ),
-      ];
+    } catch (e) {
+      if (e is DioException) {
+        throw Exception(e.response?.data['message'] ?? e.message ?? e.toString());
+      }
+      rethrow;
     }
   }
 
@@ -231,38 +196,19 @@ class SesiRepository {
 }
 
 class FinanceRepository {
-  static final Map<String, List<Iuran>> _userMockLists = {};
-
   Future<List<Iuran>> getIuranHistory(String userId) async {
-    if (userId.contains('pending')) {
-      return [];
-    }
-    if (!_userMockLists.containsKey(userId)) {
-      if (userId.contains('admin') || userId.contains('da001') || userId.contains('Sri') || userId.contains('Ahmad') || userId.contains('google')) {
-        // Pre-existing members get full default history
-        _userMockLists[userId] = [
-          Iuran(id: '1', anggotaId: userId, bulan: 7, tahun: 2026, nominal: 40000, status: 'belum_bayar'),
-          Iuran(id: '2', anggotaId: userId, bulan: 6, tahun: 2026, nominal: 40000, status: 'lunas', tanggalBayar: '2026-06-10'),
-          Iuran(id: '3', anggotaId: userId, bulan: 5, tahun: 2026, nominal: 40000, status: 'lunas', tanggalBayar: '2026-05-12'),
-        ];
-      } else {
-        // Custom registered user gets exactly 1 unpaid current month bill and no old history
-        _userMockLists[userId] = [
-          Iuran(id: '1', anggotaId: userId, bulan: 7, tahun: 2026, nominal: 40000, status: 'belum_bayar'),
-        ];
-      }
-    }
-
     try {
-      final response = await api.dio.get('/finance/iuran');
+      final response = await api.dio.get(
+        '/finance/iuran',
+        queryParameters: {'userId': userId},
+      );
       final List<dynamic> list = response.data['data'] ?? [];
-      final apiList = list.map((item) => Iuran.fromJson(item)).toList();
-      if (apiList.isNotEmpty) {
-        _userMockLists[userId] = apiList;
+      return list.map((item) => Iuran.fromJson(item)).toList();
+    } catch (e) {
+      if (e is DioException) {
+        throw Exception(e.response?.data['message'] ?? e.message ?? e.toString());
       }
-      return _userMockLists[userId]!;
-    } catch (_) {
-      return _userMockLists[userId]!;
+      rethrow;
     }
   }
 
@@ -275,47 +221,12 @@ class FinanceRepository {
         if (bulan != null) 'bulan': bulan,
         if (amount != null) 'amount': amount,
       });
-    } catch (_) {}
-    
-    final list = _userMockLists[userId] ?? [];
-    final index = list.indexWhere((item) => item.id == id);
-    if (index != -1) {
-      final old = list[index];
-      list[index] = Iuran(
-        id: old.id,
-        anggotaId: old.anggotaId,
-        bulan: old.bulan,
-        tahun: old.tahun,
-        nominal: old.nominal,
-        status: 'pending',
-        tanggalBayar: DateTime.now().toString().split(' ')[0],
-      );
-    }
-    await Future.delayed(const Duration(milliseconds: 800));
-  }
-
-  void addMockIuran(String userId) {
-    int nextMonth = 8;
-    int nextYear = 2026;
-    final list = _userMockLists[userId] ?? [];
-    if (list.isNotEmpty) {
-      final last = list.first;
-      nextMonth = last.bulan + 1;
-      nextYear = last.tahun;
-      if (nextMonth > 12) {
-        nextMonth = 1;
-        nextYear++;
+    } catch (e) {
+      if (e is DioException) {
+        throw Exception(e.response?.data['message'] ?? e.message ?? e.toString());
       }
+      rethrow;
     }
-    list.insert(0, Iuran(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      anggotaId: userId,
-      bulan: nextMonth,
-      tahun: nextYear,
-      nominal: 40000,
-      status: 'belum_bayar',
-    ));
-    _userMockLists[userId] = list;
   }
 }
 
