@@ -315,7 +315,10 @@
                 <td style="font-weight:700;color:var(--text1);">Rp {{ formatRupiah(trx.nominal) }}</td>
                 <td style="font-size:11px;color:var(--text3);">
                   <div>{{ trx.waktu }}</div>
-                  <div style="font-size:10px;color:var(--text3);">{{ trx.relativeTime }}</div>
+                  <div style="font-size:10px;color:var(--text3);">
+                    <span v-if="trx.status === 'pending' && trx.metode === 'xendit'" style="color:var(--kuning);">Kedaluwarsa: {{ trx.expiredAt }}</span>
+                    <span v-else>{{ trx.relativeTime }}</span>
+                  </div>
                 </td>
                 <td>
                   <span :class="['status-badge', trx.status === 'lunas' ? 'lunas' : trx.status === 'pending' ? 'pending' : 'belum']">
@@ -325,12 +328,17 @@
                 </td>
                 <td @click.stop>
                   <div v-if="trx.status === 'pending'" class="action-btns">
-                    <button class="action-btn green" title="Konfirmasi Lunas" @click="konfirmasiTrx(trx)">
-                      <i class="ti ti-check"></i> Konfirmasi
+                    <button v-if="trx.metode === 'xendit'" class="action-btn blue" title="Cek Status Xendit" @click="syncGatewayTrx(trx)" style="color:#0050ff;background:#f0f5ff;border-color:#0050ff30;">
+                      <i class="ti ti-refresh" :class="{ spin: trx._syncing }"></i> Cek Status
                     </button>
-                    <button class="action-btn red" title="Tolak" @click="tolakTrx(trx)">
-                      <i class="ti ti-x"></i>
-                    </button>
+                    <template v-else>
+                      <button class="action-btn green" title="Konfirmasi Lunas" @click="konfirmasiTrx(trx)">
+                        <i class="ti ti-check"></i> Konfirmasi
+                      </button>
+                      <button class="action-btn red" title="Tolak" @click="tolakTrx(trx)">
+                        <i class="ti ti-x"></i>
+                      </button>
+                    </template>
                   </div>
                   <span v-else style="font-size:11px;color:var(--text3);">—</span>
                 </td>
@@ -506,21 +514,21 @@
             </div>
 
             <!-- Pilih Anggota -->
-            <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:12px;font-weight:700;">Pilih Anggota <span style="color:var(--merah);">*</span></label>
-              <div class="combobox-wrapper" style="position:relative;">
-                <div class="search-input-wrap" style="position:relative;">
-                  <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;z-index:1;"></i>
-                  <input
-                    type="text"
-                    class="form-input"
-                    style="padding-left:36px;padding-right:36px;"
-                    placeholder="Ketik nama atau nomor anggota..."
-                    v-model="xenditSearchQuery"
-                    @input="onXenditSearchInput"
-                    @focus="onXenditFocus"
-                    autocomplete="off"
-                  />
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="font-size:12px;font-weight:700;margin-bottom:6px;display:block;">Pilih Anggota <span style="color:var(--merah);">*</span></label>
+                <div class="combobox-wrapper" style="position:relative;">
+                  <div class="search-input-wrap" style="position:relative;">
+                    <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;z-index:1;"></i>
+                    <input
+                      type="text"
+                      class="form-input"
+                      style="padding-left:36px;padding-right:36px;height:42px;"
+                      placeholder="Ketik nama atau nomor anggota..."
+                      v-model="xenditSearchQuery"
+                      @input="onXenditSearchInput"
+                      @focus="onXenditFocus"
+                      autocomplete="off"
+                    />
                   <i v-if="xenditForm.memberId" class="ti ti-circle-check" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--hijau);font-size:16px;"></i>
                 </div>
 
@@ -552,45 +560,46 @@
             <!-- Email & Periode -->
             <div style="display:flex;gap:14px;">
               <div class="form-group" style="flex:1;margin-bottom:0;">
-                <label class="form-label" style="font-size:12px;font-weight:700;">Email <span style="font-weight:400;color:var(--text3);">(Opsional)</span></label>
+                <label class="form-label" style="font-size:12px;font-weight:700;margin-bottom:6px;display:block;">Email <span style="font-weight:400;color:var(--text3);">(Opsional)</span></label>
                 <div style="position:relative;">
                   <i class="ti ti-mail" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;"></i>
-                  <input v-model="xenditForm.email" class="form-input" type="email" placeholder="email@contoh.com" style="padding-left:36px;" />
+                  <input v-model="xenditForm.email" class="form-input" type="email" placeholder="email@contoh.com" style="padding-left:36px;height:42px;" />
                 </div>
               </div>
               <div class="form-group" style="flex:1;margin-bottom:0;">
-                <label class="form-label" style="font-size:12px;font-weight:700;">Periode Pembayaran <span style="color:var(--merah);">*</span></label>
+                <label class="form-label" style="font-size:12px;font-weight:700;margin-bottom:6px;display:block;">Periode Pembayaran <span style="color:var(--merah);">*</span></label>
                 <div style="position:relative;">
                   <i class="ti ti-calendar" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none;z-index:1;"></i>
                   <input
                     v-model="xenditForm.bulanDate"
                     class="form-input"
                     type="month"
-                    style="padding-left:36px;cursor:pointer;"
+                    style="padding-left:36px;cursor:pointer;height:42px;"
                     :min="minMonth"
                     :max="maxMonth"
                   />
                 </div>
-                <div style="font-size:10px;color:var(--text3);margin-top:4px;">Format: Bulan / Tahun</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:6px;">Format: Bulan / Tahun</div>
               </div>
             </div>
 
             <!-- Nominal -->
             <div class="form-group" style="margin-bottom:0;">
-              <label class="form-label" style="font-size:12px;font-weight:700;">Nominal Tagihan</label>
+              <label class="form-label" style="font-size:12px;font-weight:700;margin-bottom:6px;display:block;">Nominal Tagihan</label>
               <div style="position:relative;">
                 <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);font-weight:700;font-size:14px;">Rp</span>
-                <input :value="formatRupiah(xenditForm.amount)" @input="onAmountInput" class="form-input" type="text" placeholder="40.000" style="padding-left:44px;font-weight:700;font-size:16px;" />
+                <input :value="formatRupiah(xenditForm.amount)" @input="onAmountInput" class="form-input" type="text" placeholder="40.000" style="padding-left:44px;font-weight:700;font-size:16px;height:42px;" />
               </div>
             </div>
           </div>
         </div>
-        <div class="modal-footer" style="padding-top:16px;border-top:1px solid var(--border);">
-          <button class="btn btn-outline" style="width:auto" @click="showXenditModal = false; xenditResult = null">Batal</button>
-          <button v-if="!xenditResult" :disabled="xenditLoading" class="btn btn-primary" style="width:auto;background:linear-gradient(135deg,#0050ff,#006fff);padding:0 24px;" @click="buatInvoiceXendit">
-            <i v-if="xenditLoading" class="ti ti-loader-2 spin"></i>
-            <i v-else class="ti ti-link"></i>
-            {{ xenditLoading ? 'Membuat...' : 'Buat Link Pembayaran' }}
+        <div class="modal-footer" style="padding-top:20px;border-top:1px solid var(--border);">
+          <button class="btn btn-outline" style="width:auto;font-weight:600;" @click="showXenditModal = false; xenditResult = null">
+            <i class="ti ti-x" style="margin-right:4px;"></i> Batal
+          </button>
+          <button v-if="!xenditResult" :disabled="xenditLoading" class="btn btn-primary" style="width:auto;background:linear-gradient(135deg,#0050ff,#006fff);padding:0 24px;font-weight:600;" @click="buatInvoiceXendit">
+            <span v-if="xenditLoading"><i class="ti ti-loader-2 spin"></i> Memproses...</span>
+            <span v-else><i class="ti ti-link"></i> Buat Link Pembayaran</span>
           </button>
         </div>
       </div>
@@ -1004,6 +1013,9 @@ const fetchTransactions = async () => {
            bulan = t.description.replace('BLBA Satria Nusantara - ', '')
         }
 
+        const expiredAt = new Date(d.getTime() + 86400000) // 24 hours
+        const expiredStr = expiredAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+
         return {
           id: t.id,
           nama: t.nama || 'Anggota SN',
@@ -1014,7 +1026,8 @@ const fetchTransactions = async () => {
           waktu: formattedTime,
           relativeTime: relTime,
           status: mappedStatus,
-          buktiUrl: t.buktiUrl
+          buktiUrl: t.buktiUrl,
+          expiredAt: expiredStr
         }
       })
     }
