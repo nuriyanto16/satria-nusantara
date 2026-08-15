@@ -4,6 +4,8 @@ import 'dart:async';
 import '../core/js_interop.dart' as js_interop;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6883,8 +6885,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Tunjukkan QR ini sebagai bukti
-pembayaran jika diperlukan.',
+                              'Tunjukkan QR ini sebagai bukti pembayaran jika diperlukan.',
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                             )
