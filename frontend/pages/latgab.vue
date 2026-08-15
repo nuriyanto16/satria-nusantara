@@ -353,17 +353,20 @@
             </div>
           </div>
 
-          <!-- Participant table listing -->
-          <div class="participant-section">
+</div>
             <div class="part-header">
               <div style="font-size: 12px; font-weight: 700;">Daftar Peserta Terdaftar ({{ selectedEvent.peserta }} orang)</div>
-              <div style="display: flex; gap: 6px;">
-                <button class="export-btn" @click="exportData('PDF')"><i class="ti ti-file-type-pdf"></i> PDF</button>
-                <button class="export-btn" @click="exportData('Excel')"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline" @click="addManualParticipant">
+                  <i class="ti ti-plus"></i> Tambah Peserta Manual
+                </button>
+                <button class="btn btn-outline" @click="exportData('csv')">
+                  <i class="ti ti-file-export"></i> Ekspor Data
+                </button>
               </div>
             </div>
-            <div class="part-search-bar">
-              <i class="ti ti-search"></i>
+            
+            <div class="part-filters">
               <input v-model="pesertaSearch" placeholder="Cari nama peserta..." class="part-search-input" />
             </div>
 
@@ -471,7 +474,7 @@ const events = ref<any[]>([
     waktu: '07.00–12.00 WIB',
     lokasi: 'Lapangan Gasibu, Bandung',
     penyelenggara: 'Kota Bandung',
-    peserta: 187,
+    peserta: 0,
     targetPeserta: 300,
     batasDaftar: '2026-06-18',
     status: 'aktif',
@@ -486,7 +489,7 @@ const events = ref<any[]>([
     waktu: '08.00–12.00 WIB',
     lokasi: 'Gedung Silat Bandung',
     penyelenggara: 'Kota Bandung',
-    peserta: 42,
+    peserta: 0,
     targetPeserta: 50,
     batasDaftar: '2026-06-12',
     status: 'aktif',
@@ -501,7 +504,7 @@ const events = ref<any[]>([
     waktu: '08.00–17.00 WIB',
     lokasi: 'Pendopo Pusat, Yogyakarta',
     penyelenggara: 'SN Pusat',
-    peserta: 312,
+    peserta: 0,
     targetPeserta: 500,
     batasDaftar: '2026-07-31',
     status: 'aktif',
@@ -516,7 +519,7 @@ const events = ref<any[]>([
     waktu: '07.00–11.00 WIB',
     lokasi: 'Lapangan Simpang Lima, Semarang',
     penyelenggara: 'Kota Semarang',
-    peserta: 210,
+    peserta: 0,
     targetPeserta: 200,
     batasDaftar: '2026-06-05',
     status: 'selesai',
@@ -640,13 +643,27 @@ const calculateKeuangan = (ev: any) => {
   return `Rp ${total.toLocaleString('id-ID')}`
 }
 
-const participants = ref<any[]>([
-  { id: 1, nama: 'Budi Santoso', noAnggota: 'YO-YGY-00034', cabang: 'Kota Yogyakarta', unit: 'Unit Kotagede', tingkatan: 'PH Jurus 6' },
-  { id: 2, nama: 'Rina Wulandari', noAnggota: 'JB-BDG-00142', cabang: 'Kota Bandung', unit: 'Unit Dago', tingkatan: 'Gabungan Jurus 3' },
-  { id: 3, nama: 'Ahmad Santoso', noAnggota: 'YO-YGY-00111', cabang: 'Kota Yogyakarta', unit: 'Unit Malioboro', tingkatan: 'Dasar Jurus 5' },
-  { id: 4, nama: 'Dewi Wardani', noAnggota: 'JT-SMG-00089', cabang: 'Kota Semarang', unit: 'Unit Simpang Lima', tingkatan: 'PK Jurus 2' },
-  { id: 5, nama: 'Hendra Nugraha', noAnggota: 'JK-JKT-00201', cabang: 'Jakarta Pusat', unit: 'Unit Menteng', tingkatan: 'Pra Dasar Jurus 5' }
-])
+const participants = ref<any[]>([])
+
+const addManualParticipant = () => {
+  const nama = prompt('Masukkan Nama Peserta:')
+  if (!nama) return
+  const noAnggota = prompt('Masukkan Nomor Anggota (opsional):') || '-'
+  const cabang = prompt('Masukkan Cabang/Penyelenggara:') || 'SN Pusat'
+  
+  participants.value.unshift({
+    id: Date.now(),
+    nama: nama,
+    noAnggota: noAnggota,
+    cabang: cabang,
+    unit: '-',
+    tingkatan: 'Dasar'
+  })
+  
+  if (selectedEvent.value) {
+    selectedEvent.value.peserta = participants.value.length
+  }
+}
 
 const filteredParticipants = computed(() => {
   if (!pesertaSearch.value) return participants.value

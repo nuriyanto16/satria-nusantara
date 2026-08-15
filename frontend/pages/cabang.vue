@@ -908,11 +908,8 @@ const selectCabang = async (c: any) => {
   await fetchUnitsForCabang(c.id)
   await fetchTrainersForCabang(c.id)
   await fetchTrends()
-  staffList.value = [
-    { id: '1', nama: c.ketua || 'Hadiwiyono W.', nomor: 'YO-YGY-00001', jabatan: 'Ketua Cabang', tingkatan: 'Penjuru Jurus 8', kontak: '0812-3456-7890' },
-    { id: '2', nama: 'Siti Rahayu', nomor: 'YO-YGY-00012', jabatan: 'Sekretaris', tingkatan: 'PK Jurus 5', kontak: '0813-9876-5432' },
-    { id: '3', nama: 'Bambang Wiyono', nomor: 'YO-YGY-00034', jabatan: 'Bendahara', tingkatan: 'Gabungan Jurus 4', kontak: '0821-1234-5678' }
-  ]
+  // Data dummy kepengurusan dihilangkan agar saat tambah cabang baru, pengurus kosong
+  staffList.value = []
 }
 
 const fetchUnitsForCabang = async (cabangId: string) => {
