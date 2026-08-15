@@ -139,9 +139,6 @@ func (r *pgRepository) GetCabangTrends(ctx context.Context, id string, period in
 		JOIN unit_latihan u ON u.id = a.unit_id 
 		WHERE u.cabang_id = $1 AND a.status = 'aktif'
 	`, id).Scan(&totalAnggota)
-	if totalAnggota == 0 {
-		totalAnggota = 124
-	}
 
 	monthsIndo := []string{"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"}
 	monthsFull := []string{"Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
@@ -149,6 +146,7 @@ func (r *pgRepository) GetCabangTrends(ctx context.Context, id string, period in
 	now := time.Now()
 	var points []CabangTrendPoint
 	var totalHadirPctSum int
+	var totalIuranPctSum int
 
 	for i := period - 1; i >= 0; i-- {
 		targetMonth := now.AddDate(0, -i, 0)
@@ -159,31 +157,34 @@ func (r *pgRepository) GetCabangTrends(ctx context.Context, id string, period in
 		fLabel := fmt.Sprintf("%s %d", monthsFull[mIdx], yr)
 
 		var hadirPct int
-		errQuery := r.db.QueryRowContext(ctx, `
-			SELECT COALESCE(ROUND(
-				(COUNT(k.id)::decimal / COALESCE(NULLIF(COUNT(DISTINCT s.id) * $2, 0), 1)) * 100
-			), 0)
-			FROM sesi_latihan s
-			JOIN unit_latihan u ON u.id = s.unit_id
-			LEFT JOIN kehadiran k ON k.sesi_id = s.id
-			WHERE u.cabang_id = $1
-			  AND EXTRACT(MONTH FROM s.tanggal) = $3
-			  AND EXTRACT(YEAR FROM s.tanggal) = $4
-		`, id, totalAnggota, targetMonth.Month(), yr).Scan(&hadirPct)
-
-		if errQuery != nil || hadirPct == 0 {
-			base := 82 + ((mIdx*3 + i*2) % 13)
-			if base > 98 {
-				base = 95
-			}
-			hadirPct = base
+		if totalAnggota > 0 {
+			_ = r.db.QueryRowContext(ctx, `
+				SELECT COALESCE(ROUND(
+					(COUNT(k.id)::decimal / COALESCE(NULLIF(COUNT(DISTINCT s.id) * $2, 0), 1)) * 100
+				), 0)
+				FROM sesi_latihan s
+				JOIN unit_latihan u ON u.id = s.unit_id
+				LEFT JOIN kehadiran k ON k.sesi_id = s.id
+				WHERE u.cabang_id = $1
+				  AND EXTRACT(MONTH FROM s.tanggal) = $3
+				  AND EXTRACT(YEAR FROM s.tanggal) = $4
+			`, id, totalAnggota, targetMonth.Month(), yr).Scan(&hadirPct)
 		}
 
-		iuranPct := 85 + ((mIdx*5 + i*3) % 15)
-		if iuranPct > 100 {
-			iuranPct = 100
+		var iuranPct int
+		if totalAnggota > 0 {
+			_ = r.db.QueryRowContext(ctx, `
+				SELECT COALESCE(ROUND(
+					(COUNT(i.id)::decimal / $2) * 100
+				), 0)
+				FROM iuran i
+				WHERE i.cabang_id = $1
+				  AND EXTRACT(MONTH FROM i.tanggal) = $3
+				  AND EXTRACT(YEAR FROM i.tanggal) = $4
+			`, id, totalAnggota, targetMonth.Month(), yr).Scan(&iuranPct)
 		}
-		anggotaCount := totalAnggota - (i % 5)
+
+		anggotaCount := totalAnggota
 
 		points = append(points, CabangTrendPoint{
 			Month:        mLabel,

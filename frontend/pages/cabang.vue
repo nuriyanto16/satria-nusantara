@@ -697,21 +697,21 @@ const statsMetricLabel = computed(() => {
 })
 
 const trendPoints = computed(() => trendsResponse.value?.points || [])
-const summaryAvgKehadiran = computed(() => trendsResponse.value?.avg_kehadiran_pct ?? 89)
-const summaryBlba = computed(() => trendsResponse.value?.blba_pct ?? 96)
-const summaryAnggota = computed(() => trendsResponse.value?.total_anggota ?? 124)
+const summaryAvgKehadiran = computed(() => trendsResponse.value?.avg_kehadiran_pct ?? 0)
+const summaryBlba = computed(() => trendsResponse.value?.blba_pct ?? 0)
+const summaryAnggota = computed(() => trendsResponse.value?.total_anggota ?? 0)
 const summaryKas = computed(() => {
   if (trendsResponse.value?.kas_unit) {
     return 'Rp ' + (trendsResponse.value.kas_unit / 1000000).toFixed(1) + 'Jt'
   }
-  return 'Rp 4.2M'
+  return 'Rp 0'
 })
 
 const statsMetricValue = computed(() => {
   if (!trendsResponse.value || !trendPoints.value.length) {
-    if (statsMetric.value === 'kehadiran') return '89%'
-    if (statsMetric.value === 'iuran') return '96%'
-    return '124 Anggota'
+    if (statsMetric.value === 'kehadiran') return '0%'
+    if (statsMetric.value === 'iuran') return '0%'
+    return '0 Anggota'
   }
   const last = trendPoints.value[trendPoints.value.length - 1]
   if (statsMetric.value === 'kehadiran') return `${last.kehadiran_pct}%`
