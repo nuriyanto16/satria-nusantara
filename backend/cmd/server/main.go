@@ -23,6 +23,7 @@ import (
 	"satria-nusantara/backend/pkg/config"
 	"satria-nusantara/backend/pkg/database"
 	"satria-nusantara/backend/pkg/response"
+	customMw "satria-nusantara/backend/pkg/middleware"
 )
 
 func main() {
@@ -111,8 +112,8 @@ func main() {
 		r.Route("/auth", authHandler.Routes(cfg.JWTSecret))
 		
 		r.Group(func(r chi.Router) {
-			r.Use(middleware.AuthMiddleware(cfg.JWTSecret))
-			r.Use(middleware.AuditLogMiddleware)
+			r.Use(customMw.Authenticate(cfg.JWTSecret))
+			r.Use(customMw.AuditLogMiddleware)
 
 			r.Route("/organization", orgHandler.Routes(cfg.JWTSecret))
 			r.Route("/training", trainHandler.Routes(cfg.JWTSecret))
