@@ -146,7 +146,6 @@ func (r *pgRepository) GetCabangTrends(ctx context.Context, id string, period in
 	now := time.Now()
 	var points []CabangTrendPoint
 	var totalHadirPctSum int
-	var totalIuranPctSum int
 
 	for i := period - 1; i >= 0; i-- {
 		targetMonth := now.AddDate(0, -i, 0)
