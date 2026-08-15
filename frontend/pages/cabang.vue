@@ -1312,10 +1312,15 @@ const initMap = async (mapId: string, formRef: any) => {
       updateForm(e.latlng)
     })
     
-    // Fix resize issue in modals
-    setTimeout(() => {
+    // Fix resize issue in modals using ResizeObserver
+    const ro = new ResizeObserver(() => {
       if (mapInstance) mapInstance.invalidateSize()
-    }, 200)
+    })
+    ro.observe(el)
+
+    // Fallback timeouts just in case
+    setTimeout(() => { if (mapInstance) mapInstance.invalidateSize() }, 200)
+    setTimeout(() => { if (mapInstance) mapInstance.invalidateSize() }, 600)
   })
 }
 

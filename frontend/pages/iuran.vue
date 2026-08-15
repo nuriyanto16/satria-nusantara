@@ -959,6 +959,16 @@ const copyLink = (url: string) => {
   })
 }
 
+const verifyTransaction = async (trx: any) => {
+  try {
+    const res = await api.post(`/admin/iuran-transactions/${trx.id}/verify`)
+    alert(res?.message || 'Berhasil cek pembayaran')
+    await fetchTransactions()
+  } catch (e: any) {
+    alert('Gagal cek pembayaran: ' + (e.message || 'Error'))
+  }
+}
+
 const transaksiList = ref<any[]>([])
 
 const fetchTransactions = async () => {

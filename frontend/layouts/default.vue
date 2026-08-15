@@ -491,6 +491,106 @@ watch(() => route.path, () => {
   z-index: 100;
 }
 
+.tb-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.tb-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tb-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.tb-bc-home {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.tb-bc-home:hover {
+  color: var(--hijau);
+}
+
+.tb-bc-cur {
+  font-weight: 600;
+  color: var(--text1);
+}
+
+.tb-scope-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+.scope-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--hijau);
+  border-radius: 50%;
+}
+
+.tb-menu-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.tb-notif-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tb-notif-btn:hover {
+  background: var(--hijauSoft);
+  color: var(--hijau);
+  border-color: var(--hijauSoft);
+}
+
+.tb-notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: var(--merah);
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
 .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--r8); font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
 .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text2); }
 

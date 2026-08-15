@@ -32,6 +32,10 @@ func main() {
 	// 2. Init DB & Redis (will fatal if failed)
 	db := database.NewPostgres(cfg)
 	defer db.Close()
+	
+	// Initialize logs service
+	logs.InitService(db)
+
 	rdb := database.NewRedis(cfg)
 	defer rdb.Close()
 
@@ -105,19 +109,25 @@ func main() {
 		})
 
 		r.Route("/auth", authHandler.Routes(cfg.JWTSecret))
-		r.Route("/organization", orgHandler.Routes(cfg.JWTSecret))
-		r.Route("/training", trainHandler.Routes(cfg.JWTSecret))
-		r.Route("/event", eventHandler.Routes())
-		r.Route("/finance", financeHandler.Routes())
-		r.Route("/content", contentHandler.Routes())
-		r.Route("/kebugaran", kebugaranHandler.Routes())
-		r.Route("/nafas", nafasHandler.Routes())
+		
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+			r.Use(middleware.AuditLogMiddleware)
 
-		r.Route("/admin", func(r chi.Router) {
-			r.Get("/iuran-transactions", financeHandler.GetTransactions)
-			r.Post("/iuran-transactions/{id}/verify", financeHandler.VerifyTransaction)
-			r.Post("/iuran-transactions/{id}/sync", financeHandler.SyncXenditTransaction)
-			r.Route("/logs", logsHandler.Routes())
+			r.Route("/organization", orgHandler.Routes(cfg.JWTSecret))
+			r.Route("/training", trainHandler.Routes(cfg.JWTSecret))
+			r.Route("/event", eventHandler.Routes())
+			r.Route("/finance", financeHandler.Routes())
+			r.Route("/content", contentHandler.Routes())
+			r.Route("/kebugaran", kebugaranHandler.Routes())
+			r.Route("/nafas", nafasHandler.Routes())
+
+			r.Route("/admin", func(r chi.Router) {
+				r.Get("/iuran-transactions", financeHandler.GetTransactions)
+				r.Post("/iuran-transactions/{id}/verify", financeHandler.VerifyTransaction)
+				r.Post("/iuran-transactions/{id}/sync", financeHandler.SyncXenditTransaction)
+				r.Route("/logs", logsHandler.Routes())
+			})
 		})
 	})
 

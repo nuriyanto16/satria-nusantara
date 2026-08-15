@@ -83,8 +83,9 @@ func (h *Handler) GetTransactions(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var tx PaymentTransaction
 		var refID, uID, nama, nomor sql.NullString
+		var providerID, paymentURL sql.NullString
 		var paidAt sql.NullTime
-		if err := rows.Scan(&tx.ID, &tx.ReferenceType, &refID, &uID, &tx.Amount, &tx.Description, &tx.Provider, &tx.ProviderID, &tx.PaymentURL, &tx.Status, &paidAt, &tx.CreatedAt, &nama, &nomor); err != nil {
+		if err := rows.Scan(&tx.ID, &tx.ReferenceType, &refID, &uID, &tx.Amount, &tx.Description, &tx.Provider, &providerID, &paymentURL, &tx.Status, &paidAt, &tx.CreatedAt, &nama, &nomor); err != nil {
 			log.Println("Scan error:", err)
 			continue
 		}
@@ -92,6 +93,8 @@ func (h *Handler) GetTransactions(w http.ResponseWriter, r *http.Request) {
 		if uID.Valid { tx.UserID = uID.String }
 		if nama.Valid { tx.Nama = nama.String }
 		if nomor.Valid { tx.Nomor = nomor.String }
+		if providerID.Valid { tx.ProviderID = providerID.String }
+		if paymentURL.Valid { tx.PaymentURL = paymentURL.String }
 		if paidAt.Valid { tx.PaidAt = &paidAt.Time }
 		txs = append(txs, tx)
 	}
@@ -314,7 +317,58 @@ func (h *Handler) createXenditInvoice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) VerifyTransaction(w http.ResponseWriter, r *http.Request) {
-	response.Success(w, http.StatusOK, "Transaksi telah diverifikasi (Stub)", nil)
+	txID := chi.URLParam(r, "id")
+	if h.db == nil {
+		response.Error(w, http.StatusInternalServerError, "No DB connected")
+		return
+	}
+
+	var provider, providerID sql.NullString
+	err := h.db.QueryRow(`SELECT provider, provider_id FROM payment_transactions WHERE id = $1`, txID).Scan(&provider, &providerID)
+	if err != nil {
+		response.Error(w, http.StatusNotFound, "Transaksi tidak ditemukan")
+		return
+	}
+
+	if provider.String != "xendit" || !providerID.Valid {
+		response.Error(w, http.StatusBadRequest, "Hanya transaksi Xendit yang dapat diverifikasi secara manual via gateway")
+		return
+	}
+
+	invoice, err := h.xendit.GetInvoice(providerID.String)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Gagal mengecek invoice dari Xendit: "+err.Error())
+		return
+	}
+
+	var mappedStatus string
+	switch invoice.Status {
+	case "SETTLED", "PAID":
+		mappedStatus = "PAID"
+	case "EXPIRED":
+		mappedStatus = "EXPIRED"
+	default:
+		mappedStatus = "PENDING"
+	}
+
+	var paidAt sql.NullTime
+	if invoice.PaidAt != nil {
+		t, err := time.Parse(time.RFC3339, *invoice.PaidAt)
+		if err == nil {
+			paidAt.Time = t
+			paidAt.Valid = true
+		}
+	}
+
+	if mappedStatus == "PAID" && paidAt.Valid {
+		h.db.Exec(`UPDATE payment_transactions SET status = $1, paid_at = $2 WHERE id = $3`, mappedStatus, paidAt.Time, txID)
+	} else {
+		h.db.Exec(`UPDATE payment_transactions SET status = $1 WHERE id = $2`, mappedStatus, txID)
+	}
+
+	response.Success(w, http.StatusOK, "Status transaksi telah disinkronisasi", map[string]string{
+		"status": mappedStatus,
+	})
 }
 
 func (h *Handler) webhookXenditInvoice(w http.ResponseWriter, r *http.Request) {
