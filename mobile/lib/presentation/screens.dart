@@ -6756,7 +6756,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
       String userId = '';
       if (authBloc.state is Authenticated) {
         userId = (authBloc.state as Authenticated).user.id;
-        _userName = (authBloc.state as Authenticated).user.nama;
+        _userName = (authBloc.state as Authenticated).user.namaLengkap;
       }
       
       final resp = await dio.get('https://nfmtech.my.id/product/satrianusantara/api/v1/finance/history?userId=$userId');
