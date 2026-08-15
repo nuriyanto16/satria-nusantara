@@ -872,8 +872,8 @@ const onXenditSearchInput = () => {
     try {
       const query = xenditSearchQuery.value.toLowerCase()
       xenditSearchResults.value = anggotaBLBAList.value.filter(m =>
-        (m.nama || '').toLowerCase().includes(query) ||
-        (m.nomor || '').toLowerCase().includes(query)
+        (m.nama || m.nama_lengkap || '').toLowerCase().includes(query) ||
+        (m.nomor || m.nomor_anggota || '').toLowerCase().includes(query)
       ).slice(0, 10)
       showXenditDropdown.value = true
     } catch (e) {

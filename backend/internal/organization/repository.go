@@ -424,7 +424,7 @@ func (r *pgRepository) VerifikasiAnggota(ctx context.Context, id, status string)
 
 	if status == "aktif" {
 		// Dapatkan provinsi_kode dan cabang_kode, dan user_id
-		var userID string
+		var userID sql.NullString
 		var provKode, cabKode string
 		err = tx.QueryRowContext(ctx, `
 			SELECT a.user_id, COALESCE(p.kode, 'PST'), COALESCE(c.kode, 'PST')
@@ -466,17 +466,19 @@ func (r *pgRepository) VerifikasiAnggota(ctx context.Context, id, status string)
 		}
 
 		// Update users status
-		_, err = tx.ExecContext(ctx, `
-			UPDATE users 
-			SET status = 'aktif', updated_at = NOW() 
-			WHERE id = $1
-		`, userID)
-		if err != nil {
-			return err
+		if userID.Valid {
+			_, err = tx.ExecContext(ctx, `
+				UPDATE users 
+				SET status = 'aktif', updated_at = NOW() 
+				WHERE id = $1
+			`, userID.String)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		// Dapatkan user_id
-		var userID string
+		var userID sql.NullString
 		err = tx.QueryRowContext(ctx, `SELECT user_id FROM anggota WHERE id = $1`, id).Scan(&userID)
 		if err != nil {
 			return err
@@ -497,11 +499,13 @@ func (r *pgRepository) VerifikasiAnggota(ctx context.Context, id, status string)
 			return err
 		}
 
-		_, err = tx.ExecContext(ctx, `
-			UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2
-		`, dbStatus, userID)
-		if err != nil {
-			return err
+		if userID.Valid {
+			_, err = tx.ExecContext(ctx, `
+				UPDATE users SET status = $1, updated_at = NOW() WHERE id = $2
+			`, dbStatus, userID.String)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
