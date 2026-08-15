@@ -868,18 +868,22 @@ const onXenditSearchInput = () => {
     xenditForm.value.memberId = ''
   }
 
-  xenditSearchTimeout = setTimeout(() => {
+  xenditSearchTimeout = setTimeout(async () => {
     try {
-      const query = xenditSearchQuery.value.toLowerCase()
-      xenditSearchResults.value = anggotaBLBAList.value.filter(m =>
-        (m.nama || m.nama_lengkap || '').toLowerCase().includes(query) ||
-        (m.nomor || m.nomor_anggota || '').toLowerCase().includes(query)
-      ).slice(0, 10)
+      const query = xenditSearchQuery.value
+      const res = await api.get(`/organization/anggota?search=${query}&limit=10`)
+      const items = res.data || []
+      xenditSearchResults.value = items.map((m: any) => ({
+        id: m.id,
+        nama: m.nama_lengkap,
+        nomor: m.nomor_anggota,
+        unit: m.unit_nama || ''
+      }))
       showXenditDropdown.value = true
     } catch (e) {
       console.error(e)
     }
-  }, 100)
+  }, 300)
 }
 
 const selectXenditMember = (m: any) => {
