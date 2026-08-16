@@ -595,9 +595,10 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 
 .login-page {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg);
 }
@@ -1107,6 +1108,10 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
 
 /* Responsive Styles */
 @media (max-width: 992px) {
+  .login-page {
+    height: auto;
+    overflow-y: auto;
+  }
   .login-bg {
     display: none;
   }
@@ -1114,6 +1119,7 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
     flex: 1;
     background: var(--bg);
     padding: 24px;
+    align-items: flex-start;
   }
   .login-card {
     background: #ffffff;
@@ -1121,6 +1127,7 @@ const handleGoogleLogin = async (gEmail: string, gName: string, gId?: string) =>
     border-radius: 16px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-md);
+    margin: auto;
   }
 }
 
