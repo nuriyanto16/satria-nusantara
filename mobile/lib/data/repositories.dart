@@ -212,6 +212,17 @@ class FinanceRepository {
     }
   }
 
+  Future<void> addMockIuran(String userId) async {
+    try {
+      await api.dio.post('/finance/iuran/mock', data: {'userId': userId});
+    } catch (e) {
+      if (e is DioException) {
+        throw Exception(e.response?.data['message'] ?? e.message ?? e.toString());
+      }
+      rethrow;
+    }
+  }
+
   Future<void> payIuran(String id, String method, String userId, {String? bulan, int? amount}) async {
     try {
       await api.dio.post('/finance/iuran/pay', data: {

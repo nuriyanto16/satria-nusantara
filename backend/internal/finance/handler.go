@@ -48,6 +48,7 @@ func (h *Handler) Routes() func(r chi.Router) {
 	return func(r chi.Router) {
 		r.Get("/history", h.getPaymentHistory) // For mobile
 		r.Get("/iuran", h.getIuranHistory)
+		r.Post("/iuran/mock", h.addMockIuran)
 		r.Post("/iuran/pay", h.payIuran)
 		r.Post("/iuran/xendit/create-invoice", h.createXenditInvoice)
 		
@@ -191,15 +192,15 @@ func (h *Handler) getIuranHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT id, anggota_id, bulan, tahun, nominal, status, tanggal_bayar FROM tagihan_blba`
+	query := `SELECT t.id, t.anggota_id, t.bulan, t.tahun, t.nominal, t.status, t.tanggal_bayar FROM tagihan_blba t`
 	var rows *sql.Rows
 	var err error
 
 	if userId != "" {
-		query += ` WHERE anggota_id = $1 ORDER BY tahun DESC, bulan DESC`
+		query += ` JOIN anggota a ON t.anggota_id = a.id WHERE a.user_id = $1 ORDER BY t.tahun DESC, t.bulan DESC`
 		rows, err = h.db.QueryContext(r.Context(), query, userId)
 	} else {
-		query += ` ORDER BY tahun DESC, bulan DESC`
+		query += ` ORDER BY t.tahun DESC, t.bulan DESC`
 		rows, err = h.db.QueryContext(r.Context(), query)
 	}
 
@@ -238,6 +239,44 @@ func (h *Handler) getIuranHistory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.Success(w, http.StatusOK, "Finance BLBA API", results)
+}
+
+func (h *Handler) addMockIuran(w http.ResponseWriter, r *http.Request) {
+	if h.db == nil {
+		response.Success(w, http.StatusOK, "Mock Iuran API (No DB)", nil)
+		return
+	}
+	var req struct {
+		UserID string `json:"userId"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	var anggotaId string
+	err := h.db.QueryRowContext(r.Context(), "SELECT id FROM anggota WHERE user_id = $1", req.UserID).Scan(&anggotaId)
+	if err != nil {
+		response.Error(w, http.StatusNotFound, "Anggota not found for user")
+		return
+	}
+
+	query := `INSERT INTO tagihan_blba (anggota_id, bulan, tahun, nominal, status) VALUES ($1, $2, $3, $4, 'belum_bayar')`
+	now := time.Now()
+	bulan := int(now.Month())
+	tahun := now.Year()
+	nominal := 50000
+
+	_, err = h.db.ExecContext(r.Context(), query, anggotaId, bulan, tahun, nominal)
+	if err != nil {
+		_, err = h.db.ExecContext(r.Context(), query, anggotaId, bulan+1, tahun, nominal)
+		if err != nil {
+			response.Error(w, http.StatusInternalServerError, "Failed to create mock tagihan: " + err.Error())
+			return
+		}
+	}
+
+	response.Success(w, http.StatusOK, "Mock tagihan created", nil)
 }
 
 type PayRequest struct {

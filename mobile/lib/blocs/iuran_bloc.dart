@@ -55,7 +55,7 @@ class IuranBloc extends Bloc<IuranEvent, IuranState> {
     on<AddMockIuran>((event, emit) async {
       emit(IuranLoading());
       try {
-        // _repository.addMockIuran(event.userId);
+        await _repository.addMockIuran(event.userId);
         final list = await _repository.getIuranHistory(event.userId);
         emit(IuranLoaded(list));
       } catch (e) {
