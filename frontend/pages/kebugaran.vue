@@ -470,21 +470,41 @@ const formatDate = (dateStr: string) => {
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-// Participants for Test Results Input
-const inputPesertaList = ref<any[]>([
-  { id: 1, nama: 'Budi Santoso', noAnggota: 'YO-YGY-00034', nafas: 120, pushUp: 35, sitUp: 40, sitReach: 22, shuttleRun: 13.2, kategori: 'Baik' },
-  { id: 2, nama: 'Rina Wulandari', noAnggota: 'JB-BDG-00142', nafas: 95, pushUp: 28, sitUp: 32, sitReach: 18, shuttleRun: 14.8, kategori: 'Cukup' },
-  { id: 3, nama: 'Ahmad Santoso', noAnggota: 'YO-YGY-00111', nafas: 140, pushUp: 42, sitUp: 50, sitReach: 26, shuttleRun: 12.5, kategori: 'Baik' },
-  { id: 4, nama: 'Dewi Wardani', noAnggota: 'JT-SMG-00089', nafas: 80, pushUp: 20, sitUp: 25, sitReach: 12, shuttleRun: 16.1, kategori: 'Kurang' }
-])
+// Dummy Template for Participants
+const dummyPesertaTemplate = [
+  { id: 1, nama: 'Budi Santoso', noAnggota: 'YO-YGY-00034' },
+  { id: 2, nama: 'Rina Wulandari', noAnggota: 'JB-BDG-00142' },
+  { id: 3, nama: 'Ahmad Santoso', noAnggota: 'YO-YGY-00111' },
+  { id: 4, nama: 'Dewi Wardani', noAnggota: 'JT-SMG-00089' }
+]
+
+const inputPesertaList = ref<any[]>([])
+
+const setupPesertaForSesi = (s: any) => {
+  if (s.selesai === 0) {
+    inputPesertaList.value = dummyPesertaTemplate.map(p => ({
+      ...p,
+      nafas: null, pushUp: null, sitUp: null, sitReach: null, shuttleRun: null, kategori: 'Belum'
+    }))
+  } else {
+    inputPesertaList.value = [
+      { ...dummyPesertaTemplate[0], nafas: 120, pushUp: 35, sitUp: 40, sitReach: 22, shuttleRun: 13.2, kategori: 'Baik' },
+      { ...dummyPesertaTemplate[1], nafas: 95, pushUp: 28, sitUp: 32, sitReach: 18, shuttleRun: 14.8, kategori: 'Cukup' },
+      { ...dummyPesertaTemplate[2], nafas: 140, pushUp: 42, sitUp: 50, sitReach: 26, shuttleRun: 12.5, kategori: 'Baik' },
+      { ...dummyPesertaTemplate[3], nafas: 80, pushUp: 20, sitUp: 25, sitReach: 12, shuttleRun: 16.1, kategori: 'Kurang' }
+    ]
+  }
+}
 
 const openInput = (s: any) => {
   selectedSesi.value = s
+  setupPesertaForSesi(s)
   showInputModal.value = true
 }
 
 const viewDetail = (s: any) => {
   selectedSesi.value = s
+  setupPesertaForSesi(s)
   showDetailModal.value = true
 }
 
@@ -628,6 +648,7 @@ onMounted(() => {
 .kategori-badge.baik { background: var(--hijau3); color: var(--hijau); }
 .kategori-badge.cukup { background: #fff8e0; color: #a07000; }
 .kategori-badge.kurang { background: #fde8e8; color: var(--merah); }
+.kategori-badge.belum { background: var(--surface); color: var(--text3); }
 
 .export-btn { border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; background: #fff; display: inline-flex; align-items: center; gap: 4px; }
 .export-btn:hover { color: var(--hijau); border-color: var(--hijau); }
