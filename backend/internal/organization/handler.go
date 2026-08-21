@@ -37,7 +37,9 @@ func (h *Handler) Routes(jwtSecret string) func(r chi.Router) {
 		r.Get("/cabang/{id}/unit", h.listUnit)
 
 		// ── Unit ───────────────────────────────────────
-		r.With(manager).Post("/unit", h.createUnit)
+			r.With(manager).Post("/unit", h.createUnit)
+		r.With(manager).Put("/unit/{id}", h.updateUnit)
+		r.With(manager).Delete("/unit/{id}", h.deleteUnit)
 		r.Get("/unit/{id}", h.getUnit)
 
 		// ── Anggota ────────────────────────────────────
@@ -49,14 +51,25 @@ func (h *Handler) Routes(jwtSecret string) func(r chi.Router) {
 		r.Post("/anggota/{id}/upload", h.uploadFoto)
 		r.Get("/anggota/{id}/stats", h.getAnggotaStats)
 		r.Post("/anggota/{id}/kebugaran", h.updateAnggotaKebugaran)
+		r.Get("/anggota/{id}/kebugaran/history", h.getAnggotaKebugaranHistory)
 
 		// ── Pelatih ────────────────────────────────────
-		r.Get("/pelatih", h.listPelatih)
+			r.Get("/pelatih", h.listPelatih)
+		r.With(manager).Post("/pelatih", h.createPelatih)
+		r.With(manager).Put("/pelatih/{id}", h.updatePelatih)
+		r.With(manager).Delete("/pelatih/{id}", h.deletePelatih)
 
 		// ── Sebaran ────────────────────────────────────
 		r.Get("/sebaran", h.sebaranProvinsi)
 
+		// ── Pengurus ───────────────────────────────────
+		r.Get("/cabang/{id}/pengurus", h.listPengurus)
+		r.Post("/cabang/{id}/pengurus", h.createPengurus)
+		r.Put("/pengurus/{id}", h.updatePengurus)
+		r.Delete("/pengurus/{id}", h.deletePengurus)
+
 		// ── Dashboard ──────────────────────────────────
+
 		r.Get("/dashboard-stats", h.dashboardStats)
 	}
 }
@@ -131,6 +144,30 @@ func (h *Handler) listUnit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.JSON(w, http.StatusOK, units)
+}
+
+func (h *Handler) updateUnit(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req CreateUnitRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Format payload tidak valid")
+		return
+	}
+
+	if err := h.svc.UpdateUnit(id, req); err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Unit berhasil diperbarui", nil)
+}
+
+func (h *Handler) deleteUnit(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if err := h.svc.DeleteUnit(id); err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Unit berhasil dihapus", nil)
 }
 
 func (h *Handler) getUnit(w http.ResponseWriter, r *http.Request) {
@@ -222,6 +259,45 @@ func (h *Handler) verifikasiAnggota(w http.ResponseWriter, r *http.Request) {
 	msg := "Anggota berhasil diaktifkan"
 	if req.Aksi == "reject" { msg = "Anggota ditolak" }
 	response.Success(w, http.StatusOK, msg, nil)
+}
+
+func (h *Handler) createPelatih(w http.ResponseWriter, r *http.Request) {
+	var req CreatePelatihRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Format payload tidak valid")
+		return
+	}
+
+	createdID, err := h.svc.CreatePelatih(req)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusCreated, "Pelatih berhasil ditambahkan", map[string]string{"id": createdID})
+}
+
+func (h *Handler) updatePelatih(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req CreatePelatihRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Format payload tidak valid")
+		return
+	}
+
+	if err := h.svc.UpdatePelatih(id, req); err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Pelatih berhasil diperbarui", nil)
+}
+
+func (h *Handler) deletePelatih(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if err := h.svc.DeletePelatih(id); err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Pelatih berhasil dihapus", nil)
 }
 
 func (h *Handler) listPelatih(w http.ResponseWriter, r *http.Request) {
@@ -367,4 +443,67 @@ func (h *Handler) updateAnggotaKebugaran(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	response.Success(w, http.StatusOK, "Hasil tes kebugaran berhasil disimpan", nil)
+}
+
+func (h *Handler) getAnggotaKebugaranHistory(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	history, err := h.svc.GetAnggotaKebugaranHistory(id)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Riwayat kebugaran", history)
+}
+
+// ─── Pengurus Cabang ─────────────────────────────────────────────────────────
+
+func (h *Handler) listPengurus(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	res, err := h.svc.ListPengurus(id)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Berhasil memuat pengurus", res)
+}
+
+func (h *Handler) createPengurus(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req CreatePengurusRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Format payload tidak valid")
+		return
+	}
+	req.CabangID = id
+
+	createdID, err := h.svc.CreatePengurus(req)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusCreated, "Pengurus berhasil ditambahkan", map[string]string{"id": createdID})
+}
+
+func (h *Handler) updatePengurus(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req CreatePengurusRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, http.StatusBadRequest, "Format payload tidak valid")
+		return
+	}
+
+	if err := h.svc.UpdatePengurus(id, req); err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Pengurus berhasil diperbarui", nil)
+}
+
+func (h *Handler) deletePengurus(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if err := h.svc.DeletePengurus(id); err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response.Success(w, http.StatusOK, "Pengurus berhasil dihapus", nil)
 }

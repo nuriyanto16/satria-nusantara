@@ -27,6 +27,8 @@ func (h *Handler) Routes(jwtSecret string) func(r chi.Router) {
 		r.Post("/sesi/{id}/qr", h.generateQR)
 		r.Post("/scan-qr", h.scanQR)
 		
+		r.Get("/antrian/status", h.getAntrianStatus)
+		
 		r.Get("/sesi/{id}/kehadiran", h.getKehadiran)
 	}
 }
@@ -117,4 +119,34 @@ func (h *Handler) getKehadiran(w http.ResponseWriter, r *http.Request) {
 		"ringkasan": ringkasan,
 		"detail": detail,
 	})
+}
+
+func (h *Handler) getAntrianStatus(w http.ResponseWriter, r *http.Request) {
+	// Dummy response for antrian status
+	data := map[string]any{
+		"nomor_antrian": 14,
+		"antrian_saat_ini": 9,
+		"total_antrian": 25,
+		"estimasi": "± 25 menit",
+		"nama_session": "Latihan Gabungan – Minggu, 10 Agu 2026",
+		"lokasi": "GOR Arcamanik, Kota Bandung",
+		"antrian": []map[string]any{
+			{"no": 1, "nama": "Ahmad Fauzi", "status": "selesai"},
+			{"no": 2, "nama": "Budi Santoso", "status": "selesai"},
+			{"no": 3, "nama": "Citra Dewi", "status": "selesai"},
+			{"no": 4, "nama": "Dani Kurniawan", "status": "selesai"},
+			{"no": 5, "nama": "Eva Susanti", "status": "selesai"},
+			{"no": 6, "nama": "Fajar Nugroho", "status": "selesai"},
+			{"no": 7, "nama": "Galih Prasetyo", "status": "selesai"},
+			{"no": 8, "nama": "Hani Pertiwi", "status": "selesai"},
+			{"no": 9, "nama": "Irfan Hakim", "status": "aktif"},
+			{"no": 10, "nama": "Joko Susilo", "status": "menunggu"},
+			{"no": 11, "nama": "Kartika Sari", "status": "menunggu"},
+			{"no": 12, "nama": "Lukman Hakim", "status": "menunggu"},
+			{"no": 13, "nama": "Mira Lesmana", "status": "menunggu"},
+			{"no": 14, "nama": "Anda", "status": "menunggu"},
+			{"no": 15, "nama": "Nina Bobo", "status": "menunggu"},
+		},
+	}
+	response.Success(w, http.StatusOK, "Berhasil mengambil status antrian", data)
 }

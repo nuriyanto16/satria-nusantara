@@ -1,0 +1,6 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn scp -o StrictHostKeyChecking=no build/app/outputs/flutter-apk/app-release.apk ubuntu@43.133.150.102:/home/ubuntu/apps/satrianusantara/
+expect "*?assword:*"
+send "mountain-87%-ninja\r"
+expect eof

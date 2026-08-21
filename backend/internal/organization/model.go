@@ -67,6 +67,8 @@ type CreateUnitRequest struct {
 	LokasiNama   string `json:"lokasi_nama"`
 	LokasiAlamat string `json:"lokasi_alamat"`
 	PicUserID    string `json:"pic_user_id"`
+	Lat          string `json:"lat"`
+	Lng          string `json:"lng"`
 }
 
 // ─── Anggota ──────────────────────────────────────────────────────────────────
@@ -287,4 +289,40 @@ type UpdateKebugaranRequest struct {
 	SitAndReach         int     `json:"sit_and_reach"`
 	ShuttleRun          float64 `json:"shuttle_run"`
 	KategoriKeseluruhan string  `json:"kategori_keseluruhan"`
+}
+
+// ─── Pengurus Cabang ──────────────────────────────────────────────────────────
+
+type PengurusCabang struct {
+	ID        string `json:"id"`
+	CabangID  string `json:"cabang_id"`
+	Nama      string `json:"nama"`
+	Jabatan   string `json:"jabatan"`
+	Tingkatan string `json:"tingkatan"`
+	Kontak    string `json:"kontak"`
+	Nomor     string `json:"nomor"`
+	UserID    string `json:"-"`
+	IsActive  bool   `json:"is_active"`
+}
+
+type CreatePengurusRequest struct {
+	CabangID  string `json:"cabang_id"`
+	Nama      string `json:"nama"`
+	Jabatan   string `json:"jabatan"`
+	Tingkatan string `json:"tingkatan"`
+	Kontak    string `json:"kontak"`
+	Nomor     string `json:"nomor"`
+}
+
+type CreatePelatihRequest struct {
+	CabangID     string `json:"cabang_id"`
+	Nama         string `json:"nama"`
+	Nomor        string `json:"nomor"`
+	Jenis        string `json:"jenis"`
+	Tingkatan    string `json:"tingkatan"`
+	Jarak        string `json:"jarak"`
+	Transport    int    `json:"transport"`
+	TanggalMulai string `json:"tanggal_mulai"`
+	SK           string `json:"sk"`
+	Status       string `json:"status"`
 }

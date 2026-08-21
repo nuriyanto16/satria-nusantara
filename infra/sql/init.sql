@@ -66,7 +66,10 @@ CREATE TABLE pengurus_cabang (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cabang_id UUID REFERENCES cabang(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id),
+    nama VARCHAR(255),                  -- Bisa NULL jika pakai user_id
     jabatan VARCHAR(100) NOT NULL,      -- Ketua, Sekretaris, Bendahara, Kabid Latihan, dst
+    tingkatan VARCHAR(100),
+    kontak VARCHAR(50),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -485,4 +488,14 @@ CREATE TABLE IF NOT EXISTS app_errors (
     stack_trace TEXT,
     context JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- TABLE APP_VERSIONS
+CREATE TABLE app_versions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    version_name VARCHAR(50) NOT NULL,
+    build_number INTEGER NOT NULL,
+    release_notes TEXT,
+    is_mandatory BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

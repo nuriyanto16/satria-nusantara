@@ -34,6 +34,7 @@ type Service interface {
 	UpdateFotoAnggota(id, fotoURL string) error
 	GetAnggotaStats(id string) (*AnggotaStats, error)
 	UpdateAnggotaKebugaran(id string, req UpdateKebugaranRequest) error
+	GetAnggotaKebugaranHistory(id string) ([]map[string]interface{}, error)
 
 	// Pelatih
 	ListPelatih(cabangID string) ([]Pelatih, error)
@@ -41,8 +42,19 @@ type Service interface {
 	// Sebaran
 	GetSebaranProvinsi() ([]SebaranProvinsi, error)
 
-	// Dashboard
 	GetDashboardStats() (*DashboardStats, error)
+
+	UpdateUnit(id string, req CreateUnitRequest) error
+	DeleteUnit(id string) error
+	
+	ListPengurus(cabangID string) ([]PengurusCabang, error)
+	CreatePengurus(req CreatePengurusRequest) (string, error)
+	UpdatePengurus(id string, req CreatePengurusRequest) error
+	DeletePengurus(id string) error
+	
+	CreatePelatih(req CreatePelatihRequest) (string, error)
+	UpdatePelatih(id string, req CreatePelatihRequest) error
+	DeletePelatih(id string) error
 }
 
 type service struct {
@@ -92,6 +104,14 @@ func (s *service) CreateUnit(req CreateUnitRequest) (string, error) {
 	return s.repo.CreateUnit(context.Background(), req)
 }
 
+func (s *service) UpdateUnit(id string, req CreateUnitRequest) error {
+	return s.repo.UpdateUnit(context.Background(), id, req)
+}
+
+func (s *service) DeleteUnit(id string) error {
+	return s.repo.DeleteUnit(context.Background(), id)
+}
+
 // ─── Anggota ─────────────────────────────────────────────────────────────────
 
 func (s *service) ListAnggota(params ListParams) (*PaginatedResult[Anggota], error) {
@@ -135,6 +155,22 @@ func (s *service) ListPelatih(cabangID string) ([]Pelatih, error) {
 	return s.repo.ListPelatih(context.Background(), cabangID)
 }
 
+func (s *service) CreatePelatih(req CreatePelatihRequest) (string, error) {
+	return s.repo.CreatePelatih(context.Background(), req)
+}
+
+func (s *service) UpdatePelatih(id string, req CreatePelatihRequest) error {
+	return s.repo.UpdatePelatih(context.Background(), id, req)
+}
+
+func (s *service) DeletePelatih(id string) error {
+	return s.repo.DeletePelatih(context.Background(), id)
+}
+
+func (s *service) ListPelatihOld(cabangID string) ([]Pelatih, error) {
+	return s.repo.ListPelatih(context.Background(), cabangID)
+}
+
 func (s *service) GetSebaranProvinsi() ([]SebaranProvinsi, error) {
 	return s.repo.GetSebaranProvinsi(context.Background())
 }
@@ -146,4 +182,24 @@ func (s *service) GetDashboardStats() (*DashboardStats, error) {
 
 func (s *service) UpdateAnggotaKebugaran(id string, req UpdateKebugaranRequest) error {
 	return s.repo.UpdateAnggotaKebugaran(context.Background(), id, req)
+}
+
+func (s *service) ListPengurus(cabangID string) ([]PengurusCabang, error) {
+	return s.repo.ListPengurus(context.Background(), cabangID)
+}
+
+func (s *service) CreatePengurus(req CreatePengurusRequest) (string, error) {
+	return s.repo.CreatePengurus(context.Background(), req)
+}
+
+func (s *service) UpdatePengurus(id string, req CreatePengurusRequest) error {
+	return s.repo.UpdatePengurus(context.Background(), id, req)
+}
+
+func (s *service) DeletePengurus(id string) error {
+	return s.repo.DeletePengurus(context.Background(), id)
+}
+
+func (s *service) GetAnggotaKebugaranHistory(id string) ([]map[string]interface{}, error) {
+	return s.repo.GetAnggotaKebugaranHistory(context.Background(), id)
 }

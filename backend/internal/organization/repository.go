@@ -40,8 +40,21 @@ type Repository interface {
 	// Sebaran
 	GetSebaranProvinsi(ctx context.Context) ([]SebaranProvinsi, error)
 
-	// Dashboard
 	GetDashboardStats(ctx context.Context) (*DashboardStats, error)
+
+	UpdateUnit(ctx context.Context, id string, req CreateUnitRequest) error
+	DeleteUnit(ctx context.Context, id string) error
+	
+	ListPengurus(ctx context.Context, cabangID string) ([]PengurusCabang, error)
+	CreatePengurus(ctx context.Context, req CreatePengurusRequest) (string, error)
+	UpdatePengurus(ctx context.Context, id string, req CreatePengurusRequest) error
+	DeletePengurus(ctx context.Context, id string) error
+	
+	CreatePelatih(ctx context.Context, req CreatePelatihRequest) (string, error)
+	UpdatePelatih(ctx context.Context, id string, req CreatePelatihRequest) error
+	DeletePelatih(ctx context.Context, id string) error
+	
+	GetAnggotaKebugaranHistory(ctx context.Context, anggotaID string) ([]map[string]interface{}, error)
 }
 
 type pgRepository struct{ db *sql.DB }
@@ -1077,4 +1090,109 @@ func (r *pgRepository) UpdateAnggotaKebugaran(ctx context.Context, id string, re
 		)
 	`, id, req.NafasDalamAir, req.PushUp, req.SitUp, req.SitAndReach, req.ShuttleRun, kat)
 	return err
+}
+
+func (r *pgRepository) UpdateUnit(ctx context.Context, id string, req CreateUnitRequest) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE unit_latihan 
+		SET nama = $1, lokasi_nama = $2, koordinat_lat = $3, koordinat_lng = $4
+		WHERE id = $5
+	`, req.Nama, req.LokasiNama, req.Lat, req.Lng, id)
+	return err
+}
+
+func (r *pgRepository) DeleteUnit(ctx context.Context, id string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE unit_latihan 
+		SET status = 'tidak_aktif' 
+		WHERE id = $1
+	`, id)
+	return err
+}
+
+func (r *pgRepository) CreatePelatih(ctx context.Context, req CreatePelatihRequest) (string, error) {
+	// Search for anggota by nomor_anggota
+	var anggotaID string
+	err := r.db.QueryRowContext(ctx, "SELECT id FROM anggota WHERE nomor_anggota = $1", req.Nomor).Scan(&anggotaID)
+	if err != nil {
+		err = r.db.QueryRowContext(ctx, "INSERT INTO anggota (cabang_id, nama_lengkap, nomor_anggota, tingkatan, status) VALUES ($1, $2, $3, $4, 'aktif') RETURNING id", req.CabangID, req.Nama, req.Nomor, req.Tingkatan).Scan(&anggotaID)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	var pelatihID string
+	err = r.db.QueryRowContext(ctx, `
+		INSERT INTO pelatih (anggota_id, cabang_id, jenis, kategori_transport, is_active)
+		VALUES ($1, $2, $3, $4, true)
+		RETURNING id
+	`, anggotaID, req.CabangID, req.Jenis, req.Jarak).Scan(&pelatihID)
+	return pelatihID, err
+}
+
+func (r *pgRepository) UpdatePelatih(ctx context.Context, id string, req CreatePelatihRequest) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE pelatih 
+		SET jenis = $1, kategori_transport = $2
+		WHERE id = $3
+	`, req.Jenis, req.Jarak, id)
+	return err
+}
+
+func (r *pgRepository) DeletePelatih(ctx context.Context, id string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE pelatih 
+		SET is_active = false 
+		WHERE id = $1
+	`, id)
+	return err
+}
+
+func (r *pgRepository) ListPengurus(ctx context.Context, cabangID string) ([]PengurusCabang, error) {
+	rows, err := r.db.QueryContext(ctx, "SELECT id, cabang_id, COALESCE(user_id::text,''), COALESCE(nama,''), jabatan, COALESCE(tingkatan,''), COALESCE(kontak,''), is_active FROM pengurus_cabang WHERE cabang_id = $1 AND is_active = true", cabangID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var res []PengurusCabang
+	for rows.Next() {
+		var p PengurusCabang
+		if err := rows.Scan(&p.ID, &p.CabangID, &p.UserID, &p.Nama, &p.Jabatan, &p.Tingkatan, &p.Kontak, &p.IsActive); err != nil {
+			return nil, err
+		}
+		res = append(res, p)
+	}
+	return res, nil
+}
+
+func (r *pgRepository) CreatePengurus(ctx context.Context, req CreatePengurusRequest) (string, error) {
+	var id string
+	err := r.db.QueryRowContext(ctx, `
+		INSERT INTO pengurus_cabang (cabang_id, nama, jabatan, tingkatan, kontak)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id
+	`, req.CabangID, req.Nama, req.Jabatan, req.Tingkatan, req.Kontak).Scan(&id)
+	return id, err
+}
+
+func (r *pgRepository) UpdatePengurus(ctx context.Context, id string, req CreatePengurusRequest) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE pengurus_cabang 
+		SET nama = $1, jabatan = $2, tingkatan = $3, kontak = $4
+		WHERE id = $5
+	`, req.Nama, req.Jabatan, req.Tingkatan, req.Kontak, id)
+	return err
+}
+
+func (r *pgRepository) DeletePengurus(ctx context.Context, id string) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE pengurus_cabang 
+		SET is_active = false 
+		WHERE id = $1
+	`, id)
+	return err
+}
+
+func (r *pgRepository) GetAnggotaKebugaranHistory(ctx context.Context, anggotaID string) ([]map[string]interface{}, error) {
+	return nil, nil // mock implementation for now since it's just missing
 }

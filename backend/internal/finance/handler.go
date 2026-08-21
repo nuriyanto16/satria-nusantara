@@ -248,6 +248,8 @@ func (h *Handler) addMockIuran(w http.ResponseWriter, r *http.Request) {
 	}
 	var req struct {
 		UserID string `json:"userId"`
+		Bulan  int    `json:"bulan"`
+		Tahun  int    `json:"tahun"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid request body")
@@ -263,8 +265,14 @@ func (h *Handler) addMockIuran(w http.ResponseWriter, r *http.Request) {
 
 	query := `INSERT INTO tagihan_blba (anggota_id, bulan, tahun, nominal, status) VALUES ($1, $2, $3, $4, 'belum_bayar')`
 	now := time.Now()
-	bulan := int(now.Month())
-	tahun := now.Year()
+	bulan := req.Bulan
+	if bulan == 0 {
+		bulan = int(now.Month())
+	}
+	tahun := req.Tahun
+	if tahun == 0 {
+		tahun = now.Year()
+	}
 	nominal := 50000
 
 	_, err = h.db.ExecContext(r.Context(), query, anggotaId, bulan, tahun, nominal)
@@ -295,7 +303,16 @@ func (h *Handler) payIuran(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
-	response.Success(w, http.StatusOK, "Pembayaran berhasil dicatat (Stub)", nil)
+	
+	if h.db != nil {
+		_, err := h.db.ExecContext(r.Context(), "UPDATE tagihan_blba SET status = 'lunas', tanggal_bayar = $1 WHERE id = $2", time.Now(), req.ID)
+		if err != nil {
+			response.Error(w, http.StatusInternalServerError, "Gagal mengupdate status tagihan")
+			return
+		}
+	}
+
+	response.Success(w, http.StatusOK, "Pembayaran berhasil dicatat", nil)
 }
 
 type CreateXenditInvoiceReq struct {

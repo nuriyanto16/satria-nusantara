@@ -1,12 +1,12 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/network.dart';
 import '../core/constants.dart';
 import 'models.dart';
 
 class AuthRepository {
-  // Static map to hold newly registered mock users for prototype demo
-  static final Map<String, User> _registeredUsers = {};
-  static final Map<String, String> _registeredPasswords = {};
 
   Future<void> registerUser({
     required String email,
@@ -20,19 +20,6 @@ class AuthRepository {
     String? googleId,
   }) async {
     final cleanEmail = email.trim().toLowerCase();
-    
-    // Pre-populate mock users list for offline/prototype fallback
-    _registeredUsers[cleanEmail] = User(
-      id: 'u-registered-${DateTime.now().millisecondsSinceEpoch}',
-      email: cleanEmail,
-      namaLengkap: name,
-      noHp: phone,
-      roleId: 4,
-      roleName: 'Anggota',
-      scope: 'anggota',
-      status: 'pending',
-    );
-    _registeredPasswords[cleanEmail] = password;
 
     try {
       await api.dio.post(
@@ -59,39 +46,45 @@ class AuthRepository {
   }
 
   void approveUser(String email) {
-    final cleanEmail = email.trim().toLowerCase();
-    if (_registeredUsers.containsKey(cleanEmail)) {
-      final user = _registeredUsers[cleanEmail]!;
-      _registeredUsers[cleanEmail] = User(
-        id: user.id,
-        email: user.email,
-        namaLengkap: user.namaLengkap,
-        noHp: user.noHp,
-        roleId: user.roleId,
-        roleName: user.roleName,
-        scope: user.scope,
-        status: 'aktif',
-      );
+    // Left empty or can call backend to approve
+  }
+
+  Future<void> logout() async {
+    try {
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.disconnect();
+        await googleSignIn.signOut();
+      }
+    } catch (_) {}
+    api.setToken(null);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('auth_user');
+  }
+
+  Future<Map<String, dynamic>?> checkSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      final userStr = prefs.getString('auth_user');
+
+      if (token != null && token.isNotEmpty && userStr != null && userStr.isNotEmpty) {
+        api.setToken(token);
+        final user = User.fromJson(jsonDecode(userStr));
+        return {'token': token, 'user': user};
+      }
+    } catch (e) {
+      // Ignore
     }
+    return null;
   }
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final cleanEmail = email.trim().toLowerCase();
 
-    // Check if it exists in mock registered users first
-    if (_registeredUsers.containsKey(cleanEmail)) {
-      if (_registeredPasswords[cleanEmail] == password) {
-        final user = _registeredUsers[cleanEmail]!;
-        final mockToken = 'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}';
-        api.setToken(mockToken);
-        return {'token': mockToken, 'user': user};
-      } else {
-        throw Exception("Email atau password salah");
-      }
-    }
-
     try {
-      // Otherwise, fall back to real backend API call
+      // Call to real backend API
       final response = await api.dio.post(
         ApiConstants.login,
         data: {'email': email, 'password': password},
@@ -102,6 +95,11 @@ class AuthRepository {
       
       // Save token in API client
       api.setToken(token);
+      
+      // Save to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+      await prefs.setString('auth_user', jsonEncode(data['user']));
       
       return {'token': token, 'user': user};
     } catch (e) {
@@ -133,7 +131,14 @@ class AuthRepository {
       final data = response.data['data'];
       final token = data['token'];
       final user = User.fromJson(data['user']);
+      
       api.setToken(token);
+      
+      // Save to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+      await prefs.setString('auth_user', jsonEncode(data['user']));
+
       return {'token': token, 'user': user};
     } catch (e) {
       if (e is DioException) {
@@ -145,23 +150,12 @@ class AuthRepository {
         }
       }
 
-      // Offline / Fallback handling for prototype testing:
-      // If the email is in mock memory store, return that user directly
-      if (_registeredUsers.containsKey(cleanEmail)) {
-        final user = _registeredUsers[cleanEmail]!;
-        final mockToken = 'mock_google_token_${DateTime.now().millisecondsSinceEpoch}';
-        api.setToken(mockToken);
-        return {'token': mockToken, 'user': user};
-      }
-
-      // Otherwise, since this is a new Google login/registration, force profile completion
+      // Offline / Fallback handling for prototype testing removed
+      // Force profile completion if not found
       throw Exception("User not found");
     }
   }
 
-  void logout() {
-    api.setToken(null);
-  }
 }
 
 class SesiRepository {
@@ -212,9 +206,13 @@ class FinanceRepository {
     }
   }
 
-  Future<void> addMockIuran(String userId) async {
+  Future<void> addMockIuran(String userId, {int? bulan, int? tahun}) async {
     try {
-      await api.dio.post('/finance/iuran/mock', data: {'userId': userId});
+      await api.dio.post('/finance/iuran/mock', data: {
+        'userId': userId,
+        if (bulan != null) 'bulan': bulan,
+        if (tahun != null) 'tahun': tahun,
+      });
     } catch (e) {
       if (e is DioException) {
         throw Exception(e.response?.data['message'] ?? e.message ?? e.toString());
@@ -253,5 +251,53 @@ class EventRepository {
         Event(id: '2', jenis: 'EKT', nama: 'EKT Jurus Yogyakarta', lokasi: 'Lapangan Kotagede', tanggal: '2026-08-15', deskripsi: 'Evaluasi Kenaikan Tingkat Jurus bagi segenap anggota Cabang Yogyakarta.'),
       ];
     }
+  }
+
+  Future<void> registerLatgab(Map<String, dynamic> data) async {
+    await api.dio.post('/event/register', data: data);
+  }
+
+  Future<void> saveReservasi(Map<String, dynamic> data) async {
+    await api.dio.post('/event/reservasi', data: data);
+  }
+}
+
+class TransactionRepository {
+  Future<void> saveNafas(Map<String, dynamic> data) async {
+    await api.dio.post('/nafas/history', data: data);
+  }
+
+  Future<void> saveKebugaran(String userId, Map<String, dynamic> data) async {
+    await api.dio.post('/organization/anggota/$userId/kebugaran', data: data);
+  }
+
+  Future<List<dynamic>> getKebugaranHistory(String userId) async {
+    try {
+      final response = await api.dio.get('/organization/anggota/$userId/kebugaran/history');
+      return response.data['data'] ?? [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> saveAntrian(Map<String, dynamic> data) async {
+    await api.dio.post('/training/antrian', data: data);
+  }
+
+  Future<Map<String, dynamic>> getAntrianStatus(String userId) async {
+    final response = await api.dio.get('/training/antrian/status', queryParameters: {'user_id': userId});
+    return response.data['data'];
+  }
+
+  Future<void> saveKta(Map<String, dynamic> data) async {
+    await api.dio.post('/organization/anggota/kta', data: data);
+  }
+
+  Future<void> saveEkta(Map<String, dynamic> data) async {
+    await api.dio.post('/organization/anggota/ekta', data: data);
+  }
+
+  Future<void> saveJadwal(Map<String, dynamic> data) async {
+    await api.dio.post('/training/sesi', data: data);
   }
 }

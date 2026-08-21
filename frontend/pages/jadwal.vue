@@ -131,6 +131,7 @@
             <td class="text-muted">{{ s.materi || '-' }}</td>
             <td>
               <div class="action-btns">
+                <button class="action-btn detail" @click="openDetailModal(s)" title="Lihat Detail Absensi" style="background:#ebfbee; color:var(--hijau);"><i class="ti ti-users"></i></button>
                 <button class="action-btn qr" @click="generateQR(s.id)" title="Generate QR Absensi"><i class="ti ti-qrcode"></i></button>
                 <button class="action-btn edit" @click="openEditModal(s)" title="Edit Sesi" style="background:#e0f5fb; color:var(--biru);"><i class="ti ti-edit"></i></button>
                 <button class="action-btn delete" @click="deleteSesi(s.id)" title="Hapus Sesi"><i class="ti ti-trash"></i></button>
@@ -164,8 +165,11 @@
         </div>
         <div class="modal-footer" style="margin-top: 20px;">
           <button class="btn btn-outline" @click="selectedCalendarSession = null">Tutup</button>
+          <button class="btn btn-primary" style="background:var(--hijau); border-color:var(--hijau);" @click="openDetailModal(selectedCalendarSession); selectedCalendarSession = null">
+            <i class="ti ti-users"></i> Kehadiran
+          </button>
           <button class="btn btn-primary" @click="generateQR(selectedCalendarSession.id); selectedCalendarSession = null">
-            <i class="ti ti-qrcode"></i> QR Absensi
+            <i class="ti ti-qrcode"></i> QR
           </button>
           <button class="btn btn-outline" style="border-color:var(--biru); color:var(--biru);" @click="openEditModal(selectedCalendarSession); selectedCalendarSession = null">
             <i class="ti ti-edit"></i> Edit
@@ -262,6 +266,76 @@
         </div>
       </div>
     </div>
+    <!-- MODAL DETAIL ABSENSI -->
+    <div v-if="showDetailModal" class="modal-overlay" @click.self="showDetailModal = false">
+      <div class="modal-card" style="max-width: 650px;">
+        <div class="modal-header">
+          <h2 class="modal-title">Detail Kehadiran Sesi</h2>
+          <button class="modal-close" @click="showDetailModal = false"><i class="ti ti-x"></i></button>
+        </div>
+        <div v-if="loadingDetail" style="padding: 24px; text-align: center;">
+          <i class="ti ti-loader-2 spin" style="font-size: 24px; color: var(--biru);"></i>
+          <div style="margin-top: 10px; color: var(--text2);">Memuat data kehadiran...</div>
+        </div>
+        <div v-else class="detail-content" style="padding: 20px;">
+          <div class="stats-row" style="display:flex; gap: 16px; margin-bottom: 20px;">
+             <div class="stat-card" style="flex:1; background: var(--surface); padding: 16px; border-radius: var(--r8); text-align:center;">
+               <div style="font-size:12px; color:var(--text3); font-weight:700;">TOTAL ANGGOTA</div>
+               <div style="font-size:24px; font-weight:800; color:var(--text1);">{{ detailData.total }}</div>
+             </div>
+             <div class="stat-card" style="flex:1; background: #ebfbee; padding: 16px; border-radius: var(--r8); text-align:center;">
+               <div style="font-size:12px; color:#1a5c2a; font-weight:700;">HADIR</div>
+               <div style="font-size:24px; font-weight:800; color:#1a5c2a;">{{ detailData.hadir }}</div>
+             </div>
+             <div class="stat-card" style="flex:1; background: #fee2e2; padding: 16px; border-radius: var(--r8); text-align:center;">
+               <div style="font-size:12px; color:#991b1b; font-weight:700;">ABSEN</div>
+               <div style="font-size:24px; font-weight:800; color:#991b1b;">{{ detailData.absen }}</div>
+             </div>
+          </div>
+          
+          <div class="tabs" style="display:flex; gap:8px; margin-bottom:12px;">
+            <button :class="['btn', detailTab === 'hadir' ? 'btn-primary' : 'btn-outline']" @click="detailTab = 'hadir'" style="flex:1;">Hadir ({{ detailData.hadirList.length }})</button>
+            <button :class="['btn', detailTab === 'absen' ? 'btn-primary' : 'btn-outline']" @click="detailTab = 'absen'" style="flex:1;">Absen ({{ detailData.absenList.length }})</button>
+          </div>
+          
+          <div class="list-container" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--r8);">
+            <table class="data-table" v-if="detailTab === 'hadir'">
+              <thead>
+                <tr>
+                  <th>Nama Anggota</th>
+                  <th>Waktu Scan</th>
+                  <th>Metode</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="detailData.hadirList.length === 0"><td colspan="3" class="text-center text-muted" style="padding:16px;">Belum ada yang hadir</td></tr>
+                <tr v-for="h in detailData.hadirList" :key="h.id">
+                  <td style="font-weight:600;">{{ h.nama }}</td>
+                  <td>{{ new Date(h.waktu_scan).toLocaleTimeString('id-ID') }}</td>
+                  <td><span class="badge" style="background:#e0f5fb; color:var(--biru); padding:4px 8px; border-radius:4px; font-size:11px;">{{ h.metode ? h.metode.toUpperCase() : 'UNKNOWN' }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <table class="data-table" v-if="detailTab === 'absen'">
+              <thead>
+                <tr>
+                  <th>Nama Anggota</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="detailData.absenList.length === 0"><td colspan="2" class="text-center text-muted" style="padding:16px;">Semua anggota hadir</td></tr>
+                <tr v-for="a in detailData.absenList" :key="a.id">
+                  <td style="font-weight:600;">{{ a.nama_lengkap }}</td>
+                  <td><span class="badge" style="background:#fee2e2; color:#991b1b; padding:4px 8px; border-radius:4px; font-size:11px;">TIDAK HADIR</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -276,6 +350,10 @@ const filterUnit = ref('')
 const filterTanggal = ref('')
 const showModal = ref(false)
 const showQRModal = ref(false)
+const showDetailModal = ref(false)
+const loadingDetail = ref(false)
+const detailTab = ref('hadir')
+const detailData = ref({ total: 0, hadir: 0, absen: 0, hadirList: [] as any[], absenList: [] as any[] })
 const submitting = ref(false)
 const editingId = ref<string | null>(null)
 const loading = ref(false)
@@ -345,6 +423,48 @@ const nextMonth = () => {
 
 const showCalendarDetail = (s: any) => {
   selectedCalendarSession.value = s
+}
+
+const openDetailModal = async (s: any) => {
+  showDetailModal.value = true
+  loadingDetail.value = true
+  detailTab.value = 'hadir'
+  detailData.value = { total: 0, hadir: 0, absen: 0, hadirList: [], absenList: [] }
+  
+  try {
+    // Fetch members of the unit
+    let members: any[] = []
+    try {
+      const membersRes = await api.get(`/organization/anggota?limit=500&unit_id=${s.unit_id}&status=aktif`)
+      members = membersRes.data || []
+    } catch (e) {
+      console.warn('Failed to fetch members for unit', e)
+    }
+    
+    // Fetch attendance for the session
+    let hadirList: any[] = []
+    try {
+      const kehadiranRes = await api.get(`/training/sesi/${s.id}/kehadiran`)
+      hadirList = kehadiranRes.detail || []
+    } catch (e) {
+      console.warn('Failed to fetch attendance', e)
+    }
+    
+    // Find absentees
+    const absenList = members.filter((m: any) => !hadirList.some((h: any) => h.anggota_id === m.id))
+    
+    detailData.value = {
+      total: members.length,
+      hadir: hadirList.length,
+      absen: absenList.length,
+      hadirList: hadirList,
+      absenList: absenList
+    }
+  } catch (e) {
+    console.error('Error fetching detail', e)
+  } finally {
+    loadingDetail.value = false
+  }
 }
 
 const form = ref({

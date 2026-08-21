@@ -13,5 +13,11 @@ func (h *Handler) Routes() func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			response.Success(w, http.StatusOK, "Event API", []Event{})
 		})
+		r.Post("/register", func(w http.ResponseWriter, r *http.Request) {
+			response.Success(w, http.StatusOK, "Berhasil mendaftar Latgab", map[string]string{"status": "success"})
+		})
+		r.Post("/reservasi", func(w http.ResponseWriter, r *http.Request) {
+			response.Success(w, http.StatusOK, "Berhasil reservasi", map[string]string{"status": "success"})
+		})
 	}
 }

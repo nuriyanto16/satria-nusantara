@@ -908,8 +908,17 @@ const selectCabang = async (c: any) => {
   await fetchUnitsForCabang(c.id)
   await fetchTrainersForCabang(c.id)
   await fetchTrends()
-  // Data dummy kepengurusan dihilangkan agar saat tambah cabang baru, pengurus kosong
-  staffList.value = []
+  await fetchPengurusForCabang(c.id)
+}
+
+const fetchPengurusForCabang = async (cabangId: string) => {
+  try {
+    const res = await api.get(`/organization/cabang/${cabangId}/pengurus`)
+    staffList.value = res.data || []
+  } catch (error) {
+    console.error('Gagal memuat daftar pengurus:', error)
+    staffList.value = []
+  }
 }
 
 const fetchUnitsForCabang = async (cabangId: string) => {
@@ -1068,41 +1077,46 @@ const openEditUnitModal = (u: any) => {
   initMap('map-unit', unitForm)
 }
 
-const saveUnit = () => {
-  if (editingUnitId.value) {
-    const idx = unitList.value.findIndex(x => x.id === editingUnitId.value)
-    if (idx !== -1) {
-      unitList.value[idx] = {
-        ...unitList.value[idx],
-        nama: unitForm.value.nama,
-        lokasi: unitForm.value.lokasi,
-        jadwal: unitForm.value.jadwal,
-        pic: unitForm.value.pic,
-        lat: unitForm.value.lat || '-7.7956',
-        lng: unitForm.value.lng || '110.3695'
-      }
-      alert('Unit latihan berhasil diperbarui!')
-    }
-  } else {
-    unitList.value.push({
-      id: String(Date.now()),
+const saveUnit = async () => {
+  if (!selectedCabang.value) return
+  try {
+    const payload = {
+      cabang_id: selectedCabang.value.id,
       nama: unitForm.value.nama,
-      lokasi: unitForm.value.lokasi,
-      jadwal: unitForm.value.jadwal,
-      pic: unitForm.value.pic,
-      lat: unitForm.value.lat || '-7.7956',
-      lng: unitForm.value.lng || '110.3695',
-      jumlah_anggota: 0
-    })
-    alert('Unit latihan baru berhasil ditambahkan!')
+      lokasi_nama: unitForm.value.lokasi,
+      lokasi_alamat: '',
+      pic_user_id: '',
+      lat: String(unitForm.value.lat || '-7.7956'),
+      lng: String(unitForm.value.lng || '110.3695')
+    }
+
+    if (editingUnitId.value) {
+      await api.put(`/organization/unit/${editingUnitId.value}`, payload)
+      alert('Unit latihan berhasil diperbarui!')
+    } else {
+      await api.post(`/organization/unit`, payload)
+      alert('Unit latihan baru berhasil ditambahkan!')
+    }
+    // Refresh unit list
+    const res = await api.get(`/organization/cabang/${selectedCabang.value.id}/unit`)
+    unitList.value = res || []
+    
+    showUnitModal.value = false
+    selectedUnit.value = null
+  } catch (e: any) {
+    alert(e.response?.data?.message || 'Gagal menyimpan unit')
   }
-  showUnitModal.value = false
-  selectedUnit.value = null
 }
 
-const deleteUnit = (id: string) => {
+const deleteUnit = async (id: string) => {
   if (confirm('Apakah Anda yakin ingin menghapus unit latihan ini?')) {
-    unitList.value = unitList.value.filter(u => u.id !== id)
+    try {
+      await api.delete(`/organization/unit/${id}`)
+      const res = await api.get(`/organization/cabang/${selectedCabang.value.id}/unit`)
+      unitList.value = res || []
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Gagal menghapus unit')
+    }
   }
 }
 
@@ -1126,36 +1140,36 @@ const openEditPengurusModal = (p: any) => {
   showPengurusModal.value = true
 }
 
-const savePengurus = () => {
-  if (editingPengurusId.value) {
-    const idx = staffList.value.findIndex(x => x.id === editingPengurusId.value)
-    if (idx !== -1) {
-      staffList.value[idx] = {
-        ...staffList.value[idx],
-        nama: pengurusForm.value.nama,
-        jabatan: pengurusForm.value.jabatan,
-        tingkatan: pengurusForm.value.tingkatan,
-        kontak: pengurusForm.value.kontak
-      }
+const savePengurus = async () => {
+  if (!selectedCabang.value) return
+  submitting.value = true
+  try {
+    if (editingPengurusId.value) {
+      await api.put(`/organization/pengurus/${editingPengurusId.value}`, pengurusForm.value)
       alert('Informasi pengurus berhasil diperbarui!')
+    } else {
+      await api.post(`/organization/cabang/${selectedCabang.value.id}/pengurus`, pengurusForm.value)
+      alert('Pengurus baru berhasil ditambahkan!')
     }
-  } else {
-    staffList.value.push({
-      id: String(Date.now()),
-      nama: pengurusForm.value.nama,
-      nomor: `YO-YGY-${100 + staffList.value.length}`,
-      jabatan: pengurusForm.value.jabatan,
-      tingkatan: pengurusForm.value.tingkatan,
-      kontak: pengurusForm.value.kontak
-    })
-    alert('Pengurus baru berhasil ditambahkan!')
+    await fetchPengurusForCabang(selectedCabang.value.id)
+    showPengurusModal.value = false
+  } catch (error: any) {
+    alert(error.response?.data?.message || 'Gagal menyimpan data pengurus')
+  } finally {
+    submitting.value = false
   }
-  showPengurusModal.value = false
 }
 
-const deletePengurus = (id: string) => {
+const deletePengurus = async (id: string) => {
   if (confirm('Apakah Anda yakin ingin menghapus pengurus ini dari kepengurusan cabang?')) {
-    staffList.value = staffList.value.filter(s => s.id !== id)
+    try {
+      await api.delete(`/organization/pengurus/${id}`)
+      if (selectedCabang.value) {
+        await fetchPengurusForCabang(selectedCabang.value.id)
+      }
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Gagal menghapus pengurus')
+    }
   }
 }
 
@@ -1201,38 +1215,47 @@ const onJarakChange = () => {
   else if (trainerForm.value.jarak === 'Jarak Jauh') trainerForm.value.transport = 75000
 }
 
-const saveTrainer = () => {
-  if (editingTrainerId.value) {
-    const idx = trainerList.value.findIndex(x => x.id === editingTrainerId.value)
-    if (idx !== -1) {
-      trainerList.value[idx] = {
-        ...trainerList.value[idx],
-        jenis: trainerForm.value.jenis,
-        jarak: trainerForm.value.jarak,
-        transport: trainerForm.value.transport,
-        status: trainerForm.value.status
-      }
-      alert('Data pelatih berhasil diperbarui!')
-    }
-  } else {
-    trainerList.value.push({
-      id: String(Date.now()),
+const saveTrainer = async () => {
+  if (!selectedCabang.value) return
+  try {
+    const payload = {
+      cabang_id: selectedCabang.value.id,
       nama: trainerForm.value.nama,
-      nomor: `YO-YGY-${200 + trainerList.value.length}`,
+      nomor: trainerForm.value.nomor,
       jenis: trainerForm.value.jenis,
       tingkatan: trainerForm.value.tingkatan,
       jarak: trainerForm.value.jarak,
       transport: trainerForm.value.transport,
-      status: 'Aktif'
-    })
-    alert('Pelatih baru berhasil ditambahkan!')
+      tanggal_mulai: trainerForm.value.tanggal_mulai,
+      sk: trainerForm.value.sk,
+      status: trainerForm.value.status
+    }
+
+    if (editingTrainerId.value) {
+      await api.put(`/organization/pelatih/${editingTrainerId.value}`, payload)
+      alert('Data pelatih berhasil diperbarui!')
+    } else {
+      await api.post(`/organization/pelatih`, payload)
+      alert('Pelatih baru berhasil ditambahkan!')
+    }
+    const res = await api.get(`/organization/pelatih?cabang_id=${selectedCabang.value.id}`)
+    trainerList.value = res || []
+    
+    showTrainerModal.value = false
+  } catch (e: any) {
+    alert(e.response?.data?.message || 'Gagal menyimpan pelatih')
   }
-  showTrainerModal.value = false
 }
 
-const deleteTrainer = (id: string) => {
+const deleteTrainer = async (id: string) => {
   if (confirm('Apakah Anda yakin ingin menghapus pelatih ini?')) {
-    trainerList.value = trainerList.value.filter(t => t.id !== id)
+    try {
+      await api.delete(`/organization/pelatih/${id}`)
+      const res = await api.get(`/organization/pelatih?cabang_id=${selectedCabang.value.id}`)
+      trainerList.value = res || []
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Gagal menghapus pelatih')
+    }
   }
 }
 

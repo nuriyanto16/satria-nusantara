@@ -3,6 +3,7 @@ import '../data/models.dart';
 import '../data/repositories.dart';
 
 abstract class AuthEvent {}
+class CheckAuth extends AuthEvent {}
 class LoginRequested extends AuthEvent {
   final String email;
   final String password;
@@ -32,6 +33,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _repository;
 
   AuthBloc(this._repository) : super(AuthInitial()) {
+    on<CheckAuth>((event, emit) async {
+      emit(AuthLoading());
+      final session = await _repository.checkSession();
+      if (session != null) {
+        emit(Authenticated(session['token'], session['user']));
+      } else {
+        emit(Unauthenticated());
+      }
+    });
+
     on<LoginRequested>((event, emit) async {
       emit(AuthLoading());
       try {
@@ -61,8 +72,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(Authenticated(event.token, event.user));
     });
 
-    on<LogoutRequested>((event, emit) {
-      _repository.logout();
+    on<LogoutRequested>((event, emit) async {
+      await _repository.logout();
       emit(Unauthenticated());
     });
   }

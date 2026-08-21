@@ -19,6 +19,7 @@ import (
 	"satria-nusantara/backend/internal/nafas"
 	"satria-nusantara/backend/internal/organization"
 	"satria-nusantara/backend/internal/training"
+	"satria-nusantara/backend/internal/version"
 
 	"satria-nusantara/backend/pkg/config"
 	"satria-nusantara/backend/pkg/database"
@@ -60,6 +61,7 @@ func main() {
 	contentHandler := content.NewHandler()
 	kebugaranHandler := kebugaran.NewHandler()
 	nafasHandler := nafas.NewHandler()
+	versionHandler := version.NewHandler(db)
 
 	// 6. Setup Router (Chi)
 	r := chi.NewRouter()
@@ -99,7 +101,8 @@ func main() {
 			})
 		})
 
-		r.Get("/app-version", func(w http.ResponseWriter, r *http.Request) {
+		r.Get("/app-version", versionHandler.CheckVersion)
+		r.Get("/app-version-mock", func(w http.ResponseWriter, r *http.Request) {
 			response.Success(w, http.StatusOK, "Latest app version", map[string]interface{}{
 				"versionCode":     1, // Increment this value to force/show updates
 				"versionName":     "1.0.0",
@@ -117,6 +120,7 @@ func main() {
 
 			r.Route("/organization", orgHandler.Routes(cfg.JWTSecret))
 			r.Route("/training", trainHandler.Routes(cfg.JWTSecret))
+			r.Route("/versions", versionHandler.RoutesAdmin)
 			r.Route("/event", eventHandler.Routes())
 			r.Route("/finance", financeHandler.Routes())
 			r.Route("/content", contentHandler.Routes())

@@ -143,7 +143,7 @@
                 </td>
                 <td @click.stopPropagation>
                   <div style="display: flex; gap: 4px;">
-                    <button v-if="s.selesai < s.total" class="icon-btn" title="Input Data" @click="openInput(s)">
+                    <button class="icon-btn" title="Input Data" @click="openInput(s)">
                       <i class="ti ti-edit"></i>
                     </button>
                     <button class="icon-btn" title="Lihat Detail" @click="viewDetail(s)">

@@ -9,7 +9,9 @@ class LoadIuranHistory extends IuranEvent {
 }
 class AddMockIuran extends IuranEvent {
   final String userId;
-  AddMockIuran(this.userId);
+  final int? bulan;
+  final int? tahun;
+  AddMockIuran(this.userId, {this.bulan, this.tahun});
 }
 class PayIuranRequested extends IuranEvent {
   final String id;
@@ -53,13 +55,11 @@ class IuranBloc extends Bloc<IuranEvent, IuranState> {
     });
 
     on<AddMockIuran>((event, emit) async {
-      emit(IuranLoading());
       try {
-        await _repository.addMockIuran(event.userId);
-        final list = await _repository.getIuranHistory(event.userId);
-        emit(IuranLoaded(list));
+        await _repository.addMockIuran(event.userId, bulan: event.bulan, tahun: event.tahun);
+        add(LoadIuranHistory(event.userId));
       } catch (e) {
-        emit(IuranError('Gagal menambah tagihan.'));
+        emit(IuranError(e.toString()));
       }
     });
 
